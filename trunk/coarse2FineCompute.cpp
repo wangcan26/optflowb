@@ -26,6 +26,8 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	GaussPyramid Pyramid2;		
 	cout<<"Constructing pyramid..."<<endl;
 	Pyramid1.ConstructPyramid(Im1,ratio,minWidth);
+
+
 	Pyramid2.ConstructPyramid(Im2,ratio,minWidth);
 	cout<<"done!"<<endl;
 	
@@ -48,33 +50,43 @@ for(int k=Pyramid1.nlevels()-1;k>=0;k--)
 		im2feature(Image2,Pyramid2.Image(k));
 */
 
-		if(k==Pyramid1.nlevels()-1) // if at the top level
+		//on top level(first iteration)
+		if(k==Pyramid1.nlevels()-1)
 		{
-			
+			cout<<"first iteration:"<<k<<endl;
 			vx=cvCreateImage(cvSize(width,height ),depth,nChannels);
 			vy=cvCreateImage(cvSize(width,height ),depth,nChannels);		
 			//clone image2 to warpImage2
-			WarpImage2 = cvCreateImage(cvSize(Image2->width,Image2->height ),Image2->depth, Image2->nChannels );
-			WarpImage2=  cvCloneImage(Image2);
+		//	WarpImage2 = cvCreateImage(cvSize(Image2->width,Image2->height ),Image2->depth, Image2->nChannels );
+		//	WarpImage2=  cvCloneImage(Image2);
 		}
 		else
 		{
 			
+			
+
+			IplImage *tempVx = cvCreateImage(cvSize(width, height), 
+											   vx->depth,
+											   vx->nChannels);
+			cvResize(vx, tempVx); 
+			vx=tempVx;
+
+			IplImage *tempVy = cvCreateImage(cvSize(width, height), 
+											   vy->depth,
+											   vy->nChannels);
+			cvResize(vy, tempVy); 
+			vy=tempVy;
+			//toolsKit::cvShowManyImages("Image", 2, Pyramid1.getImageFromPyramid(k),Pyramid1.getImageFromPyramid(k));
+			toolsKit::cvShowManyImages("Image", 2,vx,vy);
+
+			
 			//vx.imresize(width,height);
-			vx = cvCreateImage( cvSize( width,height),depth,nChannels );
-			//cvResize(vx,tempvx);
-			//why need resizing at all???
-
-
-			/*
-			vx.Multiplywith(1/ratio);
+			/*vx.Multiplywith(1/ratio);
 			vy.imresize(width,height);
 			vy.Multiplywith(1/ratio);			
 			warpFL(WarpImage2,Image1,Image2,vx,vy);
 			*/
-		}
-						//SmoothFlowPDE(GPyramid1.Image(k),GPyramid2.Image(k),warpI2,vx,vy,alpha,nOuterFPIterations,nInnerFPIterations,nCGIterations);
-						//SmoothFlowPDE(Image1,Image2,WarpImage2,vx,vy,alpha*pow((1/ratio),k),nOuterFPIterations,nInnerFPIterations,nCGIterations);
+		}						
 		 // SmoothFlowPDE(Image1,Image2,WarpImage2,vx,vy,alpha,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
 	}
 	//warpFL(warpI2,Im1,Im2,vx,vy);

@@ -4,7 +4,7 @@
 #include "highgui.h" 
 #include "cv.h"
 #include "GaussPyramid.h"
-
+#include "toolsKit.h"
 class coarse2FineCompute
 {
 public:

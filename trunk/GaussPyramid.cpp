@@ -28,7 +28,7 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 	ImPyramid[0]=cvCloneImage(&image);
 /* create destination image */
 	cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 
-	cvShowImage("TEST",ImPyramid[0]); 
+	//cvShowImage("TEST",ImPyramid[0]); 
 	//cvWaitKey(0); 
 	cvDestroyWindow("TEST"); 
 	
@@ -53,8 +53,8 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 			//cvSmooth(&image,&foo,2,3,0,sigma,sigma*3);
 			cvSmooth(ImPyramid[i-1],foo,2);
 			
-			cvNamedWindow("smooth",  CV_WINDOW_AUTOSIZE); 
-			cvShowImage("smooth",foo); 
+			//cvNamedWindow("smooth",  CV_WINDOW_AUTOSIZE); 
+			//cvShowImage("smooth",foo); 
 			//cvWaitKey(0); 
 
 			ImPyramid[i] = cvCreateImage( cvSize( foo->width*ratio,foo->height*ratio ),foo->depth, foo->nChannels );
@@ -62,11 +62,11 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 			cvResize(foo,ImPyramid[i]);
 			//foo.imresize(ImPyramid[i],pow(ratio,i));
 			
-			cvNamedWindow("resize",  CV_WINDOW_AUTOSIZE); 
-			cvShowImage("resize",ImPyramid[i]); 
-			cvWaitKey(0); 
-			cvDestroyWindow("resize"); 
-			cvDestroyWindow("smooth"); 
+			//cvNamedWindow("resize",  CV_WINDOW_AUTOSIZE); 
+			//cvShowImage("resize",ImPyramid[i]); 
+			//cvWaitKey(0); 
+			//cvDestroyWindow("resize"); 
+			//cvDestroyWindow("smooth"); 
 
 		/*}
 		else
