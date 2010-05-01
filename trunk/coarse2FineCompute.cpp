@@ -118,37 +118,131 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 }
 
-void coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1, 
+double psiDerivative(double x,double epsilon){
+	double y=1 / (2 * sqrt( x + epsilon ) ) ;
+	return y;
+}
+
+double computePsidash(){
+	double ans=-1;	
+	// ( Ikz + (Ikx * du) + (Iky * dv) ) ^ 2 + 
+	// gamma * ( ( Ixz + (Ixx * du) + (Ixy * dv) ) ^ 2 +  
+	//( Iyz + (Ixy * du) + (Iyy * dv) ) ^ 2 
+	return ans;
+}
+
+IplImage* computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels){
+	IplImage* ans=cvCreateImage(cvSize( 2*width+1, 2*height+1 ),IPL_DEPTH_8U,channels);
+	//init masks
+	double a[] = {1,1};
+	double b[] = {1,-1};
+	CvMat* matOnes = &cvMat( 1, 2, CV_64FC1, a ); // 64FC1 for double
+	CvMat* matOnesT=&cvMat( 2, 1, CV_64FC1, a );
+	cvTranspose(matOnes,matOnesT);
+	CvMat* matOneNegOne = &cvMat( 1, 2, CV_64FC1, b ); // 64FC1 for double
+	CvMat* matOneNegOneT=&cvMat( 2, 1, CV_64FC1, b );;
+	cvTranspose(matOneNegOne,matOneNegOneT);
+	//init temp params
+	IplImage* ux=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* uy=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+
+	cvFilter2D(iterU,ux,matOneNegOne);// x and y derivatives of u by 2d convolution
+	cvFilter2D(iterU,uy,matOneNegOneT);// x and y derivatives of u by 2d convolution
+/*
+
+to be contintued...
+
+*/
+
+	return ans;
+}
+
+flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1, 
 										const IplImage* Im2, 
 										IplImage* warpIm2, 
-										IplImage* du, 
-										IplImage* dv, 
+										IplImage* uinit, 
+										IplImage* vinit, 
 										double alpha, 
 										int nOuterFPIterations, 
 										int nInnerFPIterations, 
 										int nCGIterations){
-										
-		IplImage* Ikx=cvCreateImage(cvSize( Im1->width, Im1->height ),IPL_DEPTH_8U,1); 
-		IplImage* Iky=cvCreateImage(cvSize( Im1->width, Im1->height ),IPL_DEPTH_8U,1);
-		IplImage* Ikx2=cvCreateImage(cvSize( Im1->width, Im1->height ),IPL_DEPTH_8U,1); 
-		IplImage* Iky2=cvCreateImage(cvSize( Im1->width, Im1->height ),IPL_DEPTH_8U,1); 
 		
+		//dimantions
+		int height=Im1->height;
+		int width=Im1->width;
+		int channels=Im1->nChannels;
+		//this will hold the optical flow
+	    //flowUV* UV=new flowUV(width,height,IPL_DEPTH_8U,channels);
+		flowUV* UV=new flowUV(uinit,vinit);
+		//init for the different DX,DY & DT		
+		IplImage* Ikx=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* Iky=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+		IplImage* Ikx2=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* Iky2=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* Ikt_Org=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* IXt_axis=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* IYt_ayis=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		//the gradient of the gradient
+		IplImage* Ixx=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* Ixy=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+		IplImage* Iyx=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* Iyy=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);	
+		//the addition in each iter to u&v
+		IplImage* Du=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+		IplImage* Dv=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+
 		//	IplImage* im1=cvCreateImage(cvSize( Im1->width, Im1->height ),IPL_DEPTH_8U,1); 
 		//	IplImage* im2=cvCreateImage(cvSize( Im2->width, Im2->height ),IPL_DEPTH_8U,1);
-
-			//IplImage *destination = cvCreateImage(cvSize( source->width, source->height ), IPL_DEPTH_8U, 1 );
-
+		//IplImage *destination = cvCreateImage(cvSize( source->width, source->height ), IPL_DEPTH_8U, 1 );
 			//convert to grayscale
 		//	cvCvtColor(Im1,im1,CV_RGB2GRAY);
 		//	cvCvtColor(Im2,im2,CV_RGB2GRAY);			
-			getDXs(Im1,Ikx,Iky);
-			getDXs(Im2,Ikx2,Iky2);
-			toolsKit::cvShowManyImages("Image22",6,Im1,Ikx,Iky,Im2,Ikx2,Iky2);
-			//toolsKit::cvShowManyImages("Image23",3,Im2,Ikx2,Iky2);
+		
+		//create the different DX of the pictures
+		getDXs(Im1,Ikx,Iky);
+		getDXs(Im2,Ikx2,Iky2);
+		//by brox we need to take the gradient of the gradient:
+		getDXs(Ikx,Ixx,Ixy);
+		getDXs(Iky,Iyx,Iyy);
+
+		//DXT of original images and their x&y gradiants
+	 	cvAbsDiff(Im1,Im2,Ikt_Org);
+		cvAbsDiff(Ikx,Ikx2,IXt_axis);
+		cvAbsDiff(Iky,Iky2,IYt_ayis);
+		//toolsKit::cvShowManyImages("Image22",6,Im1,Ikx,Iky,Im2,Ikx2,Iky2);
+		//toolsKit::cvShowManyImages("Image22",9,Im1,Im2,Ikt_Org,Ikx,Ikx2,IXt_axis,Iky,Iky2,IYt_ayis);			
+		toolsKit::cvShowManyImages("Image22",3,Ikt_Org,IXt_axis,IYt_ayis);			
+		//toolsKit::cvShowManyImages("Image23",3,Im2,Ikx2,Iky2);
+		
+	
+
+		//init for SOR
+		/*
+		du = zeros( ht, wt ) ;
+		dv = zeros( ht, wt ) ;
+		tol = 1e-8 * ones( 2 * ht * wt, 1 ) ;
+		duv = zeros( 2 * ht * wt, 1 ) ;
+		*/
+		
+		//outer fixed pint iteration
+		
+		for(int iter=0;iter<nOuterFPIterations;iter++){
+			// First compute the values of the data and smoothness terms
+			double psidash=computePsidash();
+
+			
+			// Compute new psidashFS
+			IplImage* tempU=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+			IplImage* tempV=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+			cvAdd(UV->getU(),Du,tempU);
+			cvAdd(UV->getV(),Dv,tempV);
+			computePsidashFS_brox(tempU,tempV,width,height,channels);
+		}
 
 
 
 
+return UV;
 
 }
 

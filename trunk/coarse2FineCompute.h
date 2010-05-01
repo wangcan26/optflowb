@@ -5,6 +5,7 @@
 #include "cv.h"
 #include "GaussPyramid.h"
 #include "toolsKit.h"
+#include "flowUV.h"
 
 class coarse2FineCompute
 {
@@ -20,7 +21,7 @@ public:
 	void SmoothFlowPDE(const IplImage* Im1, const IplImage* Im2, IplImage* warpIm2, IplImage* u, IplImage* v, 
 																    double alpha, int nOuterFPIterations, int nInnerFPIterations, int nCGIterations);
 
-	void SmoothFlowPDE2(const IplImage* Im1, 
+	flowUV* SmoothFlowPDE2(const IplImage* Im1, 
 									   const IplImage* Im2, 
 									   IplImage* warpIm2, 
 									   IplImage* du, 

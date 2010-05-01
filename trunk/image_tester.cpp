@@ -70,7 +70,7 @@ int main (int argc,char** argv)
 
 		//GPyramid1.ConstructPyramid(*img,ratio,minWidth);
 
-	 coarse2fComp.Coarse2FineFlow(  vx, 
+	 coarse2fComp.Coarse2FineFlow( vx, 
 									vy, 
 									*warpI2,
 									*img1, 
@@ -85,7 +85,7 @@ int main (int argc,char** argv)
 
 
 
-
+/*
 	double a[] = {1,0,1,
 		1,1,1,
 		1,0,1};
@@ -132,5 +132,5 @@ int main (int argc,char** argv)
 	//SparseToolKit::printSparseMat(SB);
 	cvReleaseSparseMat(&SA);
 	cvReleaseSparseMat(&SB);
-	cvReleaseSparseMat(&SX);
+	cvReleaseSparseMat(&SX);*/
 	} 
