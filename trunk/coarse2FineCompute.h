@@ -6,7 +6,7 @@
 #include "GaussPyramid.h"
 #include "toolsKit.h"
 #include "flowUV.h"
-
+#include "IplImageIterator.h"
 class coarse2FineCompute
 {
 

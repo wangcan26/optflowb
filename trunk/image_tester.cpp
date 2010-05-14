@@ -8,9 +8,6 @@
 using namespace std;
 
 
-
-
-
 void PrintMat(CvMat *A)
 	{
 	int i, j;

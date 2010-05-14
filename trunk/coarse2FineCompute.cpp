@@ -10,8 +10,8 @@ coarse2FineCompute::~coarse2FineCompute(void)
 
 
 
-int getDXs(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){
-	//char* fileAddress="c:\\a\\Dumptruck1.png";
+//need to recieve cvSobel with function pointer;
+int getDXs(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){	
 	//IplImage* orginalImage = cvLoadImage(fileAddress,0);
 	
 	/*create temp images*/
@@ -90,7 +90,9 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		{
 			cout<<"first iteration:"<<k<<endl;
 			vx=cvCreateImage(cvSize(width,height),depth,nChannels);
-			vy=cvCreateImage(cvSize(width,height),depth,nChannels);		
+			vy=cvCreateImage(cvSize(width,height),depth,nChannels);
+			cvZero(vx);
+			cvZero(vy);
 			//clone image2 to warpImage2
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
 			WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(k));
@@ -108,7 +110,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 
 			//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 
-			//toolsKit::cvShowManyImages("Image",4, Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
+		//	toolsKit::cvShowManyImages("pyramid iteration",4, Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 
 			//IplImage* out=LaplaceCompute(Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
 			//toolsKit::cvShowManyImages("Image",1, out);
@@ -118,43 +120,141 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 }
 
-double psiDerivative(double x,double epsilon){
+void IPLsqrt_mul2(IplImage* img){
+	//BwImage imgA(img);
+	//for (int i=0; i<img->width;i++)
+	//	for(int j=0;j<img->height;j++)
+	//		imgA[i][j] = 1/(2*sqrt((double)imgA[i][j]));
+	IplImageIterator<unsigned char> it(img);
+	while (!it) {      
+	  *it= 1/(2*sqrt((double)*it)); 
+	  ++it;
+	}
+}
+
+double psiDerivative(double x,double epsilon){	
 	double y=1 / (2 * sqrt( x + epsilon ) ) ;
 	return y;
 }
 
+IplImage* psiDerivative(IplImage* x,double epsilon){	
+	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
+	//cvShowImage("before",x);
+	cvAddS(x,cvRealScalar(epsilon),x);
+	
+	IPLsqrt_mul2(x);
+	//cvShowImage("after",x);
+//	x->imageData
+	return x;
+}
+
+
+
 double computePsidash(){
 	double ans=-1;	
-	// ( Ikz + (Ikx * du) + (Iky * dv) ) ^ 2 + 
-	// gamma * ( ( Ixz + (Ixx * du) + (Ixy * dv) ) ^ 2 +  
-	//( Iyz + (Ixy * du) + (Iyy * dv) ) ^ 2 
+	/* ( Ikz + 
+		(Ikx * du) + 
+		(Iky * dv) ) ^ 2 + 
+		gamma * 
+		( ( Ixz + (Ixx * du) + (Ixy * dv) ) ^ 2 +  
+		(	Iyz + 
+			(Ixy * du) + 
+			(Iyy * dv) ) ^ 2 
+	*/
 	return ans;
 }
 
-IplImage* computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels){
-	IplImage* ans=cvCreateImage(cvSize( 2*width+1, 2*height+1 ),IPL_DEPTH_8U,channels);
+void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){
+	//IplImage* ans=cvCreateImage(cvSize( 2*width+1, 2*height+1 ),IPL_DEPTH_8U,channels);
 	//init masks
 	double a[] = {1,1};
 	double b[] = {1,-1};
+	double c[]={0.5,0.5};
 	CvMat* matOnes = &cvMat( 1, 2, CV_64FC1, a ); // 64FC1 for double
 	CvMat* matOnesT=&cvMat( 2, 1, CV_64FC1, a );
 	cvTranspose(matOnes,matOnesT);
+
+	CvMat* matHalf = &cvMat( 1, 2, CV_64FC1, c ); // 64FC1 for double
+	CvMat* matHalfT=&cvMat( 2, 1, CV_64FC1, c );
+	cvTranspose(matHalf,matHalfT);
+	
+	
 	CvMat* matOneNegOne = &cvMat( 1, 2, CV_64FC1, b ); // 64FC1 for double
 	CvMat* matOneNegOneT=&cvMat( 2, 1, CV_64FC1, b );;
 	cvTranspose(matOneNegOne,matOneNegOneT);
 	//init temp params
 	IplImage* ux=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
 	IplImage* uy=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* vx=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* vy=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* uxd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* vxd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* uyd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* vyd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* t=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* uxpd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* uypd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* vxpd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
+	IplImage* vypd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
 
 	cvFilter2D(iterU,ux,matOneNegOne);// x and y derivatives of u by 2d convolution
 	cvFilter2D(iterU,uy,matOneNegOneT);// x and y derivatives of u by 2d convolution
-/*
+	cvFilter2D(iterV,vx,matOneNegOne);// x and y derivatives of v by 2d convolution
+	cvFilter2D(iterV,vy,matOneNegOneT);	// x and y derivatives of v by 2d convolution
 
-to be contintued...
+	//toolsKit::cvShowManyImages("Image22",6,iterU,iterV,ux,uy,vx,vy);		
 
-*/
+	cvFilter2D(ux,uxd,matHalf);//averaging as per the numerics section of the second chapter.for x
+	cvFilter2D(vx,vxd,matHalf);
 
-	return ans;
+	cvFilter2D(uy,uyd,matHalfT);//averaging as per the numerics section of the second chapter.for y
+	cvFilter2D(vy,vyd,matHalfT);	
+	
+	cvFilter2D(uyd,t,matHalf);// Computes the delta u(i+1/2, j) and delta u(i-1/2, j).
+	cvPow(ux,ux,2);//ux^2
+	cvPow(t,t,2);//t^2
+	cvAdd(ux,t,uxpd);//uxpd = ux^2 + t^2 
+
+	
+	cvFilter2D(uxd,t,matHalfT);//Computes the delta u(i, j+1/2) and delta u(i, j-1/2).
+	cvPow(uy,uy,2);//uy^2
+	cvPow(t,t,2);//t^2
+	cvAdd(uy,t,uypd);//uypd = uy^2 + t^2	
+	
+	cvFilter2D(vyd,t,matHalf);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
+	cvPow(vx,vx,2);//vx^2
+	cvPow(t,t,2);//t^2
+	cvAdd(vx,t,vxpd);//vxpd = vx^2 + t^2
+
+	cvFilter2D(vxd,t,matHalfT);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
+	cvPow(vy,vy,2);//vx^2
+	cvPow(t,t,2);//t^2
+	cvAdd(vy,t,vypd);//vypd=vy^2 + t^2
+	
+	//toolsKit::cvShowManyImages("before:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
+	//toolsKit::cvShowManyImages("before:vxpd,vxpd,ans2",3,vxpd,vxpd,UV->getPsidashFSAns2());	
+	cvAdd(uypd,vypd,UV->getPsidashFSAns1());
+	cvAdd(uxpd,vxpd,UV->getPsidashFSAns2());
+	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
+	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());			
+	psiDerivative(UV->getPsidashFSAns1(),0.001);
+	psiDerivative(UV->getPsidashFSAns2(),0.001);
+	
+	cvReleaseImage( &ux ); 
+	cvReleaseImage( &uy ); 
+	cvReleaseImage( &vx ); 
+	cvReleaseImage( &vy ); 
+	cvReleaseImage( &uxd ); 
+	cvReleaseImage( &vxd ); 
+	cvReleaseImage( &uyd ); 
+	cvReleaseImage( &vyd ); 
+	cvReleaseImage( &t ); 
+	cvReleaseImage( &uxpd ); 
+	cvReleaseImage( &uypd ); 
+	cvReleaseImage( &vxpd ); 
+	cvReleaseImage( &vypd ); 
+
+//	return ans;
 }
 
 flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1, 
@@ -211,7 +311,9 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1,
 		cvAbsDiff(Iky,Iky2,IYt_ayis);
 		//toolsKit::cvShowManyImages("Image22",6,Im1,Ikx,Iky,Im2,Ikx2,Iky2);
 		//toolsKit::cvShowManyImages("Image22",9,Im1,Im2,Ikt_Org,Ikx,Ikx2,IXt_axis,Iky,Iky2,IYt_ayis);			
-		toolsKit::cvShowManyImages("Image22",3,Ikt_Org,IXt_axis,IYt_ayis);			
+		
+		//toolsKit::cvShowManyImages("Image22",3,Ikt_Org,IXt_axis,IYt_ayis);			
+		
 		//toolsKit::cvShowManyImages("Image23",3,Im2,Ikx2,Iky2);
 		
 	
@@ -232,11 +334,12 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1,
 
 			
 			// Compute new psidashFS
-			IplImage* tempU=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
-			IplImage* tempV=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
-			cvAdd(UV->getU(),Du,tempU);
-			cvAdd(UV->getV(),Dv,tempV);
-			computePsidashFS_brox(tempU,tempV,width,height,channels);
+			IplImage* tempUadd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+			IplImage* tempVadd=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels); 
+			cvAdd(UV->getU(),Du,tempUadd);
+			cvAdd(UV->getV(),Dv,tempVadd);
+			toolsKit::cvShowManyImages("uinit,vinit du dv",4,tempUadd,tempVadd,Du,Dv);			
+			computePsidashFS_brox(tempUadd,tempVadd,width,height,channels,UV);
 		}
 
 
