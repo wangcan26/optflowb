@@ -16,7 +16,8 @@ public:
 						 IplImage &warpI2,
 						 const IplImage &Im1, 
 						 const IplImage &Im2, 
-						 double alpha, 
+						 double alpha,
+						 double gamma,
 						 double ratio, 
 						 int minWidth,
 						 int nOuterFPIterations, 
@@ -38,14 +39,15 @@ private:
 					   int nCGIterations);
 
 	flowUV* SmoothFlowPDE2(const IplImage* Im1, 
-									   const IplImage* Im2, 
-									   IplImage* warpIm2, 
-									   IplImage* du, 
-									   IplImage* dv, 
-									   double alpha, 
-									   int nOuterFPIterations, 
-									   int nInnerFPIterations, 
-									   int nCGIterations);
+						   const IplImage* Im2, 
+						   IplImage* warpIm2, 
+						   IplImage* du, 
+						   IplImage* dv, 
+						   double alpha,
+						   double gamma,
+						   int nOuterFPIterations, 
+						   int nInnerFPIterations, 
+						   int nCGIterations);
 
 	void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV);
 

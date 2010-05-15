@@ -55,6 +55,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 										 const IplImage &Im1, 
 										 const IplImage &Im2, 
 										 double alpha, 
+										 double gamma,
 										 double ratio, 
 										 int minWidth,
 										 int nOuterFPIterations, 
@@ -116,7 +117,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			//IplImage* out=LaplaceCompute(Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
 			//toolsKit::cvShowManyImages("Image",1, out);
 		}						
-		SmoothFlowPDE2( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
+		SmoothFlowPDE2( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
 	}
 	//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 }
@@ -129,6 +130,14 @@ void IPLsqrt_mul2(IplImage* img){
 	IplImageIterator<unsigned char> it(img);
 	while (!it) {      
 	  *it= 1/(2*sqrt((double)*it)); 
+	  ++it;
+	}
+}
+
+void cvMulScalar(IplImage* img,double scalar){
+	IplImageIterator<unsigned char> it(img);
+	while (!it) {      
+	  *it= scalar*(double)*it; 
 	  ++it;
 	}
 }
@@ -151,15 +160,49 @@ IplImage* psiDerivative(IplImage* x,double epsilon){
 
 
 
-IplImage* computePsidash(){
-	IplImage* ans=NULL;	
+IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage* IXt_axis, IplImage* Ixx, IplImage* Ixy,
+						 IplImage* IYt_ayis	,IplImage* Iyy ,IplImage* du ,IplImage* dv ,double gamma){
+	
+	IplImage* ans1=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
+	IplImage* ans2=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
+	IplImage* ans3=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
+	IplImage* ans4=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
+
 	/* ( Ikz + Ikx*du + Iky*dv )^ 2 +
 	   gamma * ( ( Ixz + Ixx*du + Ixy*dv )^ 2 +
 			   ( Iyz + Ixy*du + Iyy*dv )^ 2 )
 	*/
-	//IplImage* ux=cvCreateImage(cvSize( width, height ),IPL_DEPTH_8U,channels);
-	//( Ikz + Ikx*du + Iky*dv )^ 2
-	return ans;
+	
+	//( Ikz + Ikx*du + Iky*dv )^ 2==>ans1
+	cvMul(Ikx,du,ans1);
+	cvMul(Iky,dv,ans2);
+	cvAdd(Ikt_Org,ans1,ans1);
+	cvAdd(ans1,ans2,ans2);
+	cvPow(ans2,ans1,2);
+	//( Ixz + Ixx*du + Ixy*dv )^ 2==>ans2
+	cvMul(Ixx,du,ans2);
+	cvMul(Ixy,dv,ans3);
+	cvAdd(IXt_axis,ans2,ans2);
+	cvAdd(ans2,ans3,ans3);
+	cvPow(ans3,ans2,2);
+	//( Iyz + Ixy*du + Iyy*dv )^ 2==>ans3
+	cvMul(Ixy,du,ans3);
+	cvMul(Iyy,dv,ans4);
+	cvAdd(IYt_ayis,ans3,ans3);
+	cvAdd(ans3,ans4,ans4);
+	cvPow(ans4,ans3,2);
+
+	//========gamma*ans3
+	cvAdd(ans3,ans4,ans3);
+	cvMulScalar(ans3,gamma);
+	cvAdd(ans1,ans3,ans1);
+	toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3,ans4",4,ans1,ans2,ans3,ans4);
+	//clean
+	cvReleaseImage( &ans2 ); 
+	cvReleaseImage( &ans3 ); 
+	cvReleaseImage( &ans4 ); 
+
+	return ans1;
 }
 
 void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){
@@ -195,6 +238,7 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	IplImage* vxpd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 	IplImage* vypd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 
+	//compute psidashFS
 	cvFilter2D(iterU,ux,matOneNegOne);// x and y derivatives of u by 2d convolution
 	cvFilter2D(iterU,uy,matOneNegOneT);// x and y derivatives of u by 2d convolution
 	cvFilter2D(iterV,vx,matOneNegOne);// x and y derivatives of v by 2d convolution
@@ -260,7 +304,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1,
 										IplImage* warpIm2, 
 										IplImage* uinit, 
 										IplImage* vinit, 
-										double alpha, 
+										double alpha,
+										double gamma,
 										int nOuterFPIterations, 
 										int nInnerFPIterations, 
 										int nCGIterations){
@@ -328,7 +373,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1,
 		
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 			// First compute the values of the data and smoothness terms
-			IplImage* psidash=computePsidash();
+			IplImage* psidash=computePsidash(Ikt_Org,Ikx,Iky,IXt_axis,Ixx,Ixy,
+											 IYt_ayis,Iyy,Du,Dv,gamma);
 
 			
 			// Compute new psidashFS

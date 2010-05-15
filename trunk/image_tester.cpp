@@ -42,7 +42,8 @@ int main (int argc,char** argv)
   coarse2FineCompute coarse2fComp(IPL_DEPTH_8U);
   double ratio=0.75;
   int minWidth=30;
-
+  double alpha = 30.0 ; // Global smoothness variable.
+  double gamma = 80.0 ; // Global weight for derivatives.
 	
 	//IplImage* img= cvLoadImage(NULL); 
 	// cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 
@@ -67,12 +68,13 @@ int main (int argc,char** argv)
 
 		//GPyramid1.ConstructPyramid(*img,ratio,minWidth);
 
-	 coarse2fComp.Coarse2FineFlow( vx, 
+	 coarse2fComp.Coarse2FineFlow(  vx, 
 									vy, 
 									*warpI2,
 									*img1, 
 									*img2, 
-									0, 
+									alpha, 
+									gamma,
 									ratio, 
 									minWidth, 
 									3, 
