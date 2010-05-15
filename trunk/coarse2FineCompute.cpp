@@ -299,18 +299,18 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 //	return ans;
 }
 
-flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1, 
-										const IplImage* Im2, 
-										IplImage* warpIm2, 
-										IplImage* uinit, 
-										IplImage* vinit, 
-										double alpha,
-										double gamma,
-										int nOuterFPIterations, 
-										int nInnerFPIterations, 
-										int nCGIterations){
+flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1, 
+											const IplImage* Im2, 
+											IplImage* warpIm2, 
+											IplImage* uinit, 
+											IplImage* vinit, 
+											double alpha,
+											double gamma,
+											int nOuterFPIterations, 
+											int nInnerFPIterations, 
+											int nCGIterations){
 		
-		//dimantions
+		//dimentions
 		int height=Im1->height;
 		int width=Im1->width;
 		int channels=Im1->nChannels;
@@ -385,11 +385,22 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2(const IplImage* Im1,
 			toolsKit::cvShowManyImages("uinit,vinit du dv",4,tempUadd,tempVadd,Du,Dv);			
 			computePsidashFS_brox(tempUadd,tempVadd,width,height,channels,UV);
 		}
-
-
-
-
-return UV;
+	//clean temp vars
+	cvReleaseImage( &Ikx ); 
+	cvReleaseImage( &Iky ); 
+	cvReleaseImage( &Ikx2 ); 
+	cvReleaseImage( &Iky2 ); 
+	cvReleaseImage( &Ikt_Org ); 
+	cvReleaseImage( &IXt_axis ); 
+	cvReleaseImage( &IYt_ayis ); 
+	cvReleaseImage( &Ixx ); 
+	cvReleaseImage( &Ixy ); 
+	cvReleaseImage( &Iyx ); 
+	cvReleaseImage( &Iyy ); 
+	cvReleaseImage( &Du ); 
+	cvReleaseImage( &Dv ); 
+		
+	return UV;
 
 }
 
