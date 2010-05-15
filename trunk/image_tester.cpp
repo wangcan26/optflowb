@@ -39,7 +39,7 @@ int main (int argc,char** argv)
 { 
 
   GaussPyramid GPyramid1;
-  coarse2FineCompute coarse2fComp;
+  coarse2FineCompute coarse2fComp(IPL_DEPTH_8U);
   double ratio=0.75;
   int minWidth=30;
 
