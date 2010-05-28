@@ -9,6 +9,78 @@ coarse2FineCompute::~coarse2FineCompute(void)
 }
 
 
+// basic functions
+	template <class T>
+	T EnforceRange(const T& x,const int& MaxValue) {return __min(__max(x,0),MaxValue-1);};
+
+//--------------------------------------------------------------------------------------------------
+// function to interplate multi-channel image plane for (x,y)
+// --------------------------------------------------------------------------------------------------
+//template <class T1,class T2>
+inline void BilinearInterpolate(const IplImage* pImage,int width,int height,int nChannels,double x,double y,IplImage* result,int i,int j)
+{
+	int xx,yy,m,n,u,v,k,offset;
+	xx=x;
+	yy=y;
+	double dx,dy,s;
+	dx=__max(__min(x-xx,1),0);
+	dy=__max(__min(y-yy,1),0);
+
+	//memset(result,0,sizeof(IplImage*)*nChannels);
+
+	for(m=0;m<=1;m++)
+		for(n=0;n<=1;n++)
+		{
+			u=EnforceRange(xx+m,width);
+			v=EnforceRange(yy+n,height);
+			offset=(v*width+u)*nChannels;
+			s=fabs(1-m-dx)*fabs(1-n-dy);
+			for(k=0;k<nChannels;k++)
+				k++;
+				//result[k]+=pImage[offset+k]*s;
+				(result->imageData + i*result->widthStep)[j+k]=(pImage->imageData + m*pImage->widthStep)[n+k]*s;
+		}
+}
+//------------------------------------------------------------------------------------------------------------
+// function to warp an image with respect to flow field
+// pWarpIm2 has to be allocated before hands
+//------------------------------------------------------------------------------------------------------------
+//template <class T1,class T2>
+int warpImage(IplImage* pWarpIm2, const IplImage* pIm1, const IplImage* pIm2, const IplImage* pVx, const IplImage* pVy)
+{
+	int ans;
+	int width,height,nChannels;
+	width=pIm2->width;
+	height=pIm2->height;
+	nChannels=pIm2->nChannels;
+	for(int i=0;i<height;i++)
+		for(int j=0;j<width;j++)
+		{
+			int offset=i*width+j;
+			double x,y;
+			if(pVy->nChannels!=1){//1 channel support for now
+				return -1;
+			}
+		//	y=i+pVy[offset];		
+			y=((uchar *)(pVy->imageData + i*pVy->widthStep))[j]+i;			
+		//	x=j+pVx[offset];
+			x=((uchar *)(pVx->imageData + i*pVx->widthStep))[j]+j;
+			//offset*=nChannels;
+			if(x<0 || x>width-1 || y<0 || y>height-1)
+			{
+				for(int k=0;k<nChannels;k++)
+					//pWarpIm2[offset+k]=pIm1[offset+k];
+					(pWarpIm2->imageData + i*pWarpIm2->widthStep)[j+k]=(pIm1->imageData + i*pIm1->widthStep)[j+k];
+				continue;
+			}
+			//BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2+offset);
+			BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2,i,j);
+			
+		}
+
+		return 0;
+}
+
 
 
 //need to recieve cvSobel with function pointer;
@@ -48,6 +120,14 @@ IplImage* coarse2FineCompute::LaplaceCompute(IplImage* input,IplImage* input2){
 }
 
 
+IplImage* coarse2FineCompute::createWarp(IplImage* WarpImage2, IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy){
+
+	//IplImage* WarpImage2 = cvCreateImage(cvSize(img2->width,img2->height ),img2->depth,img2->nChannels );
+	int status=warpImage(WarpImage2,img1, img2,vx,vy);
+	if (status==-1)
+		cout<<"warp corrently support only 1 channel pics"<<endl;
+	return WarpImage2;
+}
 
 void coarse2FineCompute::Coarse2FineFlow(IplImage* vx, 
 										 IplImage* vy, 
@@ -73,8 +153,6 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	cout<<"done!"<<endl;
 
 	// now iterate from the top level to the bottom
-	//IplImage* Image1=NULL;
-	//IplImage* Image2=NULL;
 	IplImage* WarpImage2=NULL;
 
 	for(int k=Pyramid1.nlevels()-1;k>=0;k--)
@@ -95,27 +173,26 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			vy=cvCreateImage(cvSize(width,height),depth,nChannels);
 			cvZero(vx);
 			cvZero(vy);
-			//clone image2 to warpImage2
+			//clone image2 to warpImage2 (in first iter)
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
-			WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(k));
+			WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(k));			
 		}
 		else
 		{
 			IplImage *tempVx = cvCreateImage(cvSize(width, height), vx->depth, vx->nChannels);
 			cvResize(vx, tempVx); 
-			vx=tempVx;
-			//vx.Multiplywith(1/ratio);
+			vx=tempVx;			
 			IplImage *tempVy = cvCreateImage(cvSize(width, height), vy->depth, vy->nChannels);
 			cvResize(vy, tempVy); 
-			vy=tempVy;
-			//vy.Multiplywith(1/ratio);
-
-			//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
-
-		//	toolsKit::cvShowManyImages("pyramid iteration",4, Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
-
-			//IplImage* out=LaplaceCompute(Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
-			//toolsKit::cvShowManyImages("Image",1, out);
+			vy=tempVy;			
+			//create the warp image
+			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
+			cvZero(WarpImage2);
+			WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
+			toolsKit::cvShowManyImages("warpImage2",1, WarpImage2);
+			
+		    //toolsKit::cvShowManyImages("pyramid iteration",4, Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
+			//IplImage* out=LaplaceCompute(Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));			
 		}						
 		SmoothFlowPDE2( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
 	}
@@ -205,8 +282,7 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 	return ans1;
 }
 
-void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){
-	//IplImage* ans=cvCreateImage(cvSize( 2*width+1, 2*height+1 ),IPL_DEPTH_8U,channels);
+void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){	
 	//init masks
 	double a[] = {1,1};
 	double b[] = {1,-1};

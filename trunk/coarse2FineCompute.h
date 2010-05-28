@@ -27,7 +27,7 @@ public:
 private:
 	int _imageDepth;
 	IplImage* LaplaceCompute(IplImage* input,IplImage* input2);
-	
+	IplImage* coarse2FineCompute::createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
 	void SmoothFlowPDE(const IplImage* Im1, 
 					   const IplImage* Im2, 
 					   IplImage* warpIm2, 
