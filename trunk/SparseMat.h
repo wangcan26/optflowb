@@ -19,13 +19,14 @@ class SparseMat
 		typedef typename col_t::const_iterator const_col_iter;
 
 		SparseMat(){ m=n=1;}
+		//SparseMat (const SparseMat<T>& c):mat(c){
+		//	//mat(c);
+		//	m=c.m;
+		//	n= c.n;
+		//	}
 		SparseMat(int i) {m=n=i;}
 		SparseMat(int i, int j){m=i; n=j;};
-		SparseMat (const SparseMat& c){
-			mat(c);
-			m=c.m;
-			n= c.n;
-			}
+		
 		inline
 			T& operator()(int i, int j)
 			{

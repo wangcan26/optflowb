@@ -37,3 +37,31 @@ static CvSparseMat * upperTriangle(CvSparseMat * mat){
 		}
 	return ans;
 	}
+
+vector<double> SparseToolKit::SOR(SparseMat<double> A, vector<double> x,vector<double> B, double w, int numOfIterations){
+		int k,i,j;
+		double e1,e2,e3,Aii,Aij;
+		vector<double> oldX(x);
+		vector<double> newX(x.size());
+		for (k=0; k<numOfIterations; k++){
+			for (i=0; i<x.size(); i++){
+					Aii=A(i,i);
+					e1 = B[i]/Aii;
+					e2=0;
+					for (j=0; j< i-1; j++){
+						Aij = A(i,j);
+						e2+=Aij*newX[j];
+						}
+					e2 = e2*w/Aii;// (W/Aii)* Sigma(0,i-1){Aij*newX[j]}
+					e3=0;
+					for (j=i+1; j<x.size(); j++){
+						Aij = A(i,j);
+						e3 += Aij * oldX[j];
+						}
+					e3 = e3*w/Aii; // (W/Aii)* Sigma(i+1,n){Aij*oldX[j]}
+					newX[i] = e1 - e2 - e3; //newX[i] = B[i]/Aii - (W/Aii)Sigma(0,i-1){Aij*newX[j]} - (W/Aii)Sigma(i+1,n){Aij*oldX[j]}
+				}
+			oldX = newX;
+			}
+		return newX;
+	}
