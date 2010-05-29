@@ -36,13 +36,29 @@ void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
 	cvReleaseImage( &tempx ); 
 	cvReleaseImage( &tempy ); 
 }
-
+//psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
 void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplImage* Ikx,IplImage* du,IplImage* Iky,IplImage* dv){
+	//x=Ikx * du
+
+	//y=Iky * dv
+
+	//z=Ikz +x+y
+	
+	//t=z^2
+
+	//ans=theta0*t
+
+}
+
+//psiDerivative( gamma * (  theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2 + 
+	//						theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 ) ) ;
+void computepsidashGCA(IplImage* psidashGCA,int gamma,IplImage* theta1,IplImage* Ixz,IplImage* Ixx,IplImage* du,IplImage* Ixy,
+					   IplImage* dv,IplImage* theta2,IplImage* Iyz,IplImage* Iyy){
 
 }
 
 void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
-											    IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma,int _ERROR_CONST ){
+											 IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* u,IplImage* v,double gamma,int _ERROR_CONST ){
 	
 
 	IplImage* theta0=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
@@ -64,11 +80,15 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImag
 
 	// First compute the values of the data  term
     //the brightness constancy assumption
-	//psidashBCA = psiDerivative( theta0 .* ( Ikz + Ikx .* du + Iky .* dv ) .^ 2 );
-	computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,u,Iky,v);
-    // and the Gradient Constancy Assumption
-   // psidashGCA = psiDerivative( gamma * (  theta1 .*  ( Ixz + Ixx .* du + Ixy .* dv ) .^ 2 + 
-	//							theta2 .*   ( Iyz + Ixy .* du + Iyy .* dv ) .^ 2 ) ) ;
 
+	//TODO:du or u?? dv or v??
+	computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,u,Iky,v);
+	//psidashBCA = 
+    //and the Gradient Constancy Assumption
+    //psidashGCA = psiDerivative( gamma * (  theta1 .*  ( Ixz + Ixx .* du + Ixy .* dv ) .^ 2 + 
+	//							theta2 .*   ( Iyz + Ixy .* du + Iyy .* dv ) .^ 2 ) ) ;
+	
+	//TODO:du or u?? dv or v??
+	computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,u,Ixy,v,theta2,Iyz,Iyy);
 
 }

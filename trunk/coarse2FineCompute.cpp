@@ -452,7 +452,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
-			constructMatrix_brox::constructMatrix_b( Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(), gamma , _ERROR_CONST);
+			constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,
+													UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(), gamma , _ERROR_CONST);
 			
 			//downscaling back to 8k after upscaling in computePsidashFS_brox(before next iteration)
 			UV->setPsidashFSAns1(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
