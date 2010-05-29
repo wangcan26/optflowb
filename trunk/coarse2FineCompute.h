@@ -10,7 +10,7 @@
 class coarse2FineCompute
 {
 public:	
-	coarse2FineCompute(int imageDepth);
+	coarse2FineCompute(int imageDepth,double error);
 	void Coarse2FineFlow(IplImage* vx, 
 						 IplImage* vy, 
 						 IplImage &warpI2,
@@ -25,20 +25,14 @@ public:
 						 int nCGIterations);
 	virtual ~coarse2FineCompute(void);
 private:
+	double _ERROR_CONST;
 	int _imageDepth;
 	IplImage* LaplaceCompute(IplImage* input,IplImage* input2);
 	IplImage* coarse2FineCompute::createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
-	void SmoothFlowPDE(const IplImage* Im1, 
-					   const IplImage* Im2, 
-					   IplImage* warpIm2, 
-					   IplImage* u, 
-					   IplImage* v, 
-					   double alpha, 
-					   int nOuterFPIterations, 
-					   int nInnerFPIterations, 
-					   int nCGIterations);
-
-	flowUV* SmoothFlowPDE2(const IplImage* Im1, 
+	
+	void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
+												  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma );
+	flowUV* SmoothFlowPDE(const IplImage* Im1, 
 						   const IplImage* Im2, 
 						   IplImage* warpIm2, 
 						   IplImage* du, 

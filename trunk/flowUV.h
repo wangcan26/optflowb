@@ -36,6 +36,16 @@ public:
 	inline IplImage* getPsidashFSAns2(){
 		return PsidashFSAns2;
 	}
+	inline void setPsidashFSAns1(IplImage* ans1){
+		PsidashFSAns1=ans1;
+	}
+	inline void setPsidashFSAns2(IplImage* ans2){
+		PsidashFSAns2=ans2;
+	}
+	inline void releaseAns1and2(){
+		cvReleaseImage(&PsidashFSAns1);
+		cvReleaseImage(&PsidashFSAns2);
+	}
 private:
 	IplImage* innerU;
 	IplImage* innerV;

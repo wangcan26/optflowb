@@ -39,7 +39,9 @@ int main (int argc,char** argv)
 { 
 
   GaussPyramid GPyramid1;
-  coarse2FineCompute coarse2fComp(IPL_DEPTH_8U);
+  double error_const=0.001;
+  //IPL_DEPTH_32F IPL_DEPTH_8U
+  coarse2FineCompute coarse2fComp(IPL_DEPTH_8U,error_const);
   double ratio=0.75;
   int minWidth=30;
   double alpha = 30.0 ; // Global smoothness variable.

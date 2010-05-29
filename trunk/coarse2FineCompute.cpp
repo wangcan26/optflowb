@@ -1,7 +1,8 @@
 #include "coarse2FineCompute.h"
-coarse2FineCompute::coarse2FineCompute(int imageDepth)
+coarse2FineCompute::coarse2FineCompute(int imageDepth,double error)
 {
 	_imageDepth=imageDepth;
+	_ERROR_CONST=error;
 }
 
 coarse2FineCompute::~coarse2FineCompute(void)
@@ -9,15 +10,14 @@ coarse2FineCompute::~coarse2FineCompute(void)
 }
 
 
-// basic functions
-	template <class T>
-	T EnforceRange(const T& x,const int& MaxValue) {return __min(__max(x,0),MaxValue-1);};
+
+	//template <class T>
+	int EnforceRange(const int& x,const int& MaxValue) {return __min(__max(x,0),MaxValue-1);};
 
 //--------------------------------------------------------------------------------------------------
 // function to interplate multi-channel image plane for (x,y)
 // --------------------------------------------------------------------------------------------------
-//template <class T1,class T2>
-inline void BilinearInterpolate(const IplImage* pImage,int width,int height,int nChannels,double x,double y,IplImage* result,int i,int j)
+ void BilinearInterpolate(const IplImage* pImage,int width,int height,int nChannels,double x,double y,IplImage* result,int i,int j)
 {
 	int xx,yy,m,n,u,v,k,offset;
 	xx=x;
@@ -84,7 +84,7 @@ int warpImage(IplImage* pWarpIm2, const IplImage* pIm1, const IplImage* pIm2, co
 
 
 //need to recieve cvSobel with function pointer;
-int getDXs(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){	
+int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){	
 	//IplImage* orginalImage = cvLoadImage(fileAddress,0);
 	
 	/*create temp images*/
@@ -106,10 +106,6 @@ int getDXs(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){
 
 	return 0;
 }
-
-
-
-
 
 
 IplImage* coarse2FineCompute::LaplaceCompute(IplImage* input,IplImage* input2){
@@ -194,21 +190,82 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		    //toolsKit::cvShowManyImages("pyramid iteration",4, Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 			//IplImage* out=LaplaceCompute(Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));			
 		}						
-		SmoothFlowPDE2( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
+		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
 	}
 	//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
 }
 
-void IPLsqrt_mul2(IplImage* img){
-	//BwImage imgA(img);
-	//for (int i=0; i<img->width;i++)
-	//	for(int j=0;j<img->height;j++)
-	//		imgA[i][j] = 1/(2*sqrt((double)imgA[i][j]));
-	IplImageIterator<unsigned char> it(img);
+
+template <class PEL>
+void IPLsqrt_mul2(IplImageIterator<PEL> it){
 	while (!it) {      
 	  *it= 1/(2*sqrt((double)*it)); 
 	  ++it;
 	}
+}
+
+template <class PEL>
+void IPL_mul_inverse_loop(IplImageIterator<PEL> it){
+	double one=1;
+	while (!it) {      
+		if(0!=((double)*it))
+			 *it= one/((double)*it); 
+	  ++it;
+	}
+}
+void IPL_mul_inverse(IplImage* img,int opType){
+	if(img->depth==IPL_DEPTH_8U){
+		IplImageIterator<unsigned char> it(img);		
+		(opType==1?IPL_mul_inverse_loop(it):IPLsqrt_mul2(it));
+	}
+	else if (img->depth==IPL_DEPTH_32F){
+		IplImageIterator<float> it(img);
+		(opType==1?IPL_mul_inverse_loop(it):IPLsqrt_mul2(it));
+	}
+	else{
+		cout<<"IPL_mul_inverse got unsupported depth"<<endl;
+		return;
+	}
+
+}
+
+void IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
+	IplImageIterator<unsigned char> it(img);
+	IplImageIterator<unsigned char> it2(img);
+	IplImageIterator<unsigned char> it3(dest);
+	while (!it) {      
+	//	cout<<"bef:"<<it.data;
+			 *it3= ((double)*it)+((double)*it2); 
+	 // cout<<"=>"<<it.data<<endl;
+	  ++it;
+	  ++it2;
+	  ++it3;
+	}
+}
+
+void IPL_print(IplImage *image) {
+      int nl= image->height; // number of lines
+      int nc= image->width * image->nChannels; // total number of element per line
+      int step= image->widthStep; // effective width
+      // get the pointer to the image buffer
+      unsigned char *data= reinterpret_cast<unsigned char *>(image->imageData);
+	  cout<<"=============================width:"<<image->width <<" height:"<< image->height<<" channels:"<<image->nChannels<<"============================="<<endl;
+      for (int i=1; i<nl; i++) {
+
+            for (int j=0; j<nc; j+= image->nChannels) {
+				CvScalar sca= cvGet2D(image,i,j);
+            // process each pixel ---------------------
+                 // data[j]= data[j]/div * div + div/2;
+				cout<<sca.val[0]<<" ";
+                //  data[j+1]= data[j+1]/div * div + div/2;
+                // data[j+2]= data[j+2]/div * div + div/2;
+            // end of pixel processing ----------------
+            } // end of line          
+			cout<<endl;
+            data+= step;  // next line
+			break;
+      }
+	  cout<<"======================================================================================================================================="<<endl;
 }
 
 void cvMulScalar(IplImage* img,double scalar){
@@ -227,14 +284,43 @@ double psiDerivative(double x,double epsilon){
 IplImage* psiDerivative(IplImage* x,double epsilon){	
 	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
 	//cvShowImage("before",x);
-	cvAddS(x,cvRealScalar(epsilon),x);
-	
-	IPLsqrt_mul2(x);
+	cvAddS(x,cvScalarAll(epsilon),x);
+	IPL_print(x);
+	IPL_mul_inverse(x,0);
+	IPL_print(x);
 	//cvShowImage("after",x);
 //	x->imageData
 	return x;
 }
 
+//theta = 1/(x^2+y^2+epsilon);
+void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
+	IplImage* tempx=cvCreateImage(cvSize( x->width, x->height ),IPL_DEPTH_32F,x->nChannels);
+	IplImage* tempy=cvCreateImage(cvSize( x->width, x->height ),IPL_DEPTH_32F,x->nChannels);
+	tempx=cvCloneImage(x);
+	tempy=cvCloneImage(y);	
+	double two=2.0;
+	
+	
+	//x^2	
+	cvMulScalar(tempx,two);
+	//y^2
+	cvMulScalar(tempy,two);
+	//theta=x^2+y^2
+	IPL_add(tempx,tempy,theta);
+	//theta=theta+epsilon
+	
+	IPL_add(theta,epsilon,theta);
+	cvShowImage("theta-before",theta);
+	IPL_print(theta);
+
+	IPL_mul_inverse(theta,1);
+	IPL_print(theta);
+	cvShowImage("theta-after",theta);
+	toolsKit::cvShowManyImages("computeTheta",2,tempx,tempy);
+	cvReleaseImage( &tempx ); 
+	cvReleaseImage( &tempy ); 
+}
 
 
 IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage* IXt_axis, IplImage* Ixx, IplImage* Ixy,
@@ -280,6 +366,30 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 	cvReleaseImage( &ans4 ); 
 
 	return ans1;
+}
+
+
+void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
+											  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma ){
+	
+
+	IplImage* theta0=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
+	IplImage* theta1=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
+	IplImage* theta2=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
+	IplImage* epsilon=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	//epsilon = 1e-3*ones(size(Ikx))==>zeroing and adding instead
+	cvZero(epsilon);
+	cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
+
+//theta0 = 1./(Ikx.^2+Iky.^2+epsilon);
+computeTheta(theta0,Ikx,Iky,epsilon);
+//theta1 = 1./(Ixx.^2+Ixy.^2+epsilon);
+computeTheta(theta1,Ixx,Ixy,epsilon);
+//theta2 = 1./(Iyy.^2+Ixy.^2+epsilon);
+computeTheta(theta2,Iyy,Ixy,epsilon);
+
+
+
 }
 
 void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){	
@@ -354,9 +464,20 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	cvAdd(uypd,vypd,UV->getPsidashFSAns1());
 	cvAdd(uxpd,vxpd,UV->getPsidashFSAns2());
 	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
-	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());			
-	psiDerivative(UV->getPsidashFSAns1(),0.001);
-	psiDerivative(UV->getPsidashFSAns2(),0.001);
+	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
+	
+	//upscale before dividing
+	IplImage* PsidashFSAns1_32=cvCreateImage(cvSize( width, height ),IPL_DEPTH_32F,channels);
+	IplImage* PsidashFSAns2_32=cvCreateImage(cvSize( width, height ),IPL_DEPTH_32F,channels);
+	cvConvertScale(UV->getPsidashFSAns1(), PsidashFSAns1_32, 1/255.);
+	cvConvertScale(UV->getPsidashFSAns1(), PsidashFSAns2_32, 1/255.);
+	//no need for original 8bit pic
+	UV->releaseAns1and2();
+	
+	UV->setPsidashFSAns1(PsidashFSAns1_32);
+	UV->setPsidashFSAns2(PsidashFSAns2_32);
+	psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
+	psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
 	
 	cvReleaseImage( &ux ); 
 	cvReleaseImage( &uy ); 
@@ -375,7 +496,7 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 //	return ans;
 }
 
-flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1, 
+flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1, 
 											const IplImage* Im2, 
 											IplImage* warpIm2, 
 											IplImage* uinit, 
@@ -398,7 +519,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1,
 		IplImage* Iky=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 		IplImage* Ikx2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Iky2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Ikt_Org=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* Ikt_Org=cvCreateImage(cvSize( width, height ),_imageDepth,channels); //IKZ
 		IplImage* IXt_axis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* IYt_ayis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		//the gradient of the gradient
@@ -409,23 +530,20 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1,
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-
-		//	IplImage* im1=cvCreateImage(cvSize( Im1->width, Im1->height ),IPL_DEPTH_8U,1); 
-		//	IplImage* im2=cvCreateImage(cvSize( Im2->width, Im2->height ),IPL_DEPTH_8U,1);
-		//IplImage *destination = cvCreateImage(cvSize( source->width, source->height ), IPL_DEPTH_8U, 1 );
-			//convert to grayscale
+	
+		//convert to grayscale
 		//	cvCvtColor(Im1,im1,CV_RGB2GRAY);
 		//	cvCvtColor(Im2,im2,CV_RGB2GRAY);			
 		
 		//create the different DX of the pictures
-		getDXs(Im1,Ikx,Iky);
-		getDXs(Im2,Ikx2,Iky2);
+		getDXsCVSobel(Im1,Ikx,Iky);
+		getDXsCVSobel(Im2,Ikx2,Iky2);
 		//by brox we need to take the gradient of the gradient:
-		getDXs(Ikx,Ixx,Ixy);
-		getDXs(Iky,Iyx,Iyy);
+		getDXsCVSobel(Ikx,Ixx,Ixy);
+		getDXsCVSobel(Iky,Iyx,Iyy);
 
 		//DXT of original images and their x&y gradiants
-	 	cvAbsDiff(Im1,Im2,Ikt_Org);
+	 	cvAbsDiff(Im1,Im2,Ikt_Org);//IKz
 		cvAbsDiff(Ikx,Ikx2,IXt_axis);
 		cvAbsDiff(Iky,Iky2,IYt_ayis);
 		//toolsKit::cvShowManyImages("Image22",6,Im1,Ikx,Iky,Im2,Ikx2,Iky2);
@@ -442,11 +560,9 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1,
 		du = zeros( ht, wt ) ;
 		dv = zeros( ht, wt ) ;
 		tol = 1e-8 * ones( 2 * ht * wt, 1 ) ;
-		duv = zeros( 2 * ht * wt, 1 ) ;
-		*/
+		duv = zeros( 2 * ht * wt, 1 ) ;		*/
 		
-		//outer fixed pint iteration
-		
+		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 			// First compute the values of the data and smoothness terms
 			IplImage* psidash=computePsidash(Ikt_Org,Ikx,Iky,IXt_axis,Ixx,Ixy,
@@ -460,7 +576,18 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1,
 			cvAdd(UV->getV(),Dv,tempVadd);
 			toolsKit::cvShowManyImages("uinit,vinit du dv",4,tempUadd,tempVadd,Du,Dv);			
 			computePsidashFS_brox(tempUadd,tempVadd,width,height,channels,UV);
+
+			//[A, b] = constructMatrix_brox( Ikx, Iky, Ikz, Ixx, Ixy, Iyy, Ixz, Iyz, psidash, alpha * psidashFS, u, v, gamma ) ;
+			
+			cvMulScalar(UV->getPsidashFSAns1(),alpha);
+			cvMulScalar(UV->getPsidashFSAns2(),alpha);
+			constructMatrix_brox( Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(), gamma );
+			//[duv, err, it, flag] = sor( A, duv, b, omega, inner_iter, tol ) ;
+
+
 		}
+
+
 	//clean temp vars
 	cvReleaseImage( &Ikx ); 
 	cvReleaseImage( &Iky ); 
@@ -479,227 +606,5 @@ flowUV* coarse2FineCompute::SmoothFlowPDE2( const IplImage* Im1,
 	return UV;
 
 }
-
-//--------------------------------------------------------------------------------------------------------
-// function to compute optical flow field using two fixed point iterations
-// Input arguments:
-// Im1, Im2:				    frame 1 and frame 2
-// warpIm2:						the warped frame 2 according to the current flow field u and v
-// u,v:							the current flow field, NOTICE that they are also output arguments
-//	
-//--------------------------------------------------------------------------------------------------------
-void coarse2FineCompute::SmoothFlowPDE(const IplImage* Im1, 
-									   const IplImage* Im2, 
-									   IplImage* warpIm2, 
-									   IplImage* u, 
-									   IplImage* v, 
-									   double alpha, 
-									   int nOuterFPIterations, 
-									   int nInnerFPIterations, 
-									   int nCGIterations)
-{
-	IplImage* mask,imdx,imdy,imdt;
-	int width,height,depth,nChannels,nPixels;
-	width=Im1->width;
-	height=Im1->height;
-	depth=Im1->depth;
-	nChannels=Im1->nChannels;
-	nPixels=width*height;
-
-
-	IplImage* du=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* dv=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* uu=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* vv=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* ux=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* uy=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* vx=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* vy=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* Phi_1st=cvCreateImage(cvSize(width,height),depth,NULL);
-	IplImage* Psi_1st=cvCreateImage(cvSize(width,height),depth,nChannels);
-
-	IplImage* imdxy,imdx2,imdy2,imdtdx,imdtdy;
-	IplImage* ImDxy,ImDx2,ImDy2,ImDtDx,ImDtDy;
-	IplImage* A11,A12,A22,b1,b2;
-	IplImage* foo1,foo2;
-
-	// variables for conjugate gradient
-	//DImage r1,r2,p1,p2,q1,q2;
-	//double* rou;
-	//rou=new double[nCGIterations];
-
-	//double varepsilon_phi=pow(0.001,2);
-	//double varepsilon_psi=pow(0.001,2);
-
-	//--------------------------------------------------------------------------
-	// the outer fixed point iteration
-	//--------------------------------------------------------------------------
-	for(int count=0;count<nOuterFPIterations;count++)
-	{
-		/*
-		// compute the gradient
-		getDxs(imdx,imdy,imdt,Im1,warpIm2);
-
-		// generate the mask to set the weight of the pix	els moving outside of the image boundary to be zero
-		genInImageMask(mask,vx,vy);
-
-		// set the derivative of the flow field to be zero
-		du.reset();
-		dv.reset();
-		*/
-		//--------------------------------------------------------------------------
-		// the inner fixed point iteration
-		//--------------------------------------------------------------------------
-		for(int hh=0;hh<nInnerFPIterations;hh++)
-		{
-			/*
-			// compute the derivatives of the current flow field
-			if(hh==0)
-			{
-			uu.copyData(u);
-			vv.copyData(v);
-			}
-			else
-			{
-			uu.Add(u,du);
-			vv.Add(v,dv);
-			}
-			uu.dx(ux);
-			uu.dy(uy);
-			vv.dx(vx);
-			vv.dy(vy);
-
-			// compute the weight of phi
-			Phi_1st.reset();
-			double* phiData=Phi_1st.data();
-			double temp;
-			const double *uxData,*uyData,*vxData,*vyData;
-			uxData=ux.data();
-			uyData=uy.data();
-			vxData=vx.data();
-			vyData=vy.data();
-			for(int i=0;i<nPixels;i++)
-			{
-			temp=uxData[i]*uxData[i]+uyData[i]*uyData[i]+vxData[i]*vxData[i]+vyData[i]*vyData[i];
-			phiData[i]=1/(2*sqrt(temp+varepsilon_phi));
-			}
-
-			// compute the nonlinear term of psi
-			Psi_1st.reset();
-			double* psiData=Psi_1st.data();
-			const double *imdxData,*imdyData,*imdtData;
-			const double *duData,*dvData;
-			imdxData=imdx.data();
-			imdyData=imdy.data();
-			imdtData=imdt.data();
-			duData=du.data();
-			dvData=dv.data();
-
-			double _a  = 10000, _b = 0.1;
-			if(nChannels==1)
-			{
-			for(int i=0;i<nPixels;i++)
-			{
-			temp=imdtData[i]+imdxData[i]*duData[i]+imdyData[i]*dvData[i];
-			//if(temp*temp<0.04)
-			psiData[i]=1/(2*sqrt(temp*temp+varepsilon_psi));
-			//psiData[i] = _a*_b/(1+_a*temp*temp);
-			}
-			}
-			else
-			{
-			for(int i=0;i<nPixels;i++)
-			for(int k=0;k<nChannels;k++)
-			{
-			int offset=i*nChannels+k;
-			temp=imdtData[offset]+imdxData[offset]*duData[i]+imdyData[offset]*dvData[i];
-			//if(temp*temp<0.04)
-			psiData[offset]=1/(2*sqrt(temp*temp+varepsilon_psi));
-			//psiData[offset] =  _a*_b/(1+_a*temp*temp);
-			}
-			}
-
-			// prepare the components of the large linear system
-			ImDxy.Multiply(Psi_1st,imdx,imdy);
-			ImDx2.Multiply(Psi_1st,imdx,imdx);
-			ImDy2.Multiply(Psi_1st,imdy,imdy);
-			ImDtDx.Multiply(Psi_1st,imdx,imdt);
-			ImDtDy.Multiply(Psi_1st,imdy,imdt);
-
-			if(nChannels>1)
-			{
-			ImDxy.collapse(imdxy);
-			ImDx2.collapse(imdx2);
-			ImDy2.collapse(imdy2);
-			ImDtDx.collapse(imdtdx);
-			ImDtDy.collapse(imdtdy);
-			}
-			else
-			{
-			imdxy.copyData(ImDxy);
-			imdx2.copyData(ImDx2);
-			imdy2.copyData(ImDy2);
-			imdtdx.copyData(ImDtDx);
-			imdtdy.copyData(ImDtDy);
-			}
-
-			// filtering
-			imdx2.smoothing(A11,3);
-			imdxy.smoothing(A12,3);
-			imdy2.smoothing(A22,3);
-
-			// add epsilon to A11 and A22
-			A11.Add(alpha*0.1);
-			A22.Add(alpha*0.1);
-
-			// form b
-			imdtdx.smoothing(b1,3);
-			imdtdy.smoothing(b2,3);
-			// laplacian filtering of the current flow field
-			Laplacian(foo1,u,Phi_1st);
-			Laplacian(foo2,v,Phi_1st);
-			double *b1Data,*b2Data;
-			const double *foo1Data,*foo2Data;
-			b1Data=b1.data();
-			b2Data=b2.data();
-			foo1Data=foo1.data();
-			foo2Data=foo2.data();
-
-			for(int i=0;i<nPixels;i++)
-			{
-			b1Data[i]=-b1Data[i]-alpha*foo1Data[i];
-			b2Data[i]=-b2Data[i]-alpha*foo2Data[i];
-			}
-			*/
-			//-----------------------------------------------------------------------
-			// conjugate gradient algorithm
-			//-----------------------------------------------------------------------
-			//r1.copyData(b1);
-			//r2.copyData(b2);
-			//du.reset();
-			//dv.reset();
-			//-----------------------------------------------------------------------
-			// end of conjugate gradient algorithm
-			//-----------------------------------------------------------------------
-		}// end of inner fixed point iteration
-
-		/*
-		u.Add(du,1);
-		v.Add(dv,1);
-		warpFL(warpIm2,Im1,Im2,u,v);
-		*/
-	}// end of outer fixed point iteration
-
-
-
-
-}
-
-
-
-
-
-
-
 
 /////////////////////////////////////////////////tests///////////////////////////////////////
