@@ -41,7 +41,7 @@ int main (int argc,char** argv)
   GaussPyramid GPyramid1;
   double error_const=0.001;
   //IPL_DEPTH_32F IPL_DEPTH_8U
-  coarse2FineCompute coarse2fComp(IPL_DEPTH_8U,error_const);
+  coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
   double ratio=0.75;
   int minWidth=30;
   double alpha = 30.0 ; // Global smoothness variable.
@@ -56,6 +56,12 @@ int main (int argc,char** argv)
 	
 	 const IplImage* img1= cvLoadImage(argv[1],CV_LOAD_IMAGE_GRAYSCALE);//zero is for grayscale  CV_LOAD_IMAGE_GRAYSCALE
 	 const IplImage* img2= cvLoadImage(argv[2],CV_LOAD_IMAGE_GRAYSCALE); //1 is for color CV_LOAD_IMAGE_COLOR
+	
+	 IplImage *img1_32 = cvCreateImage(cvSize(img1->width, img1->height), IPL_DEPTH_32F, img1->nChannels);
+	 IplImage *img2_32 = cvCreateImage(cvSize(img2->width, img2->height), IPL_DEPTH_32F, img2->nChannels);
+
+	cvConvertScale(img1, img1_32, 1/255.);
+	cvConvertScale(img2, img2_32, 1/255.);
 
 	/* cvNamedWindow("TEST",CV_WINDOW_AUTOSIZE); 
 	 cvShowImage("TEST",img1); 
@@ -73,8 +79,8 @@ int main (int argc,char** argv)
 	 coarse2fComp.Coarse2FineFlow(  vx, 
 									vy, 
 									*warpI2,
-									*img1, 
-									*img2, 
+									*img1_32, 
+									*img2_32, 
 									alpha, 
 									gamma,
 									ratio, 

@@ -33,6 +33,8 @@
 		static void IPL_add(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_print(IplImage *image);
 		static void cvMulScalar(IplImage* img,double scalar);
+		static void costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5);
+		static IplImage* psiDerivative(IplImage* x,double epsilon);
 		static void opt_flow_lk();
 		virtual ~toolsKit(void);
 

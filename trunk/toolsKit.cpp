@@ -8,7 +8,7 @@
 	toolsKit::~toolsKit(void)
 	{
 	}
-
+	//void toolsKit::
 	void toolsKit::IPL_mul_inverse(IplImage* img,int opType){
 		if(img->depth==IPL_DEPTH_8U){
 			IplImageIterator<unsigned char> it(img);		
@@ -73,6 +73,28 @@
 	}
 
 
+	void toolsKit::costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5){
+	IplImage* temp=cvCreateImage(cvSize( var1->width, var1->height ),var1->depth,var1->nChannels);
+	//( var1 + var2*var3 + var4*var5 )^ 2==>ans
+	cvMul(var2,var3,ans);
+	cvMul(var4,var5,temp);
+	cvAdd(var1,ans,ans);
+	cvAdd(ans,temp,temp);
+	cvPow(temp,ans,2);
+	cvReleaseImage(&temp);
+}
+	IplImage*  toolsKit::psiDerivative(IplImage* x,double epsilon){	
+	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
+	//cvShowImage("before",x);
+	cvAddS(x,cvScalarAll(epsilon),x);
+	toolsKit::IPL_print(x);
+	toolsKit::IPL_mul_inverse(x,0);
+	toolsKit::IPL_print(x);
+	//cvShowImage("after",x);
+//	x->imageData
+	return x;
+	}
+
 	/*Function///////////////////////////////////////////////////////////////
 
 	Name:       cvShowManyImages
@@ -131,7 +153,7 @@
 		IplImage *img;
 
 		// DispImage - the image in which input images are to be copied
-		IplImage *DispImage;
+		IplImage *DispImage	;
 
 		int size;
 		int i;
@@ -190,9 +212,9 @@
 		// Create a new 3 channel image
 		img = va_arg(args1, IplImage*);
 		if(img->nChannels==1)
-			DispImage = cvCreateImage( cvSize(100 + size*w, 60 + size*h), 8, 1 );
+			DispImage = cvCreateImage( cvSize(100 + size*w, 60 + size*h), img->depth, 1 );
 		else
-			DispImage = cvCreateImage( cvSize(100 + size*w, 60 + size*h), 8, 3 );
+			DispImage = cvCreateImage( cvSize(100 + size*w, 60 + size*h), img->depth, 3 );
 
 		va_list args;
 		va_start(args, nArgs);

@@ -88,18 +88,20 @@ int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){
 	//IplImage* orginalImage = cvLoadImage(fileAddress,0);
 	
 	/*create temp images*/
-	IplImage* df_dx = cvCreateImage(cvGetSize(src),IPL_DEPTH_16S,1);
-	IplImage* df_dy = cvCreateImage(cvGetSize(src),IPL_DEPTH_16S,1);
+	IplImage* df_dx = cvCreateImage(cvGetSize(src),src->depth,1);
+	IplImage* df_dy = cvCreateImage(cvGetSize(src),src->depth,1);
 
 	//dest_dx=cvCreateImage(cvGetSize(src),IPL_DEPTH_8U,1); 
 	//dest_dy=cvCreateImage(cvGetSize(src),IPL_DEPTH_8U,1); 
 	/* use sobel to find derivatives */
-	cvSobel( src, df_dx, 1, 0, 3);
-	cvSobel( src, df_dy, 0, 1, 3);
+	//cvSobel( src, df_dx, 1, 0, 3);
+	//cvSobel( src, df_dy, 0, 1, 3);
+	cvSobel( src, dest_dx, 1, 0, 3);
+	cvSobel( src, dest_dy, 0, 1, 3);
 
 	/* Convert signed to unsigned 8*/
-	cvConvertScaleAbs( df_dx , dest_dx, 1, 0);
-	cvConvertScaleAbs( df_dy , dest_dy, 1, 0); 
+	//cvConvertScaleAbs( df_dx , dest_dx, 1, 0);
+	//cvConvertScaleAbs( df_dy , dest_dy, 1, 0); 
 
 	//toolsKit::cvShowManyImages("dx dy",2,dest_dx,dest_dy);
 
@@ -196,67 +198,54 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 }
 
 
-
-double psiDerivative(double x,double epsilon){	
-	double y=1 / (2 * sqrt( x + epsilon ) ) ;
-	return y;
-}
-
-IplImage* psiDerivative(IplImage* x,double epsilon){	
-	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
-	//cvShowImage("before",x);
-	cvAddS(x,cvScalarAll(epsilon),x);
-	toolsKit::IPL_print(x);
-	toolsKit::IPL_mul_inverse(x,0);
-	toolsKit::IPL_print(x);
-	//cvShowImage("after",x);
-//	x->imageData
-	return x;
-}
-
-
-
 IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage* IXt_axis, IplImage* Ixx, IplImage* Ixy,
 						 IplImage* IYt_ayis	,IplImage* Iyy ,IplImage* du ,IplImage* dv ,double gamma){
 	
-	IplImage* ans1=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
-	IplImage* ans2=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
-	IplImage* ans3=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
-	IplImage* ans4=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),IPL_DEPTH_8U,Ikt_Org->nChannels);
+	IplImage* ans1=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
+	IplImage* ans2=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
+	IplImage* ans3=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
+	//IplImage* ans4=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
 
-	/* ( Ikz + Ikx*du + Iky*dv )^ 2 +
-	   gamma * ( ( Ixz + Ixx*du + Ixy*dv )^ 2 +
-			   ( Iyz + Ixy*du + Iyy*dv )^ 2 )
+	/*         (  Ikz + Ikx*du + Iky*dv )^ 2 +
+	   gamma * (( Ixz + Ixx*du + Ixy*dv )^ 2 +
+			   (  Iyz + Ixy*du + Iyy*dv )^ 2 )
 	*/
 	
 	//( Ikz + Ikx*du + Iky*dv )^ 2==>ans1
-	cvMul(Ikx,du,ans1);
+	toolsKit::costumeLineCompute(ans1,Ikt_Org,Ikx,du,Iky,dv);
+	/*cvMul(Ikx,du,ans1);
 	cvMul(Iky,dv,ans2);
 	cvAdd(Ikt_Org,ans1,ans1);
 	cvAdd(ans1,ans2,ans2);
-	cvPow(ans2,ans1,2);
+	cvPow(ans2,ans1,2);*/
 	//( Ixz + Ixx*du + Ixy*dv )^ 2==>ans2
-	cvMul(Ixx,du,ans2);
+	toolsKit::costumeLineCompute(ans2,IXt_axis,Ixx,du,Ixy,dv);
+	/*cvMul(Ixx,du,ans2);
 	cvMul(Ixy,dv,ans3);
 	cvAdd(IXt_axis,ans2,ans2);
 	cvAdd(ans2,ans3,ans3);
-	cvPow(ans3,ans2,2);
+	cvPow(ans3,ans2,2);*/
 	//( Iyz + Ixy*du + Iyy*dv )^ 2==>ans3
-	cvMul(Ixy,du,ans3);
+	toolsKit::costumeLineCompute(ans3,IYt_ayis,Ixy,du,Iyy,dv);
+	/*cvMul(Ixy,du,ans3);
 	cvMul(Iyy,dv,ans4);
 	cvAdd(IYt_ayis,ans3,ans3);
 	cvAdd(ans3,ans4,ans4);
-	cvPow(ans4,ans3,2);
+	cvPow(ans4,ans3,2);*/
 
+	//ans2+ans3==>ans3	
+	cvAdd(ans3,ans2,ans3);
 	//========gamma*ans3
-	cvAdd(ans3,ans4,ans3);
+	//toolsKit::IPL_print(ans3);
 	toolsKit::cvMulScalar(ans3,gamma);
+	//toolsKit::IPL_print(ans3);
+	//ans1+ans3==>ans1
 	cvAdd(ans1,ans3,ans1);
-	toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3,ans4",4,ans1,ans2,ans3,ans4);
+	toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3,ans4",3,ans1,ans2,ans3);
 	//clean
 	cvReleaseImage( &ans2 ); 
 	cvReleaseImage( &ans3 ); 
-	cvReleaseImage( &ans4 ); 
+	//cvReleaseImage( &ans4 ); 
 
 	return ans1;
 }
@@ -338,7 +327,7 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
 	
 	//upscale before dividing
-	IplImage* PsidashFSAns1_32=cvCreateImage(cvSize( width, height ),IPL_DEPTH_32F,channels);
+	/*IplImage* PsidashFSAns1_32=cvCreateImage(cvSize( width, height ),IPL_DEPTH_32F,channels);
 	IplImage* PsidashFSAns2_32=cvCreateImage(cvSize( width, height ),IPL_DEPTH_32F,channels);
 	cvConvertScale(UV->getPsidashFSAns1(), PsidashFSAns1_32, 1/255.);
 	cvConvertScale(UV->getPsidashFSAns1(), PsidashFSAns2_32, 1/255.);
@@ -347,8 +336,9 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	
 	UV->setPsidashFSAns1(PsidashFSAns1_32);
 	UV->setPsidashFSAns2(PsidashFSAns2_32);
-	psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
-	psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
+	*/
+	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
+	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
 	
 	cvReleaseImage( &ux ); 
 	cvReleaseImage( &uy ); 
@@ -456,8 +446,9 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 													UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(), gamma , _ERROR_CONST);
 			
 			//downscaling back to 8k after upscaling in computePsidashFS_brox(before next iteration)
-			UV->setPsidashFSAns1(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
-			UV->setPsidashFSAns2(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
+			//UV->setPsidashFSAns1(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
+			//UV->setPsidashFSAns2(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
+			
 			//[duv, err, it, flag] = sor( A, duv, b, omega, inner_iter, tol ) ;
 
 

@@ -26,7 +26,7 @@ void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
 	//theta=theta+epsilon
 	
 	toolsKit::IPL_add(theta,epsilon,theta);
-	cvShowImage("theta-before",theta);
+	//cvShowImage("theta-before",theta);
 	//IPL_print(theta);
 
 	toolsKit::IPL_mul_inverse(theta,1);
@@ -37,28 +37,31 @@ void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
 	cvReleaseImage( &tempy ); 
 }
 //psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
-void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplImage* Ikx,IplImage* du,IplImage* Iky,IplImage* dv){
-	//x=Ikx * du
-
-	//y=Iky * dv
-
-	//z=Ikz +x+y
-	
-	//t=z^2
-
-	//ans=theta0*t
-
+void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplImage* Ikx,IplImage* du,IplImage* Iky,IplImage* dv,double epsilon){
+	toolsKit::costumeLineCompute(psidashBCA,Ikz,Ikx,du,Iky,dv);
+	cvMul(theta0,psidashBCA,psidashBCA);
+	toolsKit::psiDerivative(psidashBCA,epsilon);
 }
 
 //psiDerivative( gamma * (  theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2 + 
 	//						theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 ) ) ;
 void computepsidashGCA(IplImage* psidashGCA,int gamma,IplImage* theta1,IplImage* Ixz,IplImage* Ixx,IplImage* du,IplImage* Ixy,
-					   IplImage* dv,IplImage* theta2,IplImage* Iyz,IplImage* Iyy){
-
+					   IplImage* dv,IplImage* theta2,IplImage* Iyz,IplImage* Iyy,double epsilon){
+	
+	IplImage* temp=cvCreateImage(cvSize( psidashGCA->width, psidashGCA->height ),psidashGCA->depth,psidashGCA->nChannels);
+	//theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2
+	toolsKit::costumeLineCompute(psidashGCA,Ixz,Ixx,du,Ixy,dv);
+	cvMul(theta1,psidashGCA,psidashGCA);
+	//theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 )
+	toolsKit::costumeLineCompute(temp,Iyz,Ixy,du,Iyy,dv);
+	cvMul(theta2,temp,temp);
+	cvAdd(psidashGCA,temp,psidashGCA);
+	toolsKit::cvMulScalar(psidashGCA,gamma);
+	toolsKit::psiDerivative(psidashGCA,epsilon);
 }
 
 void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
-											 IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* u,IplImage* v,double gamma,int _ERROR_CONST ){
+											 IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* u,IplImage* v,double gamma,double _ERROR_CONST ){
 	
 
 	IplImage* theta0=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
@@ -71,24 +74,22 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImag
 	cvZero(epsilon);
 	cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
 
-	//theta0 = 1./(Ikx.^2+Iky.^2+epsilon);
+	//theta0 = 1/(Ikx^2+Iky^2+epsilon);
 	computeTheta(theta0,Ikx,Iky,epsilon);
-	//theta1 = 1./(Ixx.^2+Ixy.^2+epsilon);
+	//theta1 = 1/(Ixx^2+Ixy^2+epsilon);
 	computeTheta(theta1,Ixx,Ixy,epsilon);
-	//theta2 = 1./(Iyy.^2+Ixy.^2+epsilon);
+	//theta2 = 1/(Iyy^2+Ixy^2+epsilon);
 	computeTheta(theta2,Iyy,Ixy,epsilon);
 
 	// First compute the values of the data  term
     //the brightness constancy assumption
 
 	//TODO:du or u?? dv or v??
-	computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,u,Iky,v);
-	//psidashBCA = 
-    //and the Gradient Constancy Assumption
-    //psidashGCA = psiDerivative( gamma * (  theta1 .*  ( Ixz + Ixx .* du + Ixy .* dv ) .^ 2 + 
-	//							theta2 .*   ( Iyz + Ixy .* du + Iyy .* dv ) .^ 2 ) ) ;
+	computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,u,Iky,v,_ERROR_CONST);
 	
+    //and the Gradient Constancy Assumption
+ 
 	//TODO:du or u?? dv or v??
-	computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,u,Ixy,v,theta2,Iyz,Iyy);
-
+	computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,u,Ixy,v,theta2,Iyz,Iyy,_ERROR_CONST);
+	toolsKit::cvShowManyImages("constructMatrix_b:psidashBCA,psidashGCA,theta0,theta1,theta2",5,psidashBCA,psidashGCA,theta0,theta1,theta2);
 }
