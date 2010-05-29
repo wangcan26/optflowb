@@ -7,9 +7,12 @@
 #include "toolsKit.h"
 #include "flowUV.h"
 #include "IplImageIterator.h"
+#include "constructMatrix_brox.h"
+
 class coarse2FineCompute
 {
-public:	
+public:
+	double _ERROR_CONST;
 	coarse2FineCompute(int imageDepth,double error);
 	void Coarse2FineFlow(IplImage* vx, 
 						 IplImage* vy, 
@@ -25,7 +28,7 @@ public:
 						 int nCGIterations);
 	virtual ~coarse2FineCompute(void);
 private:
-	double _ERROR_CONST;
+	
 	int _imageDepth;
 	IplImage* LaplaceCompute(IplImage* input,IplImage* input2);
 	IplImage* coarse2FineCompute::createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);

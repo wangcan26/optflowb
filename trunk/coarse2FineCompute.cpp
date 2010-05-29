@@ -196,85 +196,6 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 }
 
 
-template <class PEL>
-void IPLsqrt_mul2(IplImageIterator<PEL> it){
-	while (!it) {      
-	  *it= 1/(2*sqrt((double)*it)); 
-	  ++it;
-	}
-}
-
-template <class PEL>
-void IPL_mul_inverse_loop(IplImageIterator<PEL> it){
-	double one=1;
-	while (!it) {      
-		if(0!=((double)*it))
-			 *it= one/((double)*it); 
-	  ++it;
-	}
-}
-void IPL_mul_inverse(IplImage* img,int opType){
-	if(img->depth==IPL_DEPTH_8U){
-		IplImageIterator<unsigned char> it(img);		
-		(opType==1?IPL_mul_inverse_loop(it):IPLsqrt_mul2(it));
-	}
-	else if (img->depth==IPL_DEPTH_32F){
-		IplImageIterator<float> it(img);
-		(opType==1?IPL_mul_inverse_loop(it):IPLsqrt_mul2(it));
-	}
-	else{
-		cout<<"IPL_mul_inverse got unsupported depth"<<endl;
-		return;
-	}
-
-}
-
-void IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
-	IplImageIterator<unsigned char> it(img);
-	IplImageIterator<unsigned char> it2(img);
-	IplImageIterator<unsigned char> it3(dest);
-	while (!it) {      
-	//	cout<<"bef:"<<it.data;
-			 *it3= ((double)*it)+((double)*it2); 
-	 // cout<<"=>"<<it.data<<endl;
-	  ++it;
-	  ++it2;
-	  ++it3;
-	}
-}
-
-void IPL_print(IplImage *image) {
-      int nl= image->height; // number of lines
-      int nc= image->width * image->nChannels; // total number of element per line
-      int step= image->widthStep; // effective width
-      // get the pointer to the image buffer
-      unsigned char *data= reinterpret_cast<unsigned char *>(image->imageData);
-	  cout<<"=============================width:"<<image->width <<" height:"<< image->height<<" channels:"<<image->nChannels<<"============================="<<endl;
-      for (int i=1; i<nl; i++) {
-
-            for (int j=0; j<nc; j+= image->nChannels) {
-				CvScalar sca= cvGet2D(image,i,j);
-            // process each pixel ---------------------
-                 // data[j]= data[j]/div * div + div/2;
-				cout<<sca.val[0]<<" ";
-                //  data[j+1]= data[j+1]/div * div + div/2;
-                // data[j+2]= data[j+2]/div * div + div/2;
-            // end of pixel processing ----------------
-            } // end of line          
-			cout<<endl;
-            data+= step;  // next line
-			break;
-      }
-	  cout<<"======================================================================================================================================="<<endl;
-}
-
-void cvMulScalar(IplImage* img,double scalar){
-	IplImageIterator<unsigned char> it(img);
-	while (!it) {      
-	  *it= scalar*(double)*it; 
-	  ++it;
-	}
-}
 
 double psiDerivative(double x,double epsilon){	
 	double y=1 / (2 * sqrt( x + epsilon ) ) ;
@@ -285,42 +206,14 @@ IplImage* psiDerivative(IplImage* x,double epsilon){
 	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
 	//cvShowImage("before",x);
 	cvAddS(x,cvScalarAll(epsilon),x);
-	IPL_print(x);
-	IPL_mul_inverse(x,0);
-	IPL_print(x);
+	toolsKit::IPL_print(x);
+	toolsKit::IPL_mul_inverse(x,0);
+	toolsKit::IPL_print(x);
 	//cvShowImage("after",x);
 //	x->imageData
 	return x;
 }
 
-//theta = 1/(x^2+y^2+epsilon);
-void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
-	IplImage* tempx=cvCreateImage(cvSize( x->width, x->height ),IPL_DEPTH_32F,x->nChannels);
-	IplImage* tempy=cvCreateImage(cvSize( x->width, x->height ),IPL_DEPTH_32F,x->nChannels);
-	tempx=cvCloneImage(x);
-	tempy=cvCloneImage(y);	
-	double two=2.0;
-	
-	
-	//x^2	
-	cvMulScalar(tempx,two);
-	//y^2
-	cvMulScalar(tempy,two);
-	//theta=x^2+y^2
-	IPL_add(tempx,tempy,theta);
-	//theta=theta+epsilon
-	
-	IPL_add(theta,epsilon,theta);
-	cvShowImage("theta-before",theta);
-	IPL_print(theta);
-
-	IPL_mul_inverse(theta,1);
-	IPL_print(theta);
-	cvShowImage("theta-after",theta);
-	toolsKit::cvShowManyImages("computeTheta",2,tempx,tempy);
-	cvReleaseImage( &tempx ); 
-	cvReleaseImage( &tempy ); 
-}
 
 
 IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage* IXt_axis, IplImage* Ixx, IplImage* Ixy,
@@ -357,7 +250,7 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 
 	//========gamma*ans3
 	cvAdd(ans3,ans4,ans3);
-	cvMulScalar(ans3,gamma);
+	toolsKit::cvMulScalar(ans3,gamma);
 	cvAdd(ans1,ans3,ans1);
 	toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3,ans4",4,ans1,ans2,ans3,ans4);
 	//clean
@@ -369,28 +262,6 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 }
 
 
-void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
-											  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma ){
-	
-
-	IplImage* theta0=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* theta1=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* theta2=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* epsilon=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-	//epsilon = 1e-3*ones(size(Ikx))==>zeroing and adding instead
-	cvZero(epsilon);
-	cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
-
-//theta0 = 1./(Ikx.^2+Iky.^2+epsilon);
-computeTheta(theta0,Ikx,Iky,epsilon);
-//theta1 = 1./(Ixx.^2+Ixy.^2+epsilon);
-computeTheta(theta1,Ixx,Ixy,epsilon);
-//theta2 = 1./(Iyy.^2+Ixy.^2+epsilon);
-computeTheta(theta2,Iyy,Ixy,epsilon);
-
-
-
-}
 
 void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){	
 	//init masks
@@ -579,9 +450,13 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 
 			//[A, b] = constructMatrix_brox( Ikx, Iky, Ikz, Ixx, Ixy, Iyy, Ixz, Iyz, psidash, alpha * psidashFS, u, v, gamma ) ;
 			
-			cvMulScalar(UV->getPsidashFSAns1(),alpha);
-			cvMulScalar(UV->getPsidashFSAns2(),alpha);
-			constructMatrix_brox( Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(), gamma );
+			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
+			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
+			constructMatrix_brox::constructMatrix_b( Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(), gamma , _ERROR_CONST);
+			
+			//downscaling back to 8k after upscaling in computePsidashFS_brox(before next iteration)
+			UV->setPsidashFSAns1(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
+			UV->setPsidashFSAns2(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
 			//[duv, err, it, flag] = sor( A, duv, b, omega, inner_iter, tol ) ;
 
 

@@ -1,3 +1,4 @@
+#pragma once
 template <class PEL>
 class IplImageIterator {
   int i, j, i0;
