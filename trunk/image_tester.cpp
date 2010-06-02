@@ -74,6 +74,20 @@ int main (int argc,char** argv)
 	 IplImage* vy= NULL;
 	 IplImage* warpI2= NULL;
 
+	/*double an[] ={0,0,0,0,0,0,0,0,0};
+	double a[] = {1,2,3,4,5,6,7,8,9};
+	double b[]={2,2,2,3,3,3,4,5,6};
+	CvMat* matans = &cvMat( 3, 3, CV_64FC1, an ); // 64FC1 for double
+	CvMat* matans2 = &cvMat( 3, 3, CV_64FC1, an ); // 64FC1 for double
+	CvMat* mata = &cvMat( 3, 3, CV_64FC1, a );
+	CvMat* matb = &cvMat( 3, 3, CV_64FC1, b );
+	cvMul(mata,matb,matans);
+	cvMul(matb,mata,matans2);
+	PrintMat(mata);
+	PrintMat(matb);
+	PrintMat(matans);
+	PrintMat(matans2);
+	cout<<"a"<<endl;*/
 		//GPyramid1.ConstructPyramid(*img,ratio,minWidth);
 
 	 coarse2fComp.Coarse2FineFlow(  vx, 
