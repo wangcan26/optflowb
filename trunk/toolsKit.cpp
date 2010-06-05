@@ -39,6 +39,32 @@
 		}
 	}
 
+		void toolsKit::IPL_add_top(IplImage* img,IplImage* img2,IplImage* dest){
+			int i,j;
+			int width=img->width;
+					
+			for (i = width,j=0; i < width*img->height; i++,j++)					
+				{				
+					((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[j];
+					width=width;
+				}
+	}
+	void toolsKit::IPL_add_left(IplImage* img,IplImage* img2,IplImage* dest){
+			int i,j;
+			int width=img->width;
+			if (img->nChannels==3)
+				for (i = 0; i < img->width*img->height*3; i+=3)
+				{
+				//   ((float*)img->imageData)[i] = 64/256.0;			  
+				}
+			else				
+				for (i = 1; i < width*img->height; i++,j++)					
+				{
+					if(i %width  !=0)
+						((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[i-1];
+				}
+	}
+
 	void toolsKit::IPL_print(IplImage *image) {
 		int nl= image->height; // number of lines
 		int nc= image->width * image->nChannels; // total number of element per line
@@ -46,7 +72,7 @@
 		// get the pointer to the image buffer
 		unsigned char *data= reinterpret_cast<unsigned char *>(image->imageData);
 		cout<<"=============================width:"<<image->width <<" height:"<< image->height<<" channels:"<<image->nChannels<<"============================="<<endl;
-		for (int i=1; i<nl; i++) {
+		for (int i=0; i<nl; i++) {
 
 			for (int j=0; j<nc; j+= image->nChannels) {
 				CvScalar sca= cvGet2D(image,i,j);
@@ -59,7 +85,7 @@
 			} // end of line          
 			cout<<endl;
 			data+= step;  // next line
-			break;
+			//break;
 		}
 		cout<<"======================================================================================================================================="<<endl;
 	}
