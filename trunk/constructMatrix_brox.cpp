@@ -262,7 +262,23 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImag
 			 vuapp=cvCloneImage(uvapp);
 
 			 //insert to diagonals to matrix A
-
+			 vector<float> diag;
+			 IplImageIterator<float> vu(vuapp);
+			 IplImageIterator<float> uv(uvapp);
+			 while (!vu){
+				 diag.push_back(*vu);
+				 vu++;
+				 }
+			 while (!uv){
+				 diag.push_back(*uv);
+				 uv++;
+				 }
+			//diag is the vector for the main(0) diag
+			 //create the Sparse MAtrix:
+			 SparseMat<float> * A = new SparseMat<float>(2*Ikx->height, 2*Ikx->width);
+			 A->addDiag(0,diag);
+			 cout<<"diag size: "<<diag.size()<<endl;
+			 cout<<"A size: "<<A->getM()<<", "<<A->getM()<<" diag size: "<<A->getM()*A->getN()<<endl;
 			 //////////////////////build vector B//////////////////////
 
 			 // Computing the constant terms for the first of the Euler Lagrange equations
