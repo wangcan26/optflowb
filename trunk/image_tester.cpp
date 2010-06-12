@@ -88,8 +88,9 @@ int main (int argc,char** argv)
 	PrintMat(matans);
 	PrintMat(matans2);
 	cout<<"a"<<endl;*/
-		//GPyramid1.ConstructPyramid(*img,ratio,minWidth);
+	//GPyramid1.ConstructPyramid(*img,ratio,minWidth);
 
+/*
 	 IplImage *imga1=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
 	 IplImage *imga2=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
 	 IplImage *imgans=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
@@ -104,15 +105,15 @@ int main (int argc,char** argv)
 	 ((float*)imga1->imageData)[8]=9;
 
 	 //for top bottom
-	 /*((float*)imga2->imageData)[0]=1;
-	 ((float*)imga2->imageData)[1]=1;
-	 ((float*)imga2->imageData)[2]=1;
-	 ((float*)imga2->imageData)[3]=2;
-	 ((float*)imga2->imageData)[4]=2;
-	 ((float*)imga2->imageData)[5]=2;
-	 ((float*)imga2->imageData)[6]=3;
-	 ((float*)imga2->imageData)[7]=3;
-	 ((float*)imga2->imageData)[8]=3;*/
+	 //((float*)imga2->imageData)[0]=1;
+	 //((float*)imga2->imageData)[1]=1;
+	 //((float*)imga2->imageData)[2]=1;
+	 //((float*)imga2->imageData)[3]=2;
+	 //((float*)imga2->imageData)[4]=2;
+	 //((float*)imga2->imageData)[5]=2;
+	 //((float*)imga2->imageData)[6]=3;
+	 //((float*)imga2->imageData)[7]=3;
+	 //((float*)imga2->imageData)[8]=3;
 	//for left right
 	 ((float*)imga2->imageData)[0]=1;
 	 ((float*)imga2->imageData)[1]=2;
@@ -126,13 +127,15 @@ int main (int argc,char** argv)
 	 toolsKit::IPL_print(imga1);
 	 toolsKit::IPL_print(imga2);
 	// cvZero(imgans);
-   //  toolsKit::IPL_add_left(imga1,imga2,imga1);
+    // toolsKit::IPL_add_left(imga1,imga2,imga1);
 	// toolsKit::IPL_print(imga1);
 	 toolsKit::IPL_add_right(imga1,imga2,imga1);
 	 
 	 toolsKit::IPL_print(imga1);
 	 toolsKit::IPL_print(imga1);
-	/* coarse2fComp.Coarse2FineFlow(  vx, 
+*/
+	 
+	 coarse2fComp.Coarse2FineFlow(  vx, 
 									vy, 
 									*warpI2,
 									*img1_32, 
@@ -143,7 +146,7 @@ int main (int argc,char** argv)
 									minWidth, 
 									3, 
 									500, 
-									0);*/
+									0);
 
 
 

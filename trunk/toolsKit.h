@@ -31,10 +31,23 @@
 			}
 		}
 		static void IPL_mul_inverse(IplImage* img,int opType);
-		static void IPL_add_left(IplImage* img,IplImage* img2,IplImage* dest);
-		static void IPL_add_right(IplImage* img,IplImage* img2,IplImage* dest);
-		static void IPL_add_top(IplImage* img,IplImage* img2,IplImage* dest);
-		static void IPL_add_bottom(IplImage* img,IplImage* img2,IplImage* dest);
+		//adders
+		static void IPL_add_left(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_add_right(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_add_top(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_add_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		//subs
+		static void IPL_sub_left(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_sub_right(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_sub_top(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_sub_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		//multipliers
+		static void IPL_mul_left(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_mul_right(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_mul_top(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+		static void IPL_mul_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest);
+
+
 		static void IPL_add(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_print(IplImage *image);
 		static void cvMulScalar(IplImage* img,double scalar);

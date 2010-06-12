@@ -241,7 +241,7 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 	//toolsKit::IPL_print(ans3);
 	//ans1+ans3==>ans1
 	cvAdd(ans1,ans3,ans1);
-	toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3,ans4",3,ans1,ans2,ans3);
+	//toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3,ans4",3,ans1,ans2,ans3);
 	//clean
 	cvReleaseImage( &ans2 ); 
 	cvReleaseImage( &ans3 ); 

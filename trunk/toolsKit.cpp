@@ -39,24 +39,24 @@
 		}
 	}
 	//img2 is the shifted image
-	void toolsKit::IPL_operate_top(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+	void toolsKit::IPL_operate_top(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
 			int i,j;
 			int width=img->width;
 					
 			for (i = width,j=0; i < width*img->height; i++,j++)					
 				{	
 					switch (operation){					  
-					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[j];				
+					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)shiftImg2->imageData)[j];				
 							   break;
-					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[j];				
+					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)shiftImg2->imageData)[j];				
 							   break;
-					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[j];				
+					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)shiftImg2->imageData)[j];				
 							   break;
 					}					
 				}
 	}
 	//img2 is the shifted image
-	void toolsKit::IPL_operate_bottom(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+	void toolsKit::IPL_operate_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
 			
 			int i,j;
 			int width=img->width;
@@ -64,18 +64,18 @@
 			for (i = 0,j=width; i < width*img->height-width; i++,j++)					
 				{	
 					switch (operation){					  
-					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[j];
+					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)shiftImg2->imageData)[j];
 							   break;
-					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[j];
+					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)shiftImg2->imageData)[j];
 							   break;
-					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[j];
+					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)shiftImg2->imageData)[j];
 							   break;
 					}
 									
 				}
 	}
 	//img2 is the shifted image
-	void toolsKit::IPL_operate_left(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+	void toolsKit::IPL_operate_left(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
 			int i;
 			int width=img->width;
 			if (img->nChannels==3)
@@ -88,18 +88,18 @@
 				{
 					if(i %width  !=0)//do not compute first column
 						switch (operation){					  
-						  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[i-1];
+						  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)shiftImg2->imageData)[i-1];
 								   break;
-						  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[i-1];
+						  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)shiftImg2->imageData)[i-1];
 								   break;
-						  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[i-1];
+						  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)shiftImg2->imageData)[i-1];
 								   break;
 						}
 						
 				}
 	}
 	//img2 is the shifted image
-	void toolsKit::IPL_operate_right(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+	void toolsKit::IPL_operate_right(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
 			int i,k;
 			int width=img->width;					
 			//for first cell
@@ -108,11 +108,11 @@
 			{
 				if(k)//do not compute last column
 					switch (operation){					  
-					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[i+1];
+					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)shiftImg2->imageData)[i+1];
 							   break;
-					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[i+1];
+					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)shiftImg2->imageData)[i+1];
 							   break;
-					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[i+1];
+					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)shiftImg2->imageData)[i+1];
 							   break;
 					}									
 				k==0?k=width-1:k--;
@@ -120,20 +120,45 @@
 	}
 
 
-
-	void toolsKit::IPL_add_top(IplImage* img,IplImage* img2,IplImage* dest){
-		IPL_operate_top(img,img2,dest,ADD);
+	//adders
+	void toolsKit::IPL_add_top(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_top(img,shiftImg2,dest,ADD);
 	}
-	void toolsKit::IPL_add_bottom(IplImage* img,IplImage* img2,IplImage* dest){
-		IPL_operate_bottom(img,img2,dest,ADD);
+	void toolsKit::IPL_add_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_bottom(img,shiftImg2,dest,ADD);
 	}
-	void toolsKit::IPL_add_left(IplImage* img,IplImage* img2,IplImage* dest){
-		IPL_operate_left(img,img2,dest,ADD);
+	void toolsKit::IPL_add_left(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_left(img,shiftImg2,dest,ADD);
 	}
-	void toolsKit::IPL_add_right(IplImage* img,IplImage* img2,IplImage* dest){
-		IPL_operate_right(img,img2,dest,ADD);
+	void toolsKit::IPL_add_right(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_right(img,shiftImg2,dest,ADD);
 	}
-	
+	//subs
+	void toolsKit::IPL_sub_top(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_top(img,shiftImg2,dest,SUB);
+	}
+	void toolsKit::IPL_sub_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_bottom(img,shiftImg2,dest,SUB);
+	}
+	void toolsKit::IPL_sub_left(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_left(img,shiftImg2,dest,SUB);
+	}
+	void toolsKit::IPL_sub_right(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_right(img,shiftImg2,dest,SUB);
+	}
+	//multipliers
+	void toolsKit::IPL_mul_top(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_top(img,shiftImg2,dest,MUL);
+	}
+	void toolsKit::IPL_mul_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_bottom(img,shiftImg2,dest,MUL);
+	}
+	void toolsKit::IPL_mul_left(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_left(img,shiftImg2,dest,MUL);
+	}
+	void toolsKit::IPL_mul_right(IplImage* img,IplImage* shiftImg2,IplImage* dest){
+		IPL_operate_right(img,shiftImg2,dest,MUL);
+	}
 	void toolsKit::IPL_print(IplImage *image) {
 		int nl= image->height; // number of lines
 		int nc= image->width * image->nChannels; // total number of element per line
@@ -154,7 +179,7 @@
 			} // end of line          
 			cout<<endl;
 			data+= step;  // next line
-			//break;
+			break;
 		}
 		cout<<"======================================================================================================================================="<<endl;
 	}
