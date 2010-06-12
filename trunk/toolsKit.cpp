@@ -38,33 +38,102 @@
 			++it3;
 		}
 	}
-
-		void toolsKit::IPL_add_top(IplImage* img,IplImage* img2,IplImage* dest){
+	//img2 is the shifted image
+	void toolsKit::IPL_operate_top(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
 			int i,j;
 			int width=img->width;
 					
 			for (i = width,j=0; i < width*img->height; i++,j++)					
-				{				
-					((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[j];
-					width=width;
+				{	
+					switch (operation){					  
+					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[j];				
+							   break;
+					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[j];				
+							   break;
+					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[j];				
+							   break;
+					}					
 				}
 	}
-	void toolsKit::IPL_add_left(IplImage* img,IplImage* img2,IplImage* dest){
+	//img2 is the shifted image
+	void toolsKit::IPL_operate_bottom(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+			
 			int i,j;
 			int width=img->width;
-			if (img->nChannels==3)
-				for (i = 0; i < img->width*img->height*3; i+=3)
-				{
-				//   ((float*)img->imageData)[i] = 64/256.0;			  
-				}
-			else				
-				for (i = 1; i < width*img->height; i++,j++)					
-				{
-					if(i %width  !=0)
-						((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[i-1];
+					
+			for (i = 0,j=width; i < width*img->height-width; i++,j++)					
+				{	
+					switch (operation){					  
+					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[j];
+							   break;
+					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[j];
+							   break;
+					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[j];
+							   break;
+					}
+									
 				}
 	}
+	//img2 is the shifted image
+	void toolsKit::IPL_operate_left(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+			int i;
+			int width=img->width;
+			if (img->nChannels==3)
+				for (i = 1; i < img->width*img->height*3; i+=3)
+				{
+				// 
+				}
+			else				
+				for (i = 1; i < width*img->height; i++)					
+				{
+					if(i %width  !=0)//do not compute first column
+						switch (operation){					  
+						  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[i-1];
+								   break;
+						  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[i-1];
+								   break;
+						  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[i-1];
+								   break;
+						}
+						
+				}
+	}
+	//img2 is the shifted image
+	void toolsKit::IPL_operate_right(IplImage* img,IplImage* img2,IplImage* dest,toolsKit::operations operation){
+			int i,k;
+			int width=img->width;					
+			//for first cell
+			k=width-1;
+			for (i = 0; i < width*img->height; i++)
+			{
+				if(k)//do not compute last column
+					switch (operation){					  
+					  case ADD : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]+((float*)img2->imageData)[i+1];
+							   break;
+					  case SUB : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]-((float*)img2->imageData)[i+1];
+							   break;
+					  case MUL : ((float*)dest->imageData)[i]=((float*)img->imageData)[i]*((float*)img2->imageData)[i+1];
+							   break;
+					}									
+				k==0?k=width-1:k--;
+			}
+	}
 
+
+
+	void toolsKit::IPL_add_top(IplImage* img,IplImage* img2,IplImage* dest){
+		IPL_operate_top(img,img2,dest,ADD);
+	}
+	void toolsKit::IPL_add_bottom(IplImage* img,IplImage* img2,IplImage* dest){
+		IPL_operate_bottom(img,img2,dest,ADD);
+	}
+	void toolsKit::IPL_add_left(IplImage* img,IplImage* img2,IplImage* dest){
+		IPL_operate_left(img,img2,dest,ADD);
+	}
+	void toolsKit::IPL_add_right(IplImage* img,IplImage* img2,IplImage* dest){
+		IPL_operate_right(img,img2,dest,ADD);
+	}
+	
 	void toolsKit::IPL_print(IplImage *image) {
 		int nl= image->height; // number of lines
 		int nc= image->width * image->nChannels; // total number of element per line

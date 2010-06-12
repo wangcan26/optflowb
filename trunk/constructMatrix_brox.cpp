@@ -114,7 +114,7 @@ void computeDiagonalPdfSum(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,I
 //																	 (theta1 * Ixx * Ixy + theta2 * Iyy * Ixy ) ;
 void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplImage* Ikx,IplImage* Iky,double gamma,
 						IplImage* psidashGCA,IplImage* theta1,IplImage* Ixx,IplImage* Ixy,
-						IplImage* theta2,IplImage* Iyy){
+						IplImage* theta2,IplImage* Iyy,IplImage* IxyB){
 	IplImage* temp1=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
 	IplImage* temp2=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
 	IplImage* temp3=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
@@ -133,10 +133,10 @@ void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplI
 	cvMul(theta1,Ixx,temp3);
 	cvMul(temp3,Ixy,temp3);
 	cvMul(theta2,Iyy,temp4);
-	cvMul(temp4,Ixy,temp4);
-	//temp3<==(theta1 * Ixx * Ixy + theta2 * Iyy * Ixy )
+	cvMul(temp4,IxyB,temp4);
+	//temp3<==(theta1 * Ixx * Ixy + theta2 * Iyy * IxyB )
 	cvAdd(temp3,temp4,temp3);
-	//temp2<==gamma * psidashGCA * (theta1 * Ixx * Ixy + theta2 * Iyy * Ixy ) 
+	//temp2<==gamma * psidashGCA * (theta1 * Ixx * Ixy + theta2 * Iyy * IxyB ) 
 	cvMul(temp2,temp3,temp2);
 	//temp1+temp2
 	cvAdd(temp1,temp2,ans);
@@ -160,8 +160,14 @@ void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
 	cvAdd(temp1,temp2,pdfSum);
 	cvReleaseImage(&temp1);
 	cvReleaseImage(&temp2);
+}
 
-
+/*pdfaltsumu = ans2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
+			   ans2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
+			   ans1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
+			   ans1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bottom ,ans1
+*/
+void computeVectBComponents(IplImage* pdfaltSumU,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* u,IplImage* v){
 
 }
 void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,
@@ -184,17 +190,23 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,
 											 double _ERROR_CONST ){
 	
 	//init IPLs											
-	IplImage* theta0=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* theta1=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* theta2=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* psidashBCA=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* psidashGCA=cvCreateImage(cvSize(Ikx->width, Ikz->height ),IPL_DEPTH_32F,Ikz->nChannels);
-	IplImage* epsilon=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-	IplImage* uapp=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-	IplImage* vapp=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-	IplImage* uvapp=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-	IplImage* vuapp=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-	IplImage* pdfSum=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* theta0=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* theta1=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* theta2=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* psidashBCA=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* psidashGCA=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* epsilon=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* uapp=		 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* vapp=		 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* uvapp=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* vuapp=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* pdfSum=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* constu=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* constv=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* pdfaltSumU=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+	IplImage* pdfaltSumV=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+
+	
 	//epsilon = 1e-3*ones(size(Ikx))==>zeroing and adding instead
 	cvZero(epsilon);
 	cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
@@ -211,7 +223,6 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,
 
 	// First compute the values of the data  term
     //the brightness constancy assumption
-
 
 	
 	//the brightness constancy assumption
@@ -234,10 +245,41 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,
 	computeDiagonalPdfSum(uapp, psidashBCA,theta0,Ikx,gamma,psidashGCA,theta1,Ixx,theta2,Ixy,pdfSum);
 	//vapp  = psidashBCA * theta0 * ( Iky ^ 2) +   gamma * psidashGCA * (theta2 *  Iyy ^ 2 +  theta1 * Ixy ^ 2 )  + pdfsum ;
 	computeDiagonalPdfSum(vapp, psidashBCA,theta0,Iky,gamma,psidashGCA,theta2,Iyy,theta1,Ixy,pdfSum);
-	//uvapp =                   psidashBCA * theta0*(Ikx*Iky)+gamma*psidashGCA*(theta1*Ixx*Ixy+theta2*Iyy*Ixy ) ;
-	computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy);
+	//uvapp = psidashBCA * theta0* (Ikx*Iky)+ gamma*psidashGCA*(theta1*Ixx*Ixy + theta2*Iyy*Ixy ) ;
+	computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy,Ixy);
 	//vuapp =   uvapp
 	vuapp=cvCloneImage(uvapp);
+
+	//insert to diagonals to matrix A
+
+
+	// Computing the constant terms for the first of the Euler Lagrange equations
+	computeVectBComponents(pdfaltSumU,psidashFS1,psidashFS2,u,v);
+// Computing the constant terms for the second of the Euler Lagrange equations
+/*pdfaltsumv = pdfs(2:2:end , 1:2:2*wt) * ( vpad(2:ht+1, 1:wt)  - vpad(2:ht+1, 2:wt+1) ) + 
+			   pdfs(2:2:end , 3:2:end)  * ( vpad(2:ht+1, 3:end) - vpad(2:ht+1, 2:wt+1) ) + 
+			   pdfs(1:2:2*ht, 2:2:end)  * ( vpad(1:ht, 2:wt+1)  - vpad(2:ht+1, 2:wt+1) ) + 
+			   pdfs(3:2:end , 2:2:end)  * ( vpad(3:end, 2:wt+1) - vpad(2:ht+1, 2:wt+1) ) 
+*/
+
+
+//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz )
+
+//		    - 1*pdfaltsumu 
+
+computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);
+
+cvAdd(constu,pdfaltSumU,constu);
+//constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) 
+
+//		    - 1*pdfaltsumv ;
+
+computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);
+
+cvAdd(constv,pdfaltSumV,constv);
+//b = [-constu(:) ; -constv(:) ];
+
+
 	
 	
 	toolsKit::cvShowManyImages("constructMatrix_b:psidashBCA,psidashGCA,theta0,theta1,theta2",5,psidashBCA,psidashGCA,theta0,theta1,theta2);

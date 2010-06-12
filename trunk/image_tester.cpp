@@ -103,7 +103,8 @@ int main (int argc,char** argv)
 	 ((float*)imga1->imageData)[7]=8;
 	 ((float*)imga1->imageData)[8]=9;
 
-	 ((float*)imga2->imageData)[0]=1;
+	 //for top bottom
+	 /*((float*)imga2->imageData)[0]=1;
 	 ((float*)imga2->imageData)[1]=1;
 	 ((float*)imga2->imageData)[2]=1;
 	 ((float*)imga2->imageData)[3]=2;
@@ -111,13 +112,24 @@ int main (int argc,char** argv)
 	 ((float*)imga2->imageData)[5]=2;
 	 ((float*)imga2->imageData)[6]=3;
 	 ((float*)imga2->imageData)[7]=3;
+	 ((float*)imga2->imageData)[8]=3;*/
+	//for left right
+	 ((float*)imga2->imageData)[0]=1;
+	 ((float*)imga2->imageData)[1]=2;
+	 ((float*)imga2->imageData)[2]=3;
+	 ((float*)imga2->imageData)[3]=1;
+	 ((float*)imga2->imageData)[4]=2;
+	 ((float*)imga2->imageData)[5]=3;
+	 ((float*)imga2->imageData)[6]=1;
+	 ((float*)imga2->imageData)[7]=2;
 	 ((float*)imga2->imageData)[8]=3;
 	 toolsKit::IPL_print(imga1);
 	 toolsKit::IPL_print(imga2);
 	// cvZero(imgans);
    //  toolsKit::IPL_add_left(imga1,imga2,imga1);
 	// toolsKit::IPL_print(imga1);
-	 toolsKit::IPL_add_top(imga1,imga2,imga1);
+	 toolsKit::IPL_add_right(imga1,imga2,imga1);
+	 
 	 toolsKit::IPL_print(imga1);
 	 toolsKit::IPL_print(imga1);
 	/* coarse2fComp.Coarse2FineFlow(  vx, 
