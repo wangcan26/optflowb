@@ -262,23 +262,50 @@ void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImag
 			 vuapp=cvCloneImage(uvapp);
 
 			 //insert to diagonals to matrix A
-			 vector<float> diag;
-			 IplImageIterator<float> vu(vuapp);
-			 IplImageIterator<float> uv(uvapp);
-			 while (!vu){
-				 diag.push_back(*vu);
-				 vu++;
-				 }
-			 while (!uv){
-				 diag.push_back(*uv);
-				 uv++;
-				 }
-			//diag is the vector for the main(0) diag
-			 //create the Sparse MAtrix:
-			 SparseMat<float> * A = new SparseMat<float>(2*Ikx->height, 2*Ikx->width);
-			 A->addDiag(0,diag);
-			 cout<<"diag size: "<<diag.size()<<endl;
-			 cout<<"A size: "<<A->getM()<<", "<<A->getM()<<" diag size: "<<A->getM()*A->getN()<<endl;
+			 
+			 //uu = spdiags( uapp(:),   0, wt*ht, wt*ht);
+			 vector<float> uuappCol = toolsKit::IplImageToCoulmnVector(uapp);
+			 SparseMat<float> uu(height*width);
+			 uu.addDiag(0,uuappCol);
+
+			 //vv = spdiags( vapp(:),   0, wt*ht, wt*ht);
+			 vector<float> vvappCol = toolsKit::IplImageToCoulmnVector(vapp);
+			 SparseMat<float> vv(height*width);
+			 vv.addDiag(0,vvappCol);
+			 //uv = spdiags( uvapp(:), 0, wt*ht, wt*ht);
+			 vector<float> uvappCol = toolsKit::IplImageToCoulmnVector(uvapp);
+			 SparseMat<float> uv(height*width);
+			 uv.addDiag(0,uvappCol);
+
+			 //vu = spdiags( vuapp(:), 0, wt*ht, wt*ht);
+			 vector<float> vuappCol = toolsKit::IplImageToCoulmnVector(vuapp);
+			 SparseMat<float> vu(height*width);
+			 vu.addDiag(0,vuappCol);
+
+			
+// arguments to u(j) in the linear Euler Lagrange equations.
+//tmp = pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) ;
+//ul1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
+//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
+
+//tmp = pdfs( 2 : 2 : end, 3 : 2 : end ) ;
+//ur1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
+//vr1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
+
+//% arguments to v(j) in the linear Euler Lagrange equations.
+//tmp = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) ;
+//ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
+//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
+
+//tmp = pdfs( 3 : 2 : end, 2 : 2 : end ) ;
+//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
+//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
+
+
+//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
+
+
+
 			 //////////////////////build vector B//////////////////////
 
 			 // Computing the constant terms for the first of the Euler Lagrange equations

@@ -55,7 +55,7 @@ class SparseMat
 				
 			for (const_row_iter ii = mat.begin(); ii != mat.end(); ii++){
 				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
-					
+						
 						ans(ii->first,jj->first) = jj->second * val;
 					}
 				}
@@ -174,7 +174,11 @@ class SparseMat
 				}
 
 			for (vector<T>::iterator it = elements.begin(); it != elements.end() && i<n && j<m; it++, ans++){
-				mat[i++][j++] = *it;
+				if (*it!=0)
+					mat[i++][j++] = *it;
+				else{
+					i++;j++;
+					}
 				}
 			return ans;
 			}
@@ -182,7 +186,8 @@ class SparseMat
 		
 
 		virtual ~SparseMat(void){};
-
+		
+		//construct master matrix from uu, uv, vu, vv
 
 		int getN(){return n;}
 		int getM(){return m;}
