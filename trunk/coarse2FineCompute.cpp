@@ -79,7 +79,7 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 						k=width-1;
 						j=0;
 						i=0;
-						cout<<"k:"<<k<<" t:"<<t/width<<endl;
+						//cout<<"k:"<<k<<" t:"<<t/width<<endl;
 					 }
 					 else{	 
 						k--;
