@@ -13,10 +13,10 @@ class coarse2FineCompute
 {
 public:
 	double _ERROR_CONST;
+	int _imageDepth;
 	coarse2FineCompute(int imageDepth,double error);
 	void Coarse2FineFlow(IplImage* vx, 
 						 IplImage* vy, 
-						 IplImage &warpI2,
 						 const IplImage &Im1, 
 						 const IplImage &Im2, 
 						 double alpha,
@@ -29,7 +29,7 @@ public:
 	virtual ~coarse2FineCompute(void);
 private:
 	
-	int _imageDepth;
+
 	IplImage* LaplaceCompute(IplImage* input,IplImage* input2);
 	IplImage* coarse2FineCompute::createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
 	

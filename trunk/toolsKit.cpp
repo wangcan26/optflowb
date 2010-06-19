@@ -26,12 +26,12 @@
 	}
 
 	void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
-		IplImageIterator<unsigned char> it(img);
-		IplImageIterator<unsigned char> it2(img);
-		IplImageIterator<unsigned char> it3(dest);
+		IplImageIterator<float> it(img);
+		IplImageIterator<float> it2(img);
+		IplImageIterator<float> it3(dest);
 		while (!it) {      
 			//	cout<<"bef:"<<it.data;
-			*it3= ((double)*it)+((double)*it2); 
+			*it3= ((float)*it)+((float)*it2); 
 			// cout<<"=>"<<it.data<<endl;
 			++it;
 			++it2;

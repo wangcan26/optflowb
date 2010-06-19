@@ -193,7 +193,10 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* psidashFS1,IplImage*
 	cvAdd(pdfaltSumXX,tempLeft4,pdfaltSumXX);
 	//- 1*pdfaltsumXX - needed for use in the next computation
 	toolsKit::cvMulScalar(pdfaltSumXX,-1);
-
+	cvReleaseImage(&tempLeft1);
+	cvReleaseImage(&tempLeft2);
+	cvReleaseImage(&tempLeft3);
+	cvReleaseImage(&tempLeft4);	
 }
 void constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,
 											 IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,

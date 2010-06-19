@@ -27,10 +27,10 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 	ImPyramid[0] = cvCreateImage( cvSize( image.width,image.height ),image.depth, image.nChannels );
 	ImPyramid[0]=cvCloneImage(&image);
 /* create destination image */
-	cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 
+	//cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 
 	//cvShowImage("TEST",ImPyramid[0]); 
 	//cvWaitKey(0); 
-	cvDestroyWindow("TEST"); 
+	//cvDestroyWindow("TEST"); 
 	
 /* copy from source to dest */
 //cvCopy( src, dst, NULL );

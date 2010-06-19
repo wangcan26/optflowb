@@ -19,64 +19,80 @@ coarse2FineCompute::~coarse2FineCompute(void)
 // --------------------------------------------------------------------------------------------------
  void BilinearInterpolate(const IplImage* pImage,int width,int height,int nChannels,double x,double y,IplImage* result,int i,int j)
 {
-	int xx,yy,m,n,u,v,k,offset;
+	int xx,yy,u,v,k,offset;
 	xx=x;
 	yy=y;
 	double dx,dy,s;
 	dx=__max(__min(x-xx,1),0);
 	dy=__max(__min(y-yy,1),0);
-
 	//memset(result,0,sizeof(IplImage*)*nChannels);
-
-	for(m=0;m<=1;m++)
-		for(n=0;n<=1;n++)
+	
+	for(int m=0;m<=1;m++)
+		for(int n=0;n<=1;n++)
 		{
 			u=EnforceRange(xx+m,width);
 			v=EnforceRange(yy+n,height);
 			offset=(v*width+u)*nChannels;
 			s=fabs(1-m-dx)*fabs(1-n-dy);
-			for(k=0;k<nChannels;k++)
-				k++;
+			for(k=0;k<nChannels;k++)				
 				//result[k]+=pImage[offset+k]*s;
-				(result->imageData + i*result->widthStep)[j+k]=(pImage->imageData + m*pImage->widthStep)[n+k]*s;
+				result->imageData[i*width+j+k]+=(float)fabs(((float)pImage->imageData[offset+k]*(float)s));
 		}
+		//cout<<"bilinier(i,wid,j):"<<i<<","<<width<<","<<j<<":"<<(float)result->imageData[i*width+j]<<endl;
 }
 //------------------------------------------------------------------------------------------------------------
 // function to warp an image with respect to flow field
 // pWarpIm2 has to be allocated before hands
 //------------------------------------------------------------------------------------------------------------
 //template <class T1,class T2>
-int warpImage(IplImage* pWarpIm2, const IplImage* pIm1, const IplImage* pIm2, const IplImage* pVx, const IplImage* pVy)
+int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, const IplImage* pVx, const IplImage* pVy)
 {
-	int ans;
+	int ans,i,j,k,t;
 	int width,height,nChannels;
 	width=pIm2->width;
 	height=pIm2->height;
 	nChannels=pIm2->nChannels;
-	for(int i=0;i<height;i++)
-		for(int j=0;j<width;j++)
-		{
+	
+	/*for(int i=0;i<height;i++){
+		for(int j=0;j<width;j++){
+	
 			int offset=i*width+j;
 			double x,y;
-			if(pVy->nChannels!=1){//1 channel support for now
-				return -1;
-			}
 		//	y=i+pVy[offset];		
-			y=((uchar *)(pVy->imageData + i*pVy->widthStep))[j]+i;			
+			y=((float)pVy->imageData[offset])+(float)i;			
 		//	x=j+pVx[offset];
-			x=((uchar *)(pVx->imageData + i*pVx->widthStep))[j]+j;
-			//offset*=nChannels;
-			if(x<0 || x>width-1 || y<0 || y>height-1)
-			{
-				for(int k=0;k<nChannels;k++)
-					//pWarpIm2[offset+k]=pIm1[offset+k];
-					(pWarpIm2->imageData + i*pWarpIm2->widthStep)[j+k]=(pIm1->imageData + i*pIm1->widthStep)[j+k];
-				continue;
-			}
-			//BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2+offset);
-			BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2,i,j);
+			x=((float)pVx->imageData[offset])+(float)j;
+			offset*=nChannels;
+			//edges only
 			
+			BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2,i,j);					
+
 		}
+	}*/
+			k=pIm1->width-1;
+			i=0;
+			j=0;
+			for (t=0; t < pIm1->width*pIm1->height; t++)					
+				{					  
+					 //((float*)pWarpIm2->imageData)[i]=((float*)pIm1->imageData)[i]+((float*)pIm1->imageData)[i];	
+					 if(k==0){
+						k=width-1;
+						j=0;
+						i=0;
+						cout<<"k:"<<k<<" t:"<<t/width<<endl;
+					 }
+					 else{	 
+						k--;
+						j++;
+						i++;
+						int offset=i*width+j;
+						double x,y;					
+						y=((float)pVy->imageData[offset])+(float)i;								
+						x=((float)pVx->imageData[offset])+(float)j;
+						offset*=nChannels;
+						BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2,i,j);
+					 }
+				}
 
 		return 0;
 }
@@ -129,7 +145,6 @@ IplImage* coarse2FineCompute::createWarp(IplImage* WarpImage2, IplImage* img1,Ip
 
 void coarse2FineCompute::Coarse2FineFlow(IplImage* vx, 
 										 IplImage* vy, 
-										 IplImage &warpI2,
 										 const IplImage &Im1, 
 										 const IplImage &Im2, 
 										 double alpha, 
@@ -187,14 +202,14 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
 			cvZero(WarpImage2);
 			WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
-			toolsKit::cvShowManyImages("warpImage2",1, WarpImage2);
+			//WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
 			
-		    //toolsKit::cvShowManyImages("pyramid iteration",4, Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
-			//IplImage* out=LaplaceCompute(Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));			
-		}						
-		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
+					  
+		}		
+		toolsKit::cvShowManyImages("warpImage2,image1,image2",3, WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
+		//SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
 	}
-	//warpFL(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
+	
 }
 
 

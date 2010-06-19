@@ -57,8 +57,8 @@ int main (int argc,char** argv)
 	 const IplImage* img1= cvLoadImage(argv[1],CV_LOAD_IMAGE_GRAYSCALE);//zero is for grayscale  CV_LOAD_IMAGE_GRAYSCALE
 	 const IplImage* img2= cvLoadImage(argv[2],CV_LOAD_IMAGE_GRAYSCALE); //1 is for color CV_LOAD_IMAGE_COLOR
 	
-	 IplImage *img1_32 = cvCreateImage(cvSize(img1->width, img1->height), IPL_DEPTH_32F, img1->nChannels);
-	 IplImage *img2_32 = cvCreateImage(cvSize(img2->width, img2->height), IPL_DEPTH_32F, img2->nChannels);
+	 IplImage *img1_32 = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, img1->nChannels);
+	 IplImage *img2_32 = cvCreateImage(cvSize(img2->width, img2->height), coarse2fComp._imageDepth, img2->nChannels);
 
 	cvConvertScale(img1, img1_32, 1/255.);
 	cvConvertScale(img2, img2_32, 1/255.);
@@ -72,7 +72,7 @@ int main (int argc,char** argv)
 
 	 IplImage* vx= NULL;
 	 IplImage* vy= NULL;
-	 IplImage* warpI2= NULL;
+	 //IplImage* warpI2= NULL;
 
 	/*double an[] ={0,0,0,0,0,0,0,0,0};
 	double a[] = {1,2,3,4,5,6,7,8,9};
@@ -137,7 +137,6 @@ int main (int argc,char** argv)
 	 
 	 coarse2fComp.Coarse2FineFlow(  vx, 
 									vy, 
-									*warpI2,
 									*img1_32, 
 									*img2_32, 
 									alpha, 
