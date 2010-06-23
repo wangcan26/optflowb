@@ -17,6 +17,6 @@ public:
 	static CvSparseMat * upperTriangle(CvSparseMat * mat);
 
 
-	static vector<double> SOR(SparseMat<double> A, vector<double> x,vector<double> B, double w, int numOfIterations); 
+	static vector<float>* SOR(SparseMat<float> A, vector<float> x,vector<float> B, double w, int numOfIterations); 
 
 	};

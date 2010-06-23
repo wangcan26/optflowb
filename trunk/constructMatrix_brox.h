@@ -9,7 +9,7 @@ class constructMatrix_brox
 {
 public:
 	constructMatrix_brox(void);
-	static void constructMatrix_b(IplImage* Ikx,
+	static vector<float> * constructMatrix_b(IplImage* Ikx,
 								  IplImage* Iky,
 								  IplImage* Ikz,
 								  IplImage* Ixx,

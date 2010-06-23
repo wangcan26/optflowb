@@ -30,6 +30,8 @@
 				++it;
 			}
 		}
+		static vector<float> * IplImageToCoulmnVector(IplImage* img);
+
 		static void IPL_mul_inverse(IplImage* img,int opType);
 		//adders
 		static void IPL_add_left(IplImage* img,IplImage* shiftImg2,IplImage* dest);
@@ -59,6 +61,7 @@
 		static void IPL_operate_left(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
 		static void IPL_operate_right(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
 		static void IPL_operate_top(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
-		static void IPL_operate_bottom(IplImage* img,IplImage* img2,IplImage* dest,operations oper);		
+		static void IPL_operate_bottom(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
+		
 
 	};

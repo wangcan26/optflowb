@@ -454,19 +454,34 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			computePsidashFS_brox(tempUadd,tempVadd,width,height,channels,UV);
 
 			//[A, b] = constructMatrix_brox( Ikx, Iky, Ikz, Ixx, Ixy, Iyy, Ixz, Iyz, psidash, alpha * psidashFS, u, v, gamma ) ;
-			
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
-			constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,
-													UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), 
-													UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST);
+			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST);
 			
 			//downscaling back to 8k after upscaling in computePsidashFS_brox(before next iteration)
 			//UV->setPsidashFSAns1(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
 			//UV->setPsidashFSAns2(cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels));
 			
 			//[duv, err, it, flag] = sor( A, duv, b, omega, inner_iter, tol ) ;
-
+			IplImageIterator<float> DUit(Du);
+			IplImageIterator<float> DVit(Dv);
+			int i=0;
+			cout<<"dUdV size = "<<dUdV->size()<<endl;
+			cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
+			cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
+			for (vector<float>::iterator it = dUdV->begin(); it!= dUdV->end(); it++, i++)
+				if (i<dUdV->size()){
+						*DUit = *it;
+						DUit++;
+					}
+				else{
+						*DVit = *it;
+						DVit++;
+					}
+			cout<<"end;"<<endl;
+			delete dUdV;
+			cout<<"freed"<<endl;
+			toolsKit::cvShowManyImages("DUDV",2,Du,Dv);
 
 		}
 

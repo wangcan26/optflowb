@@ -23,6 +23,37 @@ class SparseMat
 		SparseMat (const SparseMat<T2>& c):mat(c),m(c.m),n(c.n){}
 		SparseMat(int i) {m=n=i;}
 		SparseMat(int i, int j){m=i; n=j;};
+		/*
+			==========
+			| q1 | q2|
+			==========
+			| q3 | q4|
+			==========
+		*/
+		template<class T2>
+		SparseMat<T> (const SparseMat<T2>& q1, const SparseMat<T2>& q2, const SparseMat<T2>& q3, const SparseMat<T2>& q4):mat(q1.mat){
+		//	mat=q1.mat;
+			m = q1.m + q3.m;
+			n = q1.n + q2.n;
+			//add q2
+			for (const_row_iter row = q2.mat.begin(); row != q2.mat.end(); row++){
+				for( const_col_iter col = row->second.begin(); col != row->second.end(); col++){
+						mat[row->first][q1.n+ col->first] = col->second;
+					}
+				}
+			//add q3
+			for (const_row_iter row = q3.mat.begin(); row != q3.mat.end(); row++){
+				for( const_col_iter col = row->second.begin(); col != row->second.end(); col++){
+						mat[q1.m+row->first][col->first] = col->second;
+					}
+				}
+			//add q4
+			for (const_row_iter row = q4.mat.begin(); row != q4.mat.end(); row++){
+				for( const_col_iter col = row->second.begin(); col != row->second.end(); col++){
+						mat[q1.m+row->first][q1.n+col->first] = col->second;
+					}
+				}
+			};
 		
 
 		//Operators:

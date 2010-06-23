@@ -459,12 +459,12 @@
 		//return 0;
 	}
 
-	vector<float> toolsKit::IplImageToCoulmnVector(IplImage* img){
-			vector<float> ans(img->height*img->width);
+	vector<float> * toolsKit::IplImageToCoulmnVector(IplImage* img){
+			vector<float> * ans = new vector<float>(img->height*img->width);
 			IplImageIterator<float> it(img);
 			for (int i = 0; i<img->height; i++)	
 				for (int j=0; j<img->width; j++){
-					ans[i+j*img->height] = *it;
+					(*ans)[i+j*img->height] = *it;
 					it++;
 					}
 
