@@ -18,6 +18,10 @@
 			IplImageIterator<float> it(img);
 			(opType==1?IPL_mul_inverse_loop(it):IPLsqrt_mul2(it));
 		}
+		else if (img->depth==IPL_DEPTH_64F){
+			IplImageIterator<double> it(img);
+			(opType==1?IPL_mul_inverse_loop(it):IPLsqrt_mul2(it));
+		}
 		else{
 			cout<<"IPL_mul_inverse got unsupported depth"<<endl;
 			return;
@@ -159,7 +163,7 @@
 	void toolsKit::IPL_mul_right(IplImage* img,IplImage* shiftImg2,IplImage* dest){
 		IPL_operate_right(img,shiftImg2,dest,MUL);
 	}
-	void toolsKit::IPL_print(IplImage *image) {
+	void toolsKit::IPL_print(const IplImage *image) {
 		int nl= image->height; // number of lines
 		int nc= image->width * image->nChannels; // total number of element per line
 		int step= image->widthStep; // effective width
@@ -179,15 +183,15 @@
 			} // end of line          
 			cout<<endl;
 			data+= step;  // next line
-			break;
+			//break;
 		}
 		cout<<"======================================================================================================================================="<<endl;
 	}
 
-	void toolsKit::cvMulScalar(IplImage* img,double scalar){
-		IplImageIterator<unsigned char> it(img);
+	void toolsKit::cvMulScalar(IplImage* img,float scalar){
+		IplImageIterator<float> it(img);
 		while (!it) {      
-			*it= scalar*(double)*it; 
+			*it= (float)scalar*(*it); 
 			++it;
 		}
 	}
@@ -197,19 +201,24 @@
 	IplImage* temp=cvCreateImage(cvSize( var1->width, var1->height ),var1->depth,var1->nChannels);
 	//( var1 + var2*var3 + var4*var5 )^ 2==>ans
 	cvMul(var2,var3,ans);
+	
 	cvMul(var4,var5,temp);
+
 	cvAdd(var1,ans,ans);
+
 	cvAdd(ans,temp,temp);
+	
 	cvPow(temp,ans,2);
+
 	cvReleaseImage(&temp);
 }
 	IplImage*  toolsKit::psiDerivative(IplImage* x,double epsilon){	
 	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
 	//cvShowImage("before",x);
 	cvAddS(x,cvScalarAll(epsilon),x);
-	toolsKit::IPL_print(x);
+	//toolsKit::IPL_print(x);
 	toolsKit::IPL_mul_inverse(x,0);
-	toolsKit::IPL_print(x);
+	//toolsKit::IPL_print(x);
 	//cvShowImage("after",x);
 //	x->imageData
 	return x;

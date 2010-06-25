@@ -64,8 +64,7 @@ vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<fl
 				}
 			temp = oldX;
 			oldX = newX;
-			newX = new vector<float>(x.size());
-			delete temp;
+			newX = temp;
 			}
 		return newX;
 	}

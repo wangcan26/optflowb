@@ -241,11 +241,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //and the Gradient Constancy Assumption
 			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
 
+			 
 			 //now compute the  smoothness term
-			 //Compute new psidashFS(it was computed erlier just mul by alpha here)
-			 toolsKit::cvMulScalar(psidashFS1,alpha);
-			 toolsKit::cvMulScalar(psidashFS2,alpha);
-
+			 			 
 			 //compute pdfSum
 			 //pdfsum = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
@@ -260,6 +258,12 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vuapp =   uvapp
 			 vuapp=cvCloneImage(uvapp);
 
+			 cout<<"uapp"<<endl;
+			 toolsKit::IPL_print(uapp);
+			 cout<<"uapp"<<endl;
+			 toolsKit::IPL_print(vapp);
+			 cout<<"uvapp,vuapp"<<endl;
+			 toolsKit::IPL_print(uvapp);
 			 //insert to diagonals to matrix A
 			 
 			 //uu = spdiags( uapp(:),   0, wt*ht, wt*ht);
@@ -293,7 +297,11 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			tmp1 = cvCloneImage(psidashFS1);
 			toolsKit::cvMulScalar(tmp2,-1);
 			toolsKit::cvMulScalar(tmp1,-1);
-
+			
+			cout<<"-psidashFS1"<<endl;
+			toolsKit::IPL_print(psidashFS1);
+			 cout<<"-psidashFS2"<<endl;
+			 toolsKit::IPL_print(psidashFS2);
 /*pdfaltsumu = psidashFS2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
 psidashFS2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
 psidashFS1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
@@ -384,9 +392,9 @@ psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bo
 			vector<float> * x = new vector<float>(B->size());
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
-			vector<float> * dUdV = SparseToolKit::SOR(*A,*x,*B,1.0,20);
-
-			toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
+				toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
+			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,20);
+		
 			delete B;
 			delete A;
 			return dUdV;
