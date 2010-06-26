@@ -67,26 +67,37 @@ void computepsidashGCA(IplImage* psidashGCA,int gamma,IplImage* theta1,IplImage*
 						   toolsKit::psiDerivative(psidashGCA,epsilon);
 }
 
-/*uapp= psidashBCA * 
-(theta0 * ( Ikx ^ 2 ))+ ==>temp
+/*
+if gamma=0:
+uapp= psidashBCA * (theta0 * ( Ikx ^ 2 ))+ ==>ans
+else:
+uapp= psidashBCA * (theta0 * ( Ikx ^ 2 ))+ ==>temp
 gamma * psidashGCA * ==>temp2
 (theta1 *  Ixx ^ 2 + theta2 * Ixy ^ 2 )  + ==>temp3
 pdfsum */
 void computeDiagonalPdfSum(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplImage* Ikx,double gamma,
 						   IplImage* psidashGCA,IplImage* theta1,IplImage* Ixx,
 						   IplImage* theta2,IplImage* Ixy,IplImage* pdfsum){
-							   IplImage* temp=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
-							   IplImage* temp2=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
+							  // IplImage* temp=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
+							   IplImage* temp2=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);							  
+							   //( Ikx ^ 2)==>temp2
+							   temp2=cvCloneImage(Ikx);
+							   cvPow(Ikx,temp2,2);
+							   //(theta0 * ( Ikx ^ 2 ))==>temp
+							   cvMul(theta0,temp2,ans);							   							
+							   //psidashBCA * temp==>temp
+							   cvMul(psidashBCA,ans,ans);
+
+							   if (gamma==0){									
+									cvReleaseImage(&temp2);
+									return;
+							   }
+							   //for any other gamma:
 							   IplImage* temp3=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
 							   IplImage* temp4=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
-							   //(theta0 * ( Ikx ^ 2 ))==>temp
-							   cvPow(Ikx,Ikx,2);
-							   cvMul(theta0,Ikx,temp);
-							   //psidashBCA * temp==>temp
-							   cvMul(psidashBCA,temp,temp);
 							   // gamma * psidashGCA==>temp2
-							   temp2=cvCloneImage(psidashGCA);
-							   toolsKit::cvMulScalar(temp2,gamma);
+							   temp2=cvCloneImage(psidashGCA);							 
+							   toolsKit::cvMulScalar(temp2,gamma);							 
 							   //(theta1 *  Ixx ^ 2 + theta2 * Ixy ^ 2 )==>temp3
 							   cvPow(Ixx,temp3,2);
 							   cvPow(Ixy,temp4,2);
@@ -95,39 +106,50 @@ void computeDiagonalPdfSum(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,I
 							   //theta2 * Ixy ^ 2==>temp4
 							   cvMul(theta2,temp4,temp4);
 							   //temp3+temp4==>temp3
-							   cvAdd(temp3,temp4,temp3);
-
+							   cvAdd(temp3,temp4,temp3);				
 							   //temp2*temp3
 							   cvMul(temp2,temp3,temp2);
 							   //temp+temp3
-							   cvAdd(temp,temp3,temp);
-							   cvAdd(temp,pdfsum,ans);
-							   cvReleaseImage(&temp);
+							   cvAdd(ans,temp3,ans);
+							   cvAdd(ans,pdfsum,ans);
+							  // cvReleaseImage(&temp);
 							   cvReleaseImage(&temp2);
 							   cvReleaseImage(&temp3);
 							   cvReleaseImage(&temp4);
 
 
 }
-
-//uvapp = psidashBCA * 
-//					   theta0 * 
-//							    ( Ikx * Iky) + 
-//												gamma * psidashGCA * 
-//																	 (theta1 * Ixx * Ixy + theta2 * Iyy * Ixy ) ;
+/*if gamma=0
+ uvapp = psidashBCA * 
+ 					   theta0 * 
+							    ( Ikx * Iky)												
+else
+ uvapp = psidashBCA * 
+ 					   theta0 * 
+							    ( Ikx * Iky) + 
+												gamma * psidashGCA * 
+																	 (theta1 * Ixx * Ixy + theta2 * Iyy * Ixy ) ;
+*/
 void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplImage* Ikx,IplImage* Iky,double gamma,
 						IplImage* psidashGCA,IplImage* theta1,IplImage* Ixx,IplImage* Ixy,
 						IplImage* theta2,IplImage* Iyy,IplImage* IxyB){
 							IplImage* temp1=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
-							IplImage* temp2=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
-							IplImage* temp3=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
-							IplImage* temp4=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
+							IplImage* temp2=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);							
 							//psidashBCA * theta0 ==>temp1
 							cvMul(psidashBCA,theta0,temp1);
 							//( Ikx * Iky)==>temp2
 							cvMul(Ikx,Iky,temp2);
 							//temp1 * temp2 ==>temp1
-							cvMul(temp1,temp2,temp1);
+							cvMul(temp1,temp2,ans);
+							if (gamma==0){
+								cvReleaseImage(&temp1);
+								cvReleaseImage(&temp2);
+								return;
+							}
+							
+							//init more temps
+							IplImage* temp3=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
+							IplImage* temp4=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
 							// gamma * psidashGCA==>temp2
 							temp2=cvCloneImage(psidashGCA);
 							toolsKit::cvMulScalar(temp2,gamma);
@@ -141,8 +163,8 @@ void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplI
 							cvAdd(temp3,temp4,temp3);
 							//temp2<==gamma * psidashGCA * (theta1 * Ixx * Ixy + theta2 * Iyy * IxyB ) 
 							cvMul(temp2,temp3,temp2);
-							//temp1+temp2
-							cvAdd(temp1,temp2,ans);
+							//temp1(ans)+temp2
+							cvAdd(ans,temp2,ans);
 							cvReleaseImage(&temp1);
 							cvReleaseImage(&temp2);
 							cvReleaseImage(&temp3);
@@ -269,13 +291,19 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 			 //uapp  = psidashBCA * theta0 * ( Ikx ^ 2) +   gamma * psidashGCA * (theta1 *  Ixx ^ 2 +  theta2 * Ixy ^ 2 )  + pdfsum ;
 			 computeDiagonalPdfSum(uapp, psidashBCA,theta0,Ikx,gamma,psidashGCA,theta1,Ixx,theta2,Ixy,pdfSum);
+			 
 			 //vapp  = psidashBCA * theta0 * ( Iky ^ 2) +   gamma * psidashGCA * (theta2 *  Iyy ^ 2 +  theta1 * Ixy ^ 2 )  + pdfsum ;
 			 computeDiagonalPdfSum(vapp, psidashBCA,theta0,Iky,gamma,psidashGCA,theta2,Iyy,theta1,Ixy,pdfSum);
 			 //uvapp = psidashBCA * theta0* (Ikx*Iky)+ gamma*psidashGCA*(theta1*Ixx*Ixy + theta2*Iyy*Ixy ) ;
 			 computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy,Ixy);
 			 //vuapp =   uvapp
-			 vuapp=cvCloneImage(uvapp);
+			 
+			
+			 toolsKit::cvNormalizeEdges(uapp);
+			 toolsKit::cvNormalizeEdges(vapp);
+			 toolsKit::cvNormalizeEdges(uvapp);
 
+			 vuapp=cvCloneImage(uvapp);
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
 			 cout<<"vapp"<<endl;

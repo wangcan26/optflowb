@@ -197,6 +197,33 @@
 	}
 
 	
+	void toolsKit::cvNormalizeEdges(IplImage* img){
+			int i,k;
+			int width=img->width;					
+			//for first cell
+			k=width-1;
+			for (i = 0; i < width*img->height; i++)
+			{
+				if(!k)//apply to last column only										  
+					 ((float*)img->imageData)[i]=0;
+							 				
+				k==0?k=width-1:k--;
+			}
+
+			/*
+			const double x_max = -log(FLT_EPSILON);		
+			for (int i = 0; i < img->width*img->height; i++)					
+				{	
+					float t=img->imageData[i]+img->imageData[i];
+					//if(((float*)img->imageData)[i] > x_max); 
+					//	((float*)img->imageData)[i]=0;
+					if(t==((float*)img->imageData)[i])
+						((float*)img->imageData)[i]=0;
+
+				}*/
+
+		
+	}
 	//( var1 + var2*var3 + var4*var5 )^ 2==>ans
 	void toolsKit::costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5){
 	IplImage* temp=cvCreateImage(cvSize( var1->width, var1->height ),var1->depth,var1->nChannels);
@@ -396,70 +423,6 @@
 		cvReleaseImage(&DispImage);
 	}
 
-
-	void toolsKit::opt_flow_lk(){
-		//int MAX_CORNERS = 500;
-		// Load two images and allocate other structures
-		IplImage* imgA = cvLoadImage("c:\\a\\Dumptruck1.png", CV_LOAD_IMAGE_GRAYSCALE);
-		IplImage* imgB = cvLoadImage("c:\\a\\Dumptruck2.png", CV_LOAD_IMAGE_GRAYSCALE);
-
-		CvSize img_sz = cvGetSize( imgA );
-		int win_size = 15;
-
-		IplImage* imgC = cvLoadImage("c:\\a\\Dumptruck_of.png", CV_LOAD_IMAGE_UNCHANGED);
-
-		// Get the features for tracking
-		IplImage* eig_image = cvCreateImage( img_sz, IPL_DEPTH_32F, 1 );
-		IplImage* tmp_image = cvCreateImage( img_sz, IPL_DEPTH_32F, 1 );
-
-		int corner_count = 500;
-		CvPoint2D32f* cornersA = new CvPoint2D32f[500];
-
-		cvGoodFeaturesToTrack( imgA, eig_image, tmp_image, cornersA, &corner_count,
-			0.05, 5.0, 0, 3, 0, 0.04 );
-
-		cvFindCornerSubPix( imgA, cornersA, corner_count, cvSize( win_size, win_size ),
-			cvSize( -1, -1 ), cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03 ) );
-
-		// Call Lucas Kanade algorithm
-		char features_found[500];
-		float feature_errors[500];
-
-		CvSize pyr_sz = cvSize( imgA->width+8, imgB->height/3 );
-
-		IplImage* pyrA = cvCreateImage( pyr_sz, IPL_DEPTH_32F, 1 );
-		IplImage* pyrB = cvCreateImage( pyr_sz, IPL_DEPTH_32F, 1 );
-
-		CvPoint2D32f* cornersB = new CvPoint2D32f[500];
-
-		cvCalcOpticalFlowPyrLK( imgA, imgB, pyrA, pyrB, cornersA, cornersB, corner_count, 
-			cvSize( win_size, win_size ), 5, features_found, feature_errors,
-			cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3 ), 0 );
-
-		// Make an image of the results
-
-		for( int i=0; i<500;i++ )
-		{
-			/*	printf("Error is %f/n", feature_errors[i]);
-			continue;
-			}*/
-			//printf("Got it/n");
-			CvPoint p0 = cvPoint( cvRound( cornersA[i].x ), cvRound( cornersA[i].y ) );
-			CvPoint p1 = cvPoint( cvRound( cornersB[i].x ), cvRound( cornersB[i].y ) );
-			cvLine( imgC, p0, p1, CV_RGB(255,0,0), 2 );
-		}
-
-		//cvNamedWindow( "ImageA", 0 );
-		//cvNamedWindow( "ImageB", 0 );
-		//cvNamedWindow( "LKpyr_OpticalFlow", 0 );
-
-		cvShowImage( "ImageA", imgA );
-		cvShowImage( "ImageB", imgB );
-		cvShowImage( "LKpyr_OpticalFlow", imgC );
-
-		cvWaitKey(0);
-		//return 0;
-	}
 
 	vector<float> * toolsKit::IplImageToCoulmnVector(IplImage* img){
 			vector<float> * ans = new vector<float>(img->height*img->width);

@@ -62,12 +62,12 @@ int main (int argc,char** argv)
 
 	cvConvertScale(img1, img1_32, 1/255.);
 	cvConvertScale(img2, img2_32, 1/255.);
+	
+	//cvNormalize(img1_32,img1_32,0,1,CV_MINMAX); 
+	//cvNormalize(img2_32,img2_32,0,1,CV_MINMAX); 
 
-	/* cvNamedWindow("TEST",CV_WINDOW_AUTOSIZE); 
-	 cvShowImage("TEST",img1); 
-	 cvNamedWindow("TEST2",CV_WINDOW_AUTOSIZE); 
-	 cvShowImage("TEST2",img2); */
-	// toolsKit::cvShowManyImages("Image",2, img1,img2);
+	
+	// toolsKit::cvShowManyImages("Image",2, img1_32,img1_32);
 	 cvWaitKey(0);
 
 	 IplImage* vx= NULL;
