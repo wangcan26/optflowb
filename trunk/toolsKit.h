@@ -14,11 +14,12 @@
 		enum operations {ADD=1,SUB=2,MUL=3};
 		toolsKit();
 		static void cvShowManyImages(char* title, int nArgs, ...);
+		
 		template <class PEL>
 		static void IPLsqrt_mul2(IplImageIterator<PEL> it){
 			while (!it) { 
-				if(0!=((double)*it))
-					*it= 1/(2*sqrt((double)*it)); 
+				if(0!=((float)*it))
+					*it= 1/(2*sqrt((float)*it)); 
 				++it;
 			}
 		}
@@ -26,8 +27,8 @@
 		static void IPL_mul_inverse_loop(IplImageIterator<PEL> it){
 			double one=1;
 			while (!it) {      
-				if(0!=((double)*it))
-					*it= one/((double)*it); 
+				if(0!=((float)*it))
+					*it= one/((float)*it); 
 				++it;
 			}
 		}

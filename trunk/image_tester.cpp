@@ -45,7 +45,7 @@ int main (int argc,char** argv)
   double ratio=0.97;
   int minWidth=30;
   double alpha = 2 ; // Global smoothness variable.
-  double gamma = 80.0 ; // Global weight for derivatives.
+  double gamma = 0 ; // Global weight for derivatives.
 	
 	//IplImage* img= cvLoadImage(NULL); 
 	// cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 

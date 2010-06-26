@@ -234,6 +234,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 }
 
 
+/*
 IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage* IXt_axis, IplImage* Ixx, IplImage* Ixy,
 						 IplImage* IYt_ayis	,IplImage* Iyy ,IplImage* du ,IplImage* dv ,double gamma){
 	
@@ -242,10 +243,10 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 	IplImage* ans3=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
 	
 
-	/*         (  Ikz + Ikx*du + Iky*dv )^ 2 +
-	   gamma * (( Ixz + Ixx*du + Ixy*dv )^ 2 +
-			   (  Iyz + Ixy*du + Iyy*dv )^ 2 )
-	*/
+	//         (  Ikz + Ikx*du + Iky*dv )^ 2 +
+	//   gamma * (( Ixz + Ixx*du + Ixy*dv )^ 2 +
+	//		   (  Iyz + Ixy*du + Iyy*dv )^ 2 )
+	
 	
 	//( Ikz + Ikx*du + Iky*dv )^ 2==>ans1
 	toolsKit::costumeLineCompute(ans1,Ikt_Org,Ikx,du,Iky,dv);
@@ -274,6 +275,7 @@ IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage*
 
 
 
+*/
 void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){	
 	//init masks
 	double a[] = {1,1};
@@ -349,6 +351,11 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
 		
+		
+			cout<<"UV->getPsidashFSAns1()"<<endl;
+			toolsKit::IPL_print(UV->getPsidashFSAns1());
+			 cout<<"UV->getPsidashFSAns1()"<<endl;
+			 toolsKit::IPL_print(UV->getPsidashFSAns1());
 	
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
@@ -454,16 +461,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
-			// First compute the values of the data and smoothness terms
-			cout<<"begin"<<endl;
-			IplImage* psidash=computePsidash(Ikt_Org,Ikx,Iky,IXt_axis,Ixx,Ixy,
-											 IYt_ayis,Iyy,Du,Dv,gamma);
-
-			cout<<"psidhash"<<endl;
-			toolsKit::IPL_print(psidash);
-
-			// Compute new psidashFS
-				
+						
 			computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
 			
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
@@ -474,7 +472,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			cout<<"final:PsidashFSAns2*alpha"<<endl;
 			toolsKit::IPL_print(UV->getPsidashFSAns1());
 
-			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, psidash,UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST);
+			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST);
+			
 			
 			//[duv, err, it, flag] = sor( A, duv, b, omega, inner_iter, tol ) ;
 			IplImageIterator<float> DUit(Du);

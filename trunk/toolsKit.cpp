@@ -196,32 +196,25 @@
 		}
 	}
 
-
+	
+	//( var1 + var2*var3 + var4*var5 )^ 2==>ans
 	void toolsKit::costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5){
 	IplImage* temp=cvCreateImage(cvSize( var1->width, var1->height ),var1->depth,var1->nChannels);
-	//( var1 + var2*var3 + var4*var5 )^ 2==>ans
-	cvMul(var2,var3,ans);
-	
-	cvMul(var4,var5,temp);
+		
+		
+		cvMul(var2,var3,ans);
+		cvMul(var4,var5,temp);			
+		cvAdd(var1,ans,ans);
+		cvAdd(ans,temp,temp);
+		cvPow(temp,ans,2);
+		cvReleaseImage(&temp);
+	}
 
-	cvAdd(var1,ans,ans);
-
-	cvAdd(ans,temp,temp);
-	
-	cvPow(temp,ans,2);
-
-	cvReleaseImage(&temp);
-}
 	IplImage*  toolsKit::psiDerivative(IplImage* x,double epsilon){	
-	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
-	//cvShowImage("before",x);
-	cvAddS(x,cvScalarAll(epsilon),x);
-	//toolsKit::IPL_print(x);
-	toolsKit::IPL_mul_inverse(x,0);
-	//toolsKit::IPL_print(x);
-	//cvShowImage("after",x);
-//	x->imageData
-	return x;
+		//double y=1 / (2 * sqrt( x + epsilon ) ) ;
+		cvAddS(x,cvScalarAll(epsilon),x);
+		toolsKit::IPL_mul_inverse(x,0);	
+		return x;
 	}
 
 	/*Function///////////////////////////////////////////////////////////////

@@ -41,13 +41,16 @@ void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
 //psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
 void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplImage* Ikx,IplImage* du,
 					   IplImage* Iky,IplImage* dv,double epsilon){
-						   toolsKit::costumeLineCompute(psidashBCA,Ikz,Ikx,du,Iky,dv);
+						   
+						   //init psidashBCA
+						   cvZero(psidashBCA);
+						   toolsKit::costumeLineCompute(psidashBCA,Ikz,Ikx,du,Iky,dv);						   							   				
 						   cvMul(theta0,psidashBCA,psidashBCA);
 						   toolsKit::psiDerivative(psidashBCA,epsilon);
 }
 
 //psiDerivative( gamma * (  theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2 + 
-//						theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 ) ) ;
+//						    theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 ) ) ;
 void computepsidashGCA(IplImage* psidashGCA,int gamma,IplImage* theta1,IplImage* Ixz,IplImage* Ixx,
 					   IplImage* du,IplImage* Ixy,IplImage* dv,IplImage* theta2,
 					   IplImage* Iyz,IplImage* Iyy,double epsilon){
@@ -195,10 +198,11 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* psidashFS1,IplImage*
 	cvReleaseImage(&tempLeft4);	
 }
 vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,
-											 IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,
-											 IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,
-											 IplImage* u,IplImage* v,IplImage* du,IplImage* dv,double gamma,
-											 double alpha, double _ERROR_CONST){
+														IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,											
+														IplImage* psidashFS1,IplImage* psidashFS2,
+														IplImage* u,IplImage* v,
+														IplImage* du,IplImage* dv,
+														double gamma,double alpha, double _ERROR_CONST){
 			 //init IPLs											
 			 IplImage* theta0=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			 IplImage* theta1=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
@@ -230,6 +234,15 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 computeTheta(theta1,Ixx,Ixy,epsilon);
 			 //theta2 = 1/(Iyy^2+Ixy^2+epsilon);
 			 computeTheta(theta2,Iyy,Ixy,epsilon);
+				
+			cout<<"theta0"<<endl;
+			toolsKit::IPL_print(theta0);
+		    cout<<"theta1"<<endl;
+		    toolsKit::IPL_print(theta1);
+			cout<<"theta2"<<endl;
+			toolsKit::IPL_print(theta2);
+		    
+			
 
 			 // First compute the values of the data  term
 			 //the brightness constancy assumption
@@ -241,6 +254,11 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //and the Gradient Constancy Assumption
 			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
 
+
+			 cout<<"psidashBCA"<<endl;
+		    toolsKit::IPL_print(psidashBCA);
+			cout<<"psidashGCA"<<endl;
+		    toolsKit::IPL_print(psidashGCA);
 			 
 			 //now compute the  smoothness term
 			 			 
@@ -260,7 +278,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
-			 cout<<"uapp"<<endl;
+			 cout<<"vapp"<<endl;
 			 toolsKit::IPL_print(vapp);
 			 cout<<"uvapp,vuapp"<<endl;
 			 toolsKit::IPL_print(uvapp);
@@ -298,10 +316,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			toolsKit::cvMulScalar(tmp2,-1);
 			toolsKit::cvMulScalar(tmp1,-1);
 			
-			cout<<"-psidashFS1"<<endl;
+			cout<<"psidashFS1"<<endl;
 			toolsKit::IPL_print(psidashFS1);
-			 cout<<"-psidashFS2"<<endl;
-			 toolsKit::IPL_print(psidashFS2);
+		    cout<<"psidashFS2"<<endl;
+		    toolsKit::IPL_print(psidashFS2);
 /*pdfaltsumu = psidashFS2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
 psidashFS2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
 psidashFS1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
