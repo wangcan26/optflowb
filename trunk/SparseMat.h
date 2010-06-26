@@ -11,10 +11,12 @@ class SparseMat
 	{
 
 	public:		
-		typedef std::map<int, std::map<int , T> > mat_t;
+		typedef std::map<int, T> col_t;
+
+		typedef std::map<int, col_t > mat_t;
 		typedef typename mat_t::iterator row_iter;
 		typedef typename mat_t::const_iterator const_row_iter;
-		typedef std::map<int, T> col_t;
+		
 		typedef typename col_t::iterator col_iter;
 		typedef typename col_t::const_iterator const_col_iter;
 
@@ -214,7 +216,14 @@ class SparseMat
 			return ans;
 			}
 
+
+		col_iter getRowIterator(int row){
+			return mat[row].begin();
+			}
 		
+		col_t getRow(int row){
+				return mat[row];
+			}
 
 		virtual ~SparseMat(void){};
 		

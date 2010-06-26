@@ -455,6 +455,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 			// First compute the values of the data and smoothness terms
+			cout<<"begin"<<endl;
 			IplImage* psidash=computePsidash(Ikt_Org,Ikx,Iky,IXt_axis,Ixx,Ixy,
 											 IYt_ayis,Iyy,Du,Dv,gamma);
 

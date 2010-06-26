@@ -8,6 +8,8 @@
 
 class SparseToolKit{
 public:
+	typedef std::map<int, float>::iterator Sparse_col_iter; 
+
 	static void printSparseMat(CvSparseMat* mat);
 	/* return new Sparse Matrix with the elemets below the main diagonal of mat
 		does not include the main diagonal*/
@@ -17,6 +19,6 @@ public:
 	static CvSparseMat * upperTriangle(CvSparseMat * mat);
 
 
-	static vector<float>* SOR(SparseMat<float> A, vector<float> x,vector<float> B, double w, int numOfIterations); 
+	static vector<float>* SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations); 
 
 	};
