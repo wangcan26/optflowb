@@ -295,6 +295,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vapp  = psidashBCA * theta0 * ( Iky ^ 2) +   gamma * psidashGCA * (theta2 *  Iyy ^ 2 +  theta1 * Ixy ^ 2 )  + pdfsum ;
 			 computeDiagonalPdfSum(vapp, psidashBCA,theta0,Iky,gamma,psidashGCA,theta2,Iyy,theta1,Ixy,pdfSum);
 			 //uvapp = psidashBCA * theta0* (Ikx*Iky)+ gamma*psidashGCA*(theta1*Ixx*Ixy + theta2*Iyy*Ixy ) ;
+			 cout<<"vuapp before:"<<endl;
+			 toolsKit::IPL_print(vuapp);
 			 computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy,Ixy);
 			 //vuapp =   uvapp
 			 
@@ -305,12 +307,13 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
+			 cout<<"uvapp,vuapp"<<endl;
+			 toolsKit::IPL_print(uvapp);
+			 
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
 			 cout<<"vapp"<<endl;
 			 toolsKit::IPL_print(vapp);
-			 cout<<"uvapp,vuapp"<<endl;
-			 toolsKit::IPL_print(uvapp);
 			 //insert to diagonals to matrix A
 			 
 			 //uu = spdiags( uapp(:),   0, wt*ht, wt*ht);
@@ -400,9 +403,11 @@ psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bo
 //A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
 
 			SparseMat<float> uuul1ul2ur1ur2 = uu+ul1+ul2+ur2;
+			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
 			SparseMat<float> vvvl1vl2vr1vr2 = vv+vl1+vl2+vr1+vr2;
+			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
 			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);
-
+			//cout<<"A: "<<endl<<*A<<endl;
 			 //////////////////////build vector B//////////////////////
 
 
@@ -440,8 +445,8 @@ psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bo
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
 				toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,20);
-		
+			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,1);
+			
 			delete B;
 			delete A;
 			return dUdV;

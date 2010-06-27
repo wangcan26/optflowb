@@ -1,7 +1,9 @@
 #include "SparseToolKit.h"
+#include <limits>
 
 
 void SparseToolKit::printSparseMat(CvSparseMat* mat){
+	
 	CvSparseMatIterator it;
 	for(CvSparseNode *node = cvInitSparseMatIterator( mat, &it ); node != 0; node = cvGetNextSparseNode( &it )) {
 		int* idx = CV_NODE_IDX(mat,node); 
@@ -38,38 +40,62 @@ static CvSparseMat * upperTriangle(CvSparseMat * mat){
 	return ans;
 	}
 
+
+
+
+	float norm(float val){
+		float nan1 = sqrt(-1.0f);
+		if(toolsKit::AlmostEqualRelativeOrAbsolute(nan1,val,0.00001,0.00001))
+			return 0;
+		if(toolsKit::AlmostEqualRelativeOrAbsolute(FLT_MAX,val,0.00001,0.00001))
+			return FLT_MAX;
+		if(toolsKit::AlmostEqualRelativeOrAbsolute(FLT_MIN,val,0.0001,0.0001))
+			return FLT_MIN;
+		if(toolsKit::IsNan(val))
+			return 0;
+		return 0;
+	}
+
+
 vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations){
 		int k,i,j;
 		float e1,e2,e3,Aii,Aij;
+		
+		//float value = std::numeric_limits<float>::max();
+		
 		vector<float> * temp;
 		vector<float> * oldX = new vector<float>(x);
 		vector<float> * newX = new vector<float>(x.size());
 		for (k=0; k<numOfIterations; k++){
 			for (i=0; i<x.size(); i++){
 					Aii=A(i,i);
+					float Bi =B[i];
 					e1 = B[i]/(Aii!=0?Aii:1);
 					e2=0;
 					std::map<int, float> row = A.getRow(i);
 					//std::map<int,float>::iterator it = row.begin();
 					SparseMat<float>::col_iter it = row.begin();
 					//for (j=0; j< i-1; j++){
-					for(it; it->first < i-1 ; it++){
+					for(it; it->first <= i-1 ; it++){
 						j=it->first;
 						Aij = A(i,j);
-						e2+=Aij*((*newX)[j]);
+						float newXj = ((*newX)[j]);
+						e2+=Aij*newXj;
 						}
 					e2 = e2*w/(Aii!=0?Aii:1);// (W/Aii)* Sigma(0,i-1){Aij*newX[j]}
 					e3=0;
-					it++;//skip the Ith element
+					if (it->first == i) it++;//skip the Ith element
 					//for (j=i+1; j<x.size(); j++){
 					for(it; it != row.end() && it->first < x.size(); it++){
 						j = it->first;
 						Aij = A(i,j);
-						e3 += Aij * ((*oldX)[j]);
+						float oldXj = ((*oldX)[j]);
+						e3 += Aij * oldXj;
 						//if (it == A.getRow(i).end()) break;
 						}
 					e3 = e3*w/(Aii!=0?Aii:1); // (W/Aii)* Sigma(i+1,n){Aij*oldX[j]}
-					(*newX)[i] = e1 - e2 - e3; //newX[i] = B[i]/Aii - (W/Aii)Sigma(0,i-1){Aij*newX[j]} - (W/Aii)Sigma(i+1,n){Aij*oldX[j]}
+					float iVal = norm(e1 - e2 - e3);
+					(*newX)[i] = iVal; //newX[i] = B[i]/Aii - (W/Aii)Sigma(0,i-1){Aij*newX[j]} - (W/Aii)Sigma(i+1,n){Aij*oldX[j]}
 				}
 			//temp = oldX;
 			*oldX = *newX;

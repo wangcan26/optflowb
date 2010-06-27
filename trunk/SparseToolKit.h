@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "SparseMat.h"
+#include "toolsKit.h"
 #include <vector>
+
 
 class SparseToolKit{
 public:
@@ -20,5 +22,6 @@ public:
 
 
 	static vector<float>* SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations); 
+
 
 	};

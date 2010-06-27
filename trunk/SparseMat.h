@@ -75,8 +75,9 @@ class SparseMat
 			const_col_iter jj;
 			for (ii; ii != rhs.mat.end(); ii++){
 				for (jj=ii->second.begin(); jj != ii->second.end(); jj++){
-					lhs<<"["<<ii->first<<","<<jj->first<<"]"<<"="<<jj->second<<endl;
+					lhs<<"["<<ii->first<<","<<jj->first<<"]"<<"="<<jj->second<<" ; ";
 					}
+				cout<<endl;
 				}			
 			return lhs;
 			}
@@ -143,7 +144,15 @@ class SparseMat
 
 			SparseMat<T> ans(this->m, this->n);
 
-			ans.mat = this->mat;
+			//ans.mat = this->mat;
+			for (const_row_iter ii = this->mat.begin(); ii != this->mat.end(); ii++){
+				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
+
+					ans(ii->first,jj->first) = jj->second ;
+					}
+				}
+
+
 
 			for (const_row_iter ii = other.mat.begin(); ii != other.mat.end(); ii++){
 				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){

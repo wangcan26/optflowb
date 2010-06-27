@@ -494,7 +494,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			cout<<"end;"<<endl;
 			delete dUdV;
 			cout<<"freed"<<endl;
-			//toolsKit::cvShowManyImages("DUDV",2,Du,Dv);
+
+			toolsKit::cvShowManyImages("DUDV",2,Du,Dv);
 
 			//IplImage* tempUadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 			//IplImage* tempVadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 

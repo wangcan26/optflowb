@@ -237,7 +237,7 @@
 		
 	}
 
-	bool AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError)
+	bool toolsKit::AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError)
 	{
 		if (fabs(A - B) < maxAbsoluteError)
 			return true;
@@ -251,7 +251,7 @@
 		return false;
 	}
 	
-	bool IsNan(float A)
+	bool toolsKit::IsNan(float A)
 	{
 		// A NAN has an exponent of 255 (shifted left 23 positions) and
 		// a non-zero mantissa.

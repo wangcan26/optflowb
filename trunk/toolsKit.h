@@ -60,7 +60,8 @@
 		static void costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5);
 		static IplImage* psiDerivative(IplImage* x,double epsilon);
 
-
+		static bool AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError);
+		static bool IsNan(float A);
 	
 	
 		virtual ~toolsKit(void);
