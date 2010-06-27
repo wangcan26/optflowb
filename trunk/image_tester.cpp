@@ -42,7 +42,7 @@ int main (int argc,char** argv)
   double error_const=0.001;
   //IPL_DEPTH_32F IPL_DEPTH_8U
   coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
-  double ratio=0.97;
+  double ratio=0.80;
   int minWidth=30;
   double alpha = 2 ; // Global smoothness variable.
   double gamma = 0 ; // Global weight for derivatives.
@@ -63,8 +63,8 @@ int main (int argc,char** argv)
 	cvConvertScale(img1, img1_32, 1/255.);
 	cvConvertScale(img2, img2_32, 1/255.);
 	
-	//cvNormalize(img1_32,img1_32,0,1,CV_MINMAX); 
-	//cvNormalize(img2_32,img2_32,0,1,CV_MINMAX); 
+	cvNormalize(img1_32,img1_32,0,255,CV_MINMAX); 
+	cvNormalize(img2_32,img2_32,0,255,CV_MINMAX); 
 
 	
 	// toolsKit::cvShowManyImages("Image",2, img1_32,img1_32);
@@ -199,3 +199,5 @@ int main (int argc,char** argv)
 	cvReleaseSparseMat(&SB);
 	cvReleaseSparseMat(&SX);*/
 	} 
+
+

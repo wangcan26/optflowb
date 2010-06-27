@@ -107,27 +107,8 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 
 //need to recieve cvSobel with function pointer;
 int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){	
-	//IplImage* orginalImage = cvLoadImage(fileAddress,0);
-	
-	/*create temp images*/
-	IplImage* df_dx = cvCreateImage(cvGetSize(src),src->depth,1);
-	IplImage* df_dy = cvCreateImage(cvGetSize(src),src->depth,1);
-
-	//dest_dx=cvCreateImage(cvGetSize(src),IPL_DEPTH_8U,1); 
-	//dest_dy=cvCreateImage(cvGetSize(src),IPL_DEPTH_8U,1); 
-	/* use sobel to find derivatives */
-	//cvSobel( src, df_dx, 1, 0, 3);
-	//cvSobel( src, df_dy, 0, 1, 3);
 	cvSobel( src, dest_dx, 1, 0, 3);
 	cvSobel( src, dest_dy, 0, 1, 3);
-
-	/* Convert signed to unsigned 8*/
-	//cvConvertScaleAbs( df_dx , dest_dx, 1, 0);
-	//cvConvertScaleAbs( df_dy , dest_dy, 1, 0); 
-
-	//toolsKit::cvShowManyImages("dx dy",2,dest_dx,dest_dy);
-
-
 	return 0;
 }
 
@@ -233,49 +214,6 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	
 }
 
-
-/*
-IplImage* computePsidash(IplImage* Ikt_Org,IplImage* Ikx,IplImage* Iky,IplImage* IXt_axis, IplImage* Ixx, IplImage* Ixy,
-						 IplImage* IYt_ayis	,IplImage* Iyy ,IplImage* du ,IplImage* dv ,double gamma){
-	
-	IplImage* ans1=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
-	IplImage* ans2=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
-	IplImage* ans3=cvCreateImage(cvSize( Ikt_Org->width, Ikt_Org->height ),Ikt_Org->depth,Ikt_Org->nChannels);
-	
-
-	//         (  Ikz + Ikx*du + Iky*dv )^ 2 +
-	//   gamma * (( Ixz + Ixx*du + Ixy*dv )^ 2 +
-	//		   (  Iyz + Ixy*du + Iyy*dv )^ 2 )
-	
-	
-	//( Ikz + Ikx*du + Iky*dv )^ 2==>ans1
-	toolsKit::costumeLineCompute(ans1,Ikt_Org,Ikx,du,Iky,dv);
-	
-	//( Ixz + Ixx*du + Ixy*dv )^ 2==>ans2
-	toolsKit::costumeLineCompute(ans2,IXt_axis,Ixx,du,Ixy,dv);
-	
-	//( Iyz + Ixy*du + Iyy*dv )^ 2==>ans3
-	toolsKit::costumeLineCompute(ans3,IYt_ayis,Ixy,du,Iyy,dv);
-
-	//ans2+ans3==>ans3	
-	cvAdd(ans3,ans2,ans3);
-	//========gamma*ans3
-	//toolsKit::IPL_print(ans3);
-	toolsKit::cvMulScalar(ans3,gamma);
-	//toolsKit::IPL_print(ans3);
-	//ans1+ans3==>ans1
-	cvAdd(ans1,ans3,ans1);
-	//toolsKit::cvShowManyImages("pesdia:ans1,ans2,ans3",3,ans1,ans2,ans3);
-	//clean
-	cvReleaseImage( &ans2 ); 
-	cvReleaseImage( &ans3 ); 
-
-	return ans1;
-}
-
-
-
-*/
 void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){	
 	//init masks
 	double a[] = {1,1};
@@ -351,11 +289,6 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
 		
-		
-			cout<<"UV->getPsidashFSAns1()"<<endl;
-			toolsKit::IPL_print(UV->getPsidashFSAns1());
-			 cout<<"UV->getPsidashFSAns1()"<<endl;
-			 toolsKit::IPL_print(UV->getPsidashFSAns1());
 	
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
@@ -412,65 +345,26 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 	
-		//convert to grayscale
-		//	cvCvtColor(Im1,im1,CV_RGB2GRAY);
-		//	cvCvtColor(Im2,im2,CV_RGB2GRAY);			
-		
 		//create the different DX of the pictures
 		getDXsCVSobel(Im1,Ikx,Iky);
 		getDXsCVSobel(Im2,Ikx2,Iky2);
 		
-		/*cout<<"Ikx"<<endl;
-		toolsKit::IPL_print(Ikx);
-		cout<<"Iky"<<endl;
-		toolsKit::IPL_print( Iky);
-		cout<<"Ikx2"<<endl;
-		toolsKit::IPL_print(Ikx2);
-		cout<<"Iky2"<<endl;
-		toolsKit::IPL_print( Iky2);*/
-
 		//by brox we need to take the gradient of the gradient:
 		getDXsCVSobel(Ikx,Ixx,Ixy);
 		getDXsCVSobel(Iky,Iyx,Iyy);
 		
-		/*cout<<"Ixx"<<endl;
-		toolsKit::IPL_print(Ixx);
-		cout<<"Ixy"<<endl;
-		toolsKit::IPL_print( Ixy);
-		cout<<"Iyx"<<endl;
-		toolsKit::IPL_print(Iyx);
-		cout<<"Iyy"<<endl;
-		toolsKit::IPL_print( Iyy);*/
 		//DXT of original images and their x&y gradiants
 	 	cvAbsDiff(Im1,Im2,Ikt_Org);//IKz
 		cvAbsDiff(Ikx,Ikx2,IXt_axis);
 		cvAbsDiff(Iky,Iky2,IYt_ayis);
-		/*cout<<"Ikt_Org"<<endl;
-		toolsKit::IPL_print(Ikt_Org);
-		cout<<"IXt_axis"<<endl;
-		toolsKit::IPL_print(IXt_axis);
-		cout<<"IYt_ayis"<<endl;
-		toolsKit::IPL_print(IYt_ayis);*/
-		//toolsKit::cvShowManyImages("Image22",6,Im1,Ikx,Iky,Im2,Ikx2,Iky2);
-		//toolsKit::cvShowManyImages("Image22",9,Im1,Im2,Ikt_Org,Ikx,Ikx2,IXt_axis,Iky,Iky2,IYt_ayis);			
-		
-		//toolsKit::cvShowManyImages("Image22",3,Ikt_Org,IXt_axis,IYt_ayis);			
-		
-		//toolsKit::cvShowManyImages("Image23",3,Im2,Ikx2,Iky2);
-		
-		
+				
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 						
 			computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
 			
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
-			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
-			
-			cout<<"final:PsidashFSAns1*alpha"<<endl;
-			toolsKit::IPL_print(UV->getPsidashFSAns1());
-			cout<<"final:PsidashFSAns2*alpha"<<endl;
-			toolsKit::IPL_print(UV->getPsidashFSAns1());
+			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);					
 
 			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST);
 			
@@ -494,13 +388,18 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			cout<<"end;"<<endl;
 			delete dUdV;
 			cout<<"freed"<<endl;
+				
+			cout<<"u"<<endl;
+			toolsKit::IPL_print(UV->getU());
+			cout<<"v"<<endl;
+			toolsKit::IPL_print(UV->getV());
 
-			toolsKit::cvShowManyImages("DUDV",2,Du,Dv);
+			cvNormalize(UV->getU(),UV->getU(),0,1,CV_L1); 
+			cvNormalize(UV->getV(),UV->getV(),0,1,CV_L2); 
 
-			//IplImage* tempUadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-			//IplImage* tempVadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 			cvAdd(UV->getU(),Du,UV->getU());
 			cvAdd(UV->getV(),Dv,UV->getV());
+		
 
 			cout<<"u"<<endl;
 			toolsKit::IPL_print(UV->getU());

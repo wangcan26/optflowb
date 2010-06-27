@@ -288,15 +288,19 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //pdfsum = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 			 computePdfSum(pdfSum,psidashFS1,psidashFS2);
+			
+			 
+			 cout<<"pdfSum"<<endl;
+			 toolsKit::IPL_print(pdfSum);
+			 
+			 //prepare data for matrix A
 
 			 //uapp  = psidashBCA * theta0 * ( Ikx ^ 2) +   gamma * psidashGCA * (theta1 *  Ixx ^ 2 +  theta2 * Ixy ^ 2 )  + pdfsum ;
 			 computeDiagonalPdfSum(uapp, psidashBCA,theta0,Ikx,gamma,psidashGCA,theta1,Ixx,theta2,Ixy,pdfSum);
 			 
 			 //vapp  = psidashBCA * theta0 * ( Iky ^ 2) +   gamma * psidashGCA * (theta2 *  Iyy ^ 2 +  theta1 * Ixy ^ 2 )  + pdfsum ;
 			 computeDiagonalPdfSum(vapp, psidashBCA,theta0,Iky,gamma,psidashGCA,theta2,Iyy,theta1,Ixy,pdfSum);
-			 //uvapp = psidashBCA * theta0* (Ikx*Iky)+ gamma*psidashGCA*(theta1*Ixx*Ixy + theta2*Iyy*Ixy ) ;
-			 cout<<"vuapp before:"<<endl;
-			 toolsKit::IPL_print(vuapp);
+			 //uvapp = psidashBCA * theta0* (Ikx*Iky)+ gamma*psidashGCA*(theta1*Ixx*Ixy + theta2*Iyy*Ixy ) ;			
 			 computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy,Ixy);
 			 //vuapp =   uvapp
 			 
@@ -352,27 +356,22 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			toolsKit::IPL_print(psidashFS1);
 		    cout<<"psidashFS2"<<endl;
 		    toolsKit::IPL_print(psidashFS2);
-/*pdfaltsumu = psidashFS2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
-psidashFS2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
-psidashFS1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
-psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bottom ,ans1
-*/
 
-// arguments to u(j) in the linear Euler Lagrange equations.
-//tmp = pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) ; => -psidaFS2 = tmp2			 		 
-//ul1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
+			// arguments to u(j) in the linear Euler Lagrange equations.
+			//tmp = pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) ; => -psidaFS2 = tmp2			 		 
+			//ul1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
 			vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(tmp2);//-tmp(:)
 			SparseMat<float> ul1(height*width);
 			ul1.addDiag(height,*tmp2Col);
 
-//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
+			//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
 			SparseMat<float> vl1(height*width);
 			vl1.addDiag(height,*tmp2Col);
-//tmp = pdfs( 2 : 2 : end, 3 : 2 : end ) ; => -psidaFS2 = tmp2;
-//ur1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
+			//tmp = pdfs( 2 : 2 : end, 3 : 2 : end ) ; => -psidaFS2 = tmp2;
+			//ur1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
 			SparseMat<float> ur1(height*width);
 			ur1.addDiag(-height,*tmp2Col);
-//vr1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
+			//vr1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
 			SparseMat<float> vr1(height*width);
 			vr1.addDiag(-height, *tmp2Col);
 
@@ -380,27 +379,27 @@ psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bo
 			cvReleaseImage(&tmp2);
 			delete tmp2Col;
 
-//% arguments to v(j) in the linear Euler Lagrange equations.
-//tmp = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) ; => -psidaFS1 = tmp1;
+			//% arguments to v(j) in the linear Euler Lagrange equations.
+			//tmp = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) ; => -psidaFS1 = tmp1;
 			vector<float> * tmp1Col  = toolsKit::IplImageToCoulmnVector(tmp1);//-tmp(:)
-//ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
+			//ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
 			SparseMat<float> ul2(height*width);
 			ul2.addDiag(1,*tmp1Col);
-//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
+			//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
 			SparseMat<float> vl2(height*width);
 			vl2.addDiag(1, *tmp1Col);
-//tmp = pdfs( 3 : 2 : end, 2 : 2 : end ) ; => -psidaFS1 = tmp1;
-//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
+			//tmp = pdfs( 3 : 2 : end, 2 : 2 : end ) ; => -psidaFS1 = tmp1;
+			//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			SparseMat<float> ur2(height*width);
 			ur2.addDiag(-1, *tmp1Col);
-//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
+			//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			SparseMat<float> vr2(height*width);
 			vr2.addDiag(-1, *tmp1Col);
-//no need for tmp1, tmp1Col
+			//no need for tmp1, tmp1Col
 			cvReleaseImage(&tmp1);
 			delete tmp1Col;
 
-//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
+			//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
 
 			SparseMat<float> uuul1ul2ur1ur2 = uu+ul1+ul2+ur2;
 			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
@@ -408,33 +407,33 @@ psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bo
 			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
 			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);
 			//cout<<"A: "<<endl<<*A<<endl;
-			 //////////////////////build vector B//////////////////////
+			//////////////////////build vector B//////////////////////
 
 
-			 // Computing the constant terms for the first of the Euler Lagrange equations
-			 computeVectBComponents(pdfaltSumU,psidashFS1,psidashFS2,u,v);
-			 // Computing the constant terms for the second of the Euler Lagrange equations
-			 computeVectBComponents(pdfaltSumV,psidashFS1,psidashFS2,u,v);
+			// Computing the constant terms for the first of the Euler Lagrange equations
+			computeVectBComponents(pdfaltSumU,psidashFS1,psidashFS2,u,v);
+			// Computing the constant terms for the second of the Euler Lagrange equations
+			computeVectBComponents(pdfaltSumV,psidashFS1,psidashFS2,u,v);
 
 
-			 //constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 
-			 computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);
-			 cvAdd(constu,pdfaltSumU,constu);
+			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 
+			computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);
+			cvAdd(constu,pdfaltSumU,constu);
 
-			 //constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) - 1*pdfaltsumv ;
-			 computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);
-			 cvAdd(constv,pdfaltSumV,constv);
+			//constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) - 1*pdfaltsumv ;
+			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);
+			cvAdd(constv,pdfaltSumV,constv);
 
-			 //insert data to B vector:b = [-constu(:) ; -constv(:) ];
-			 IplImage * Mconstu  =  cvCreateImage(cvSize(constu->width,constu->height),constu->depth,constu->nChannels);
-			 toolsKit::cvMulScalar(Mconstu,-1);
-			 vector<float> * MconstuCol = toolsKit::IplImageToCoulmnVector(Mconstu);
-			 cvReleaseImage(&Mconstu);
-			 IplImage * Mconstv = cvCreateImage(cvSize(constv->width,constv->height),constv->depth, constv->nChannels);
-			 toolsKit::cvMulScalar(Mconstv,-1);
-			 vector<float> * MconstvCol = toolsKit::IplImageToCoulmnVector(Mconstv);
-			 cvReleaseImage(&Mconstv);
-			 vector<float> * B = new vector<float>(MconstuCol->size());
+			//insert data to B vector:b = [-constu(:) ; -constv(:) ];
+			IplImage * Mconstu  =  cvCreateImage(cvSize(constu->width,constu->height),constu->depth,constu->nChannels);
+			toolsKit::cvMulScalar(Mconstu,-1);
+			vector<float> * MconstuCol = toolsKit::IplImageToCoulmnVector(Mconstu);
+			cvReleaseImage(&Mconstu);
+			IplImage * Mconstv = cvCreateImage(cvSize(constv->width,constv->height),constv->depth, constv->nChannels);
+			toolsKit::cvMulScalar(Mconstv,-1);
+			vector<float> * MconstvCol = toolsKit::IplImageToCoulmnVector(Mconstv);
+			cvReleaseImage(&Mconstv);
+			vector<float> * B = new vector<float>(MconstuCol->size());
 			*B= *MconstuCol;
 			for (vector<float>::iterator it = MconstvCol->begin(); it != MconstvCol->end(); it++)
 				B->push_back(*it);
@@ -445,7 +444,7 @@ psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bo
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
 				toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,1);
+			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,20);
 			
 			delete B;
 			delete A;

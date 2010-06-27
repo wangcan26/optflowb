@@ -1,17 +1,4 @@
 #include "toolsKit.h"
-//using namespace toolsKit;
-
-
-#ifdef  NANCHECK
-    // If A or B are a NAN, return false. NANs are equal to nothing,
-    // not even themselves.
-    // This check is only needed if you will be generating NANs
-    // and you use a maxUlps greater than 4 million or you want to
-    // ensure that a NAN does not equal itself.
-    if (IsNan(A) || IsNan(B))
-        return false;
-#endif
-
 
 	toolsKit::toolsKit()
 	{
@@ -20,7 +7,6 @@
 	toolsKit::~toolsKit(void)
 	{
 	}
-	//void toolsKit::
 	void toolsKit::IPL_mul_inverse(IplImage* img,int opType){
 		if(img->depth==IPL_DEPTH_8U){
 			IplImageIterator<unsigned char> it(img);		
@@ -73,10 +59,8 @@
 	}
 	//img2 is the shifted image
 	void toolsKit::IPL_operate_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
-			
 			int i,j;
-			int width=img->width;
-					
+			int width=img->width;				
 			for (i = 0,j=width; i < width*img->height-width; i++,j++)					
 				{	
 					switch (operation){					  
@@ -353,23 +337,18 @@
 
 		// img - Used for getting the arguments 
 		IplImage *img;
-
 		// DispImage - the image in which input images are to be copied
 		IplImage *DispImage	;
-
 		int size;
 		int i;
 		int m, n;
 		int x, y;
-
 		// w - Maximum number of images in a row 
 		// h - Maximum number of images in a column 
 		int w, h;
-
 		// scale - How much we have to resize the image
 		float scale;
 		int max;
-
 		// If the number of arguments is lesser than 0 or greater than 12
 		// return without displaying 
 		if(nArgs <= 0) {
@@ -407,27 +386,21 @@
 			w = 4; h = 3;
 			size = 150;
 		}
-
 		va_list args1;
 		va_start(args1, nArgs);
-
 		// Create a new 3 channel image
 		img = va_arg(args1, IplImage*);
 		if(img->nChannels==1)
 			DispImage = cvCreateImage( cvSize(100 + size*w, 60 + size*h), img->depth, 1 );
 		else
 			DispImage = cvCreateImage( cvSize(100 + size*w, 60 + size*h), img->depth, 3 );
-
 		va_list args;
 		va_start(args, nArgs);
 		// Used to get the arguments passed
-
 		// Loop for nArgs number of arguments
 		for (i = 0, m = 20, n = 20; i < nArgs; i++, m += (20 + size)) {
-
 			// Get the Pointer to the IplImage
 			img = va_arg(args, IplImage*);
-
 			// Check whether it is NULL or not
 			// If it is NULL, release the image, and return
 			if(img == 0) {
@@ -435,43 +408,32 @@
 				cvReleaseImage(&DispImage);
 				return;
 			}
-
 			// Find the width and height of the image
 			x = img->width;
 			y = img->height;
-
 			// Find whether height or width is greater in order to resize the image
 			max = (x > y)? x: y;
-
 			// Find the scaling factor to resize the image
 			scale = (float) ( (float) max / size );
-
 			// Used to Align the images
 			if( i % w == 0 && m!= 20) {
 				m = 20;
 				n+= 20 + size;
 			}
-
 			// Set the image ROI to display the current image
 			cvSetImageROI(DispImage, cvRect(m, n, (int)( x/scale ), (int)( y/scale )));
-
 			// Resize the input image and copy the it to the Single Big Image
 			cvResize(img, DispImage);
-
 			// Reset the ROI in order to display the next image
 			cvResetImageROI(DispImage);
 		}
-
 		// Create a new window, and show the Single Big Image
 		cvNamedWindow( title, 1 );
 		cvShowImage( title, DispImage);
-
 		cvWaitKey();
 		cvDestroyWindow(title);
-
 		// End the number of arguments
 		va_end(args);
-
 		// Release the Image Memory
 		cvReleaseImage(&DispImage);
 	}
@@ -485,6 +447,5 @@
 					(*ans)[i+j*img->height] = *it;
 					it++;
 					}
-
 			return ans;
 		}
