@@ -272,7 +272,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 			 //the brightness constancy assumption
 			 computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,du,Iky,dv,_ERROR_CONST);
-
+			toolsKit::cvNormalizeEdges2(psidashBCA);
 			 //and the Gradient Constancy Assumption
 			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
 
@@ -298,10 +298,11 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy,Ixy);
 			 //vuapp =   uvapp
 			 
+		
 			
-			 toolsKit::cvNormalizeEdges(uapp);
-			 toolsKit::cvNormalizeEdges(vapp);
-			 toolsKit::cvNormalizeEdges(uvapp);
+			/* toolsKit::cvNormalizeEdges2(uapp);
+			 toolsKit::cvNormalizeEdges2(vapp);
+			 toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
 			 cout<<"uapp"<<endl;

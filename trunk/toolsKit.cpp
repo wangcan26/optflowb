@@ -1,6 +1,18 @@
 #include "toolsKit.h"
 //using namespace toolsKit;
 
+
+#ifdef  NANCHECK
+    // If A or B are a NAN, return false. NANs are equal to nothing,
+    // not even themselves.
+    // This check is only needed if you will be generating NANs
+    // and you use a maxUlps greater than 4 million or you want to
+    // ensure that a NAN does not equal itself.
+    if (IsNan(A) || IsNan(B))
+        return false;
+#endif
+
+
 	toolsKit::toolsKit()
 	{
 	}
@@ -223,6 +235,47 @@
 				}*/
 
 		
+	}
+
+	bool AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError)
+	{
+		if (fabs(A - B) < maxAbsoluteError)
+			return true;
+		float relativeError;
+		if (fabs(B) > fabs(A))
+			relativeError = fabs((A - B) / B);
+		else
+			relativeError = fabs((A - B) / A);
+		if (relativeError <= maxRelativeError)
+			return true;
+		return false;
+	}
+	
+	bool IsNan(float A)
+	{
+		// A NAN has an exponent of 255 (shifted left 23 positions) and
+		// a non-zero mantissa.
+		int exp = *(int*)&A & 0x7F800000;
+		int mantissa = *(int*)&A & 0x007FFFFF;
+		if (exp == 0x7F800000 && mantissa != 0)
+			return true;
+		return false;
+	}
+
+	void toolsKit::cvNormalizeEdges2(IplImage* img){				
+			float nan1 = sqrt(-1.0f);
+			for (int i = 0; i < img->width*img->height; i++)					
+				{					
+					if(AlmostEqualRelativeOrAbsolute(nan1,((float*)img->imageData)[i],0.00001,0.00001))
+						((float*)img->imageData)[i]=0;
+					if(AlmostEqualRelativeOrAbsolute(FLT_MAX,((float*)img->imageData)[i],0.00001,0.00001))
+						((float*)img->imageData)[i]=0;
+					if(AlmostEqualRelativeOrAbsolute(FLT_MIN,((float*)img->imageData)[i],0.0001,0.0001))
+						((float*)img->imageData)[i]=0;
+					if(IsNan(((float*)img->imageData)[i]))
+						((float*)img->imageData)[i]=0;
+
+				}
 	}
 	//( var1 + var2*var3 + var4*var5 )^ 2==>ans
 	void toolsKit::costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5){
