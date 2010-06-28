@@ -311,9 +311,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 
 		
 			
-			/* toolsKit::cvNormalizeEdges2(uapp);
-			 toolsKit::cvNormalizeEdges2(vapp);
-			 toolsKit::cvNormalizeEdges2(uvapp);*/
+			 toolsKit::cvNormalizeEdges(uapp);
+			 toolsKit::cvNormalizeEdges(vapp);
+			/* toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
 			 cout<<"uvapp,vuapp"<<endl;
@@ -453,7 +453,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"B size: "<<B->size()<<endl;
 			A->clean();
 				toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
-				cout<<*A<<endl;
+				//cout<<*A<<endl;
 				vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,50);
 			
 			delete B;

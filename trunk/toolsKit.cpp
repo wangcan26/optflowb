@@ -201,13 +201,13 @@
 			for (i = 0; i < width*img->height; i++)
 			{
 				if(i<width)
-					((float*)img->imageData)[i]=0;
+					((float*)img->imageData)[i]=130;
 				if(i> width*img->height-width-1)
-					((float*)img->imageData)[i]=0;
+					((float*)img->imageData)[i]=130;
 				if(!k)//apply to last column only										  
-					 ((float*)img->imageData)[i]=0;
+					 ((float*)img->imageData)[i]=130;
 				if(k==width-1)//apply to last column only										  
-					 ((float*)img->imageData)[i]=0;
+					 ((float*)img->imageData)[i]=130;
 							 				
 				k==0?k=width-1:k--;
 			}
