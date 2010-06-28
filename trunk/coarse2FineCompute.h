@@ -46,7 +46,4 @@ private:
 						   int nInnerFPIterations);
 	void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV);
 
-	//temp
-	void opt_flow_lk();
-
 };

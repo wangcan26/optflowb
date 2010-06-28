@@ -115,12 +115,7 @@ int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){
 }
 
 
-IplImage* coarse2FineCompute::LaplaceCompute(IplImage* input,IplImage* input2){
-	IplImage* output= cvCreateImage(cvSize(input->width, input->height), input->depth, input->nChannels);;
-	cvLaplace( input, input2, 3 );
 
-	return output;
-}
 
 
 IplImage* coarse2FineCompute::createWarp(IplImage* WarpImage2, IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy){
@@ -195,7 +190,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
 			cvZero(WarpImage2);
 			WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
-			//WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
+			
 			
 					  
 		}
@@ -203,11 +198,12 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		IplImage *temp1 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
 		IplImage *temp2 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
 		IplImage *temp3 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
-		cvNormalize(WarpImage2,temp1,0,1,CV_MINMAX);
-		cvNormalize(Pyramid1.getImageFromPyramid(k),temp2,0,1,CV_MINMAX);
-		cvNormalize(Pyramid2.getImageFromPyramid(k),temp3,0,1,CV_MINMAX);
+		
+		//cvNormalize(WarpImage2,temp1,0,1,CV_MINMAX);
+		//cvNormalize(Pyramid1.getImageFromPyramid(k),temp2,0,1,CV_MINMAX);
+		//cvNormalize(Pyramid2.getImageFromPyramid(k),temp3,0,1,CV_MINMAX);
 
-		toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,temp3);
+		//toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,temp3);
 		
 		start = std::clock();
 		/*cout<<"img1:"<<endl;
@@ -358,6 +354,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		getDXsCVSobel(Im1,Ikx,Iky);
 		getDXsCVSobel(Im2,Ikx2,Iky2);
 		
+
 		//by brox we need to take the gradient of the gradient:
 		getDXsCVSobel(Ikx,Ixx,Ixy);
 		getDXsCVSobel(Iky,Iyx,Iyy);
@@ -368,8 +365,10 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		cvAbsDiff(Ikx,Ikx2,IXt_axis);
 		cvAbsDiff(Iky,Iky2,IYt_ayis);
 		
-		
-		
+		cout<<"Ikx"<<endl;
+		toolsKit::IPL_print(Ikx);
+			cout<<"Iky"<<endl;
+		toolsKit::IPL_print(Iky);
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 						
@@ -403,8 +402,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 
 
 			
-			//	cout<<"u"<<endl;
-			///toolsKit::IPL_print(UV->getU());
+			cout<<"u"<<endl;
+			toolsKit::IPL_print(UV->getU());
 			//cout<<"v"<<endl;
 			//toolsKit::IPL_print(UV->getV());
 
@@ -419,7 +418,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			
 
 			
-			cvShowImage("flow??",color_img);
+			//cvShowImage("flow??",color_img);
 			//cvWaitKey(0);
 			cvReleaseImage(&color_img);
 

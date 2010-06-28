@@ -160,25 +160,26 @@
 		IPL_operate_right(img,shiftImg2,dest,MUL);
 	}
 	void toolsKit::IPL_print(const IplImage *image) {
-		int nl= image->height; // number of lines
-		int nc= image->width * image->nChannels; // total number of element per line
-		int step= image->widthStep; // effective width
+		int ht= image->height; // number of lines
+		int wt= image->width ; // total number of element per line
+		//int step= image->widthStep; // effective width
 		// get the pointer to the image buffer
-		unsigned char *data= reinterpret_cast<unsigned char *>(image->imageData);
-		cout<<"=============================width:"<<image->width <<" height:"<< image->height<<" channels:"<<image->nChannels<<"============================="<<endl;
-		for (int i=0; i<nl; i++) {
+		//unsigned char *data= reinterpret_cast<unsigned char *>(image->imageData);
+		cout<<"=============================width:"<<image->width <<" height:"<< image->height<<" channels:"<<image->nChannels<<"[B,G,R]============================="<<endl;
+		for (int i=0; i<ht; i++) {
 
-			for (int j=0; j<nc; j+= image->nChannels) {
-				CvScalar sca= cvGet2D(image,i,j);
+			for (int j=0; j<wt; j+= 1) {
+				CvScalar s= cvGet2D(image,i,j);
 				// process each pixel ---------------------
-				// data[j]= data[j]/div * div + div/2;
-				cout<<sca.val[0]<<" ";
-				//  data[j+1]= data[j+1]/div * div + div/2;
-				// data[j+2]= data[j+2]/div * div + div/2;
+				if(image->nChannels==3){
+					cout<<"["<<s.val[0]<<","<<s.val[1]<<","<<s.val[2]<<"] ";
+				}
+				else
+					cout<<s.val[0]<<" ";
 				// end of pixel processing ----------------
 			} // end of line          
 			cout<<endl;
-			data+= step;  // next line
+			//data+= step;  // next line
 			//break;
 		}
 		cout<<"======================================================================================================================================="<<endl;

@@ -311,8 +311,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 
 		
 			//only temp normalize!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			 toolsKit::cvNormalizeEdges(uapp);
-			 toolsKit::cvNormalizeEdges(vapp);
+			// toolsKit::cvNormalizeEdges(uapp);
+			// toolsKit::cvNormalizeEdges(vapp);
 			/* toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
@@ -456,7 +456,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			A->clean();
 			//toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
 			//cout<<*A<<endl;
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,500);
+			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,10);
 			
 			delete B;
 			delete A;
