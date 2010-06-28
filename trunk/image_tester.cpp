@@ -42,8 +42,10 @@ int main (int argc,char** argv)
   double error_const=0.001;
   //IPL_DEPTH_32F IPL_DEPTH_8U
   coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
-  double ratio=0.80;
+  double ratio=0.75;
   int minWidth=18;
+  int outerIter=3;
+  int innerIter=50;
   double alpha = 2 ; // Global smoothness variable.
   double gamma = 0 ; // Global weight for derivatives.
 	
@@ -143,9 +145,8 @@ int main (int argc,char** argv)
 									gamma,
 									ratio, 
 									minWidth, 
-									3, 
-									1, 
-									0);
+									outerIter,
+									innerIter);
 
 
 

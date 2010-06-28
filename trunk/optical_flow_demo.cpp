@@ -10,7 +10,7 @@
 static const double pi = 3.14159265358979323846;
 
 
-int main( int argc, char** argv )
+int main_( int argc, char** argv )
 {
 	  /* data structure for the image */
     IplImage *img1 = 0;

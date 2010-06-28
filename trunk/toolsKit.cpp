@@ -282,11 +282,11 @@
 
 	IplImage*  toolsKit::psiDerivative(IplImage* x,double epsilon){	
 		//double y=1 / (2 * sqrt( x + epsilon ) ) ;
-		toolsKit::IPL_print(x);
+		
 		cvAddS(x,cvScalarAll(epsilon),x);
-		toolsKit::IPL_print(x);
+		
 		toolsKit::IPL_mul_inverse(x,0);	
-		toolsKit::IPL_print(x);
+		
 		return x;
 	}
 

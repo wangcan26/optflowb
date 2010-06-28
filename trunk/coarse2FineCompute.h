@@ -24,8 +24,8 @@ public:
 						 double ratio, 
 						 int minWidth,
 						 int nOuterFPIterations, 
-						 int nInnerFPIterations, 
-						 int nCGIterations);
+						 int nInnerFPIterations);
+						
 	virtual ~coarse2FineCompute(void);
 private:
 	
@@ -43,9 +43,7 @@ private:
 						   double alpha,
 						   double gamma,
 						   int nOuterFPIterations, 
-						   int nInnerFPIterations, 
-						   int nCGIterations);
-
+						   int nInnerFPIterations);
 	void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV);
 
 	//temp

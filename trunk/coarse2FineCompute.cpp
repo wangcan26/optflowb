@@ -1,4 +1,5 @@
 #include "coarse2FineCompute.h"
+#include "OPTICAL_FLOW_DEMO.h"
 #include <ctime>
 coarse2FineCompute::coarse2FineCompute(int imageDepth,double error)
 {
@@ -139,8 +140,8 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 										 double ratio, 
 										 int minWidth,
 										 int nOuterFPIterations, 
-										 int nInnerFPIterations, 
-										 int nCGIterations)
+										 int nInnerFPIterations)
+										
 {
 	// first build the pyramid of the two images
 	GaussPyramid Pyramid1;
@@ -196,17 +197,23 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			//WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
 			
 					  
-		}		
-		//toolsKit::cvShowManyImages("warpImage2,image1,image2",3, WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k));
+		}
+		//cvNormalize(img1_32,img1_32,0,255,CV_MINMAX); 
+		IplImage *temp1 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
+		IplImage *temp2 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
+	cvNormalize(WarpImage2,temp1,0,1,CV_MINMAX);
+	cvNormalize(Pyramid1.getImageFromPyramid(k),temp2,0,1,CV_MINMAX);
+
+		toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,Pyramid2.getImageFromPyramid(k));
 		
 		start = std::clock();
-		cout<<"img1:"<<endl;
+		/*cout<<"img1:"<<endl;
 		toolsKit::IPL_print( Pyramid1.getImageFromPyramid(k));
 		cout<<"img2:"<<endl;
-		toolsKit::IPL_print( Pyramid2.getImageFromPyramid(k));
+		toolsKit::IPL_print( Pyramid2.getImageFromPyramid(k));*/
 
 
-		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations,nCGIterations);	
+		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 		std::cout<<"printf: "<< diff <<'\n';
 
@@ -318,8 +325,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 											double alpha,
 											double gamma,
 											int nOuterFPIterations, 
-											int nInnerFPIterations, 
-											int nCGIterations){
+											int nInnerFPIterations){
 		
 		//dimentions
 		int height=Im1->height;
@@ -402,19 +408,21 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			//cout<<"v"<<endl;
 			//toolsKit::IPL_print(UV->getV());
 
-			cvNormalize(UV->getU(),UV->getU(),0,1,CV_L1); 
-			cvNormalize(UV->getV(),UV->getV(),0,1,CV_L2); 
+		//	cvNormalize(UV->getU(),UV->getU(),0,1,CV_L1); 
+		//	cvNormalize(UV->getV(),UV->getV(),0,1,CV_L2); 
 
 			cvAdd(UV->getU(),Du,UV->getU());
 			cvAdd(UV->getV(),Dv,UV->getV());
 		
 
-			cout<<"u"<<endl;
+		/*	cout<<"u"<<endl;
 			toolsKit::IPL_print(UV->getU());
 			cout<<"v"<<endl;
 			toolsKit::IPL_print(UV->getV());
-
-			toolsKit::cvShowManyImages("uinit,vinit du dv",4,UV->getU(),UV->getV(),Du,Dv);		
+*/
+			//IplImage* color_img = cvCreateImage( cvSize(UV->getV()->height,UV->getV()->width), IPL_DEPTH_8U, 3 );
+		//	MotionToColor( UV->getU(),  UV->getU(),  color_img,  0.1f);
+			//toolsKit::cvShowManyImages("uinit,vinit du dv",4,UV->getU(),UV->getV(),Du,Dv);		
 
 		}
 

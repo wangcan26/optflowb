@@ -281,10 +281,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
 
 
-			 cout<<"psidashBCA"<<endl;
+			/* cout<<"psidashBCA"<<endl;
 		    toolsKit::IPL_print(psidashBCA);
 			cout<<"psidashGCA"<<endl;
-		    toolsKit::IPL_print(psidashGCA);
+		    toolsKit::IPL_print(psidashGCA);*/
 			 
 			 //now compute the  smoothness term
 			 			 
@@ -295,8 +295,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			// toolsKit::cvNormalizeEdges(pdfSum);
 			
 			 
-			 cout<<"pdfSum"<<endl;
-			 toolsKit::IPL_print(pdfSum);
+			/* cout<<"pdfSum"<<endl;
+			 toolsKit::IPL_print(pdfSum);*/
 			 
 			 //prepare data for matrix A
 
@@ -316,13 +316,15 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			/* toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
-			 cout<<"uvapp,vuapp"<<endl;
+			
+			/* cout<<"uvapp,vuapp"<<endl;
 			 toolsKit::IPL_print(uvapp);
 			 
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
 			 cout<<"vapp"<<endl;
-			 toolsKit::IPL_print(vapp);
+			 toolsKit::IPL_print(vapp);*/
+
 			 //insert to diagonals to matrix A
 			 
 			 //uu = spdiags( uapp(:),   0, wt*ht, wt*ht);
@@ -358,10 +360,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			toolsKit::cvMulScalar(tmp2,-1);
 			toolsKit::cvMulScalar(tmp1,-1);
 			
-			cout<<"psidashFS1"<<endl;
+			/*cout<<"psidashFS1"<<endl;
 			toolsKit::IPL_print(psidashFS1);
 		    cout<<"psidashFS2"<<endl;
-		    toolsKit::IPL_print(psidashFS2);
+		    toolsKit::IPL_print(psidashFS2);*/
 
 			// arguments to u(j) in the linear Euler Lagrange equations.
 			//tmp = pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) ; => -psidaFS2 = tmp2			 		 
