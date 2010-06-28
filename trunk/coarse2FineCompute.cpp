@@ -1,6 +1,7 @@
 #include "coarse2FineCompute.h"
-#include "OPTICAL_FLOW_DEMO.h"
+
 #include <ctime>
+#include "optical_flow_demo.h"
 coarse2FineCompute::coarse2FineCompute(int imageDepth,double error)
 {
 	_imageDepth=imageDepth;
@@ -208,9 +209,9 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		
 		start = std::clock();
 		/*cout<<"img1:"<<endl;
-		toolsKit::IPL_print( Pyramid1.getImageFromPyramid(k));
+		//toolsKit::IPL_print( Pyramid1.getImageFromPyramid(k));
 		cout<<"img2:"<<endl;
-		toolsKit::IPL_print( Pyramid2.getImageFromPyramid(k));*/
+		//toolsKit::IPL_print( Pyramid2.getImageFromPyramid(k));
 
 
 		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
@@ -413,15 +414,16 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 
 			cvAdd(UV->getU(),Du,UV->getU());
 			cvAdd(UV->getV(),Dv,UV->getV());
-		
-
+			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
+			MotionToColor( UV->getU(),  UV->getV(),  color_img,  0.1f);
+			
+			cvReleaseImage(&color_img);
 		/*	cout<<"u"<<endl;
 			toolsKit::IPL_print(UV->getU());
 			cout<<"v"<<endl;
 			toolsKit::IPL_print(UV->getV());
-*/
-			//IplImage* color_img = cvCreateImage( cvSize(UV->getV()->height,UV->getV()->width), IPL_DEPTH_8U, 3 );
-		//	MotionToColor( UV->getU(),  UV->getU(),  color_img,  0.1f);
+			cvShowImage("flow??",color_img);
+			cvWaitKey(0);
 			//toolsKit::cvShowManyImages("uinit,vinit du dv",4,UV->getU(),UV->getV(),Du,Dv);		
 
 		}

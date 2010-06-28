@@ -10,7 +10,7 @@
 static const double pi = 3.14159265358979323846;
 
 
-int main_( int argc, char** argv )
+int main__( int argc, char** argv )
 {
 	  /* data structure for the image */
     IplImage *img1 = 0;
@@ -59,7 +59,7 @@ int main_( int argc, char** argv )
 	
 
 	IplImage* color_img = cvCreateImage( cvSize(velx->height,velx->width), IPL_DEPTH_8U, 3 );
-	MotionToColor( velx,  vely,  color_img,  0.1f);
+//	MotionToColor( velx,  vely,  color_img,  0.1f);
 	cvShowImage( "yair", color_img );
 	 cvWaitKey(0);
 

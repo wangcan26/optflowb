@@ -17,7 +17,7 @@
 #define UNKNOWN_FLOW 1e10
 
 
-void MotionToColor(CvMat* velx, CvMat* vely, IplImage* color_img, float maxmotion);
+void MotionToColor(IplImage* velx, IplImage* vely, IplImage* color_img, float maxmotion);
 void computeColor(float fx, float fy, IplImage* color_img,  int x, int y);
 void makecolorwheel();
 void setcols(int r, int g, int b, int k);
