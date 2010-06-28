@@ -70,8 +70,7 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 			//edges only
 			
 			BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2,i,j);					
-			
-			if(j+2>width){
+						
 			/*if(j+2>width){
 				cout<<"i:"<<i<<" j:"<<j<<" i*j:"<<i*j<<endl;
 			}*/
@@ -414,8 +413,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			cvAdd(UV->getV(),Dv,UV->getV());
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);
-			MotionToColor( Du,  Dv,  color_img2,  0.1f);
-			
+				
 			MotionToColor( tempU,  tempV,  color_img,  0.1f);
 			
 			
