@@ -72,8 +72,9 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 			BilinearInterpolate(pIm2,width,height,nChannels,x,y,pWarpIm2,i,j);					
 			
 			if(j+2>width){
+			/*if(j+2>width){
 				cout<<"i:"<<i<<" j:"<<j<<" i*j:"<<i*j<<endl;
-			}
+			}*/
 		}
 		
 	}
@@ -202,10 +203,12 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		//cvNormalize(img1_32,img1_32,0,255,CV_MINMAX); 
 		IplImage *temp1 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
 		IplImage *temp2 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
-	cvNormalize(WarpImage2,temp1,0,1,CV_MINMAX);
-	cvNormalize(Pyramid1.getImageFromPyramid(k),temp2,0,1,CV_MINMAX);
+		IplImage *temp3 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
+		cvNormalize(WarpImage2,temp1,0,1,CV_MINMAX);
+		cvNormalize(Pyramid1.getImageFromPyramid(k),temp2,0,1,CV_MINMAX);
+		cvNormalize(Pyramid2.getImageFromPyramid(k),temp3,0,1,CV_MINMAX);
 
-		toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,Pyramid2.getImageFromPyramid(k));
+		toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,temp3);
 		
 		start = std::clock();
 		/*cout<<"img1:"<<endl;
@@ -401,13 +404,22 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 
 
 			
+			//	cout<<"u"<<endl;
+			///toolsKit::IPL_print(UV->getU());
+			//cout<<"v"<<endl;
+			//toolsKit::IPL_print(UV->getV());
+
+
 			cvAdd(UV->getU(),Du,UV->getU());
 			cvAdd(UV->getV(),Dv,UV->getV());
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);
+			MotionToColor( Du,  Dv,  color_img2,  0.1f);
 			
 			MotionToColor( tempU,  tempV,  color_img,  0.1f);
 			
+			
+
 			
 			cvShowImage("flow??",color_img);
 			//cvWaitKey(0);
