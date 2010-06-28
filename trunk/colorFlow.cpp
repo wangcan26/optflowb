@@ -4,7 +4,7 @@ int ncols = 0;
 #define MAXCOLS 60
 int colorwheel[MAXCOLS][3];
 
-void MotionToColor(IplImage* velx, IplImage* vely, IplImage* color_img, float maxmotion)
+void MotionToColor(CvMat* velx, CvMat* vely, IplImage* color_img, float maxmotion)
 {
     
     int width = velx->width, height = velx->height;
@@ -15,8 +15,8 @@ void MotionToColor(IplImage* velx, IplImage* vely, IplImage* color_img, float ma
     float minx =  999, miny =  999;
     float maxrad = -1;
     for (y = 0; y < height; y++) {
-		const float* velxPtr = (const float*)(velx->imageData + y * velx->widthStep);
-		const float* velyPtr = (const float*)(vely->imageData + y * vely->widthStep);
+		const float* velxPtr = (const float*)(velx->data.ptr + y * velx->step);
+		const float* velyPtr = (const float*)(vely->data.ptr + y * vely->step);
 
 		for (x = 0; x < width; x++) {
 			float fx =  *velxPtr++;
@@ -46,8 +46,8 @@ void MotionToColor(IplImage* velx, IplImage* vely, IplImage* color_img, float ma
 
 
 	 for (y = 0; y < height; y++) {
-		 const float* velxPtr = (const float*)(velx->imageData + y * velx->widthStep);
-		 const float* velyPtr = (const float*)(vely->imageData + y * vely->widthStep);
+		const float* velxPtr = (const float*)(velx->data.ptr + y * velx->step);
+		const float* velyPtr = (const float*)(vely->data.ptr + y * vely->step);
 
 		for (x = 0; x < width; x++) {
 			float fx =  *velxPtr++;

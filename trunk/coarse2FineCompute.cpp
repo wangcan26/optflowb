@@ -399,32 +399,19 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			delete dUdV;
 			cout<<"freed"<<endl;
 
-		//	toolsKit::cvShowManyImages("DUDV",2,Du,Dv);
 
-			//IplImage* tempUadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-			//IplImage* tempVadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 			
-			//	cout<<"u"<<endl;
-			///toolsKit::IPL_print(UV->getU());
-			//cout<<"v"<<endl;
-			//toolsKit::IPL_print(UV->getV());
-
-		//	cvNormalize(UV->getU(),UV->getU(),0,1,CV_L1); 
-		//	cvNormalize(UV->getV(),UV->getV(),0,1,CV_L2); 
-
 			cvAdd(UV->getU(),Du,UV->getU());
 			cvAdd(UV->getV(),Dv,UV->getV());
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
-			MotionToColor( UV->getU(),  UV->getV(),  color_img,  0.1f);
+			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);
 			
-			cvReleaseImage(&color_img);
-		/*	cout<<"u"<<endl;
-			toolsKit::IPL_print(UV->getU());
-			cout<<"v"<<endl;
-			toolsKit::IPL_print(UV->getV());*/
+			MotionToColor( tempU,  tempV,  color_img,  0.1f);
+			
+			
 			cvShowImage("flow??",color_img);
-			cvWaitKey(0);
-			//toolsKit::cvShowManyImages("uinit,vinit du dv",4,UV->getU(),UV->getV(),Du,Dv);		
+			//cvWaitKey(0);
+			cvReleaseImage(&color_img);
 
 		}
 
