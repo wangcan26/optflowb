@@ -19,10 +19,10 @@ void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
 	double two=2.0;
 	//x^2
 	tempx=cvCloneImage(x);
-	toolsKit::cvMulScalar(tempx,two);
+	cvPow(tempx,tempx,two);
 	//y^2
 	tempy=cvCloneImage(y);	
-	toolsKit::cvMulScalar(tempy,two);
+	cvPow(tempy,tempy,two);
 	//theta=x^2+y^2
 	cvAdd(tempx,tempy,theta);
 	//theta=theta+epsilon
@@ -44,8 +44,10 @@ void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplIm
 						   
 						   //init psidashBCA
 						   cvZero(psidashBCA);
-						   toolsKit::costumeLineCompute(psidashBCA,Ikz,Ikx,du,Iky,dv);						   							   				
+						   toolsKit::costumeLineCompute(psidashBCA,Ikz,Ikx,du,Iky,dv);
+						 
 						   cvMul(theta0,psidashBCA,psidashBCA);
+						  
 						   toolsKit::psiDerivative(psidashBCA,epsilon);
 }
 
@@ -87,8 +89,9 @@ void computeDiagonalPdfSum(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,I
 							   cvMul(theta0,temp2,ans);							   							
 							   //psidashBCA * temp==>temp
 							   cvMul(psidashBCA,ans,ans);
-
-							   if (gamma==0){									
+								
+							   if (gamma==0){
+								    cvAdd(ans,pdfsum,ans);
 									cvReleaseImage(&temp2);
 									return;
 							   }
@@ -132,7 +135,8 @@ else
 */
 void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplImage* Ikx,IplImage* Iky,double gamma,
 						IplImage* psidashGCA,IplImage* theta1,IplImage* Ixx,IplImage* Ixy,
-						IplImage* theta2,IplImage* Iyy,IplImage* IxyB){
+						IplImage* theta2,IplImage* Iyy,IplImage* IxyB)
+{
 							IplImage* temp1=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);
 							IplImage* temp2=cvCreateImage(cvSize( ans->width, ans->height ),ans->depth,ans->nChannels);							
 							//psidashBCA * theta0 ==>temp1
@@ -257,12 +261,12 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //theta2 = 1/(Iyy^2+Ixy^2+epsilon);
 			 computeTheta(theta2,Iyy,Ixy,epsilon);
 				
-			cout<<"theta0"<<endl;
+			/*cout<<"theta0"<<endl;
 			toolsKit::IPL_print(theta0);
 		    cout<<"theta1"<<endl;
 		    toolsKit::IPL_print(theta1);
 			cout<<"theta2"<<endl;
-			toolsKit::IPL_print(theta2);
+			toolsKit::IPL_print(theta2);*/
 		    
 			
 
@@ -272,7 +276,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 			 //the brightness constancy assumption
 			 computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,du,Iky,dv,_ERROR_CONST);
-			toolsKit::cvNormalizeEdges2(psidashBCA);
+			//toolsKit::cvNormalizeEdges2(psidashBCA);
 			 //and the Gradient Constancy Assumption
 			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
 
@@ -288,6 +292,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //pdfsum = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 			 computePdfSum(pdfSum,psidashFS1,psidashFS2);
+			// toolsKit::cvNormalizeEdges(pdfSum);
 			
 			 
 			 cout<<"pdfSum"<<endl;
@@ -325,6 +330,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 SparseMat<float> uu(height*width);
 			 uu.addDiag(0,*uuappCol);
 			 delete uuappCol;
+			// cout<<"UU:"<<endl<<uu<<endl;
 
 			 //vv = spdiags( vapp(:),   0, wt*ht, wt*ht);
 			 vector<float> * vvappCol = toolsKit::IplImageToCoulmnVector(vapp);
@@ -405,6 +411,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
 			SparseMat<float> vvvl1vl2vr1vr2 = vv+vl1+vl2+vr1+vr2;
 			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
+			//cout<<"uuul1ul2ur1ur2(Q1):"<<endl<<uuul1ul2ur1ur2<<endl;
+			//cout<<"vvvl1vl2vr1vr2(Q4):"<<endl<<vvvl1vl2vr1vr2<<endl;
 			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);
 			//cout<<"A: "<<endl<<*A<<endl;
 			//////////////////////build vector B//////////////////////
@@ -443,8 +451,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			vector<float> * x = new vector<float>(B->size());
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
+			A->clean();
 				toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,20);
+				cout<<*A<<endl;
+				vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,50);
 			
 			delete B;
 			delete A;

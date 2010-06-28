@@ -70,8 +70,8 @@ vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<fl
 			for (i=0; i<x.size(); i++){
 					Aii=A(i,i);
 					float Bi =B[i];
-					//e1 = B[i]/(Aii!=0?Aii:1);
-					e1 = B[i];
+					e1 = B[i]/(Aii!=0?Aii:1);
+					//e1 = B[i];
 					e2=0;
 					std::map<int, float> row = A.getRow(i);
 					//std::map<int,float>::iterator it = row.begin();
@@ -83,7 +83,7 @@ vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<fl
 						float newXj = ((*newX)[j]);
 						e2+=Aij*newXj;
 						}
-					//e2 = e2*w/(Aii!=0?Aii:1);// (W/Aii)* Sigma(0,i-1){Aij*newX[j]}
+					e2 = e2*w/(Aii!=0?Aii:1);// (W/Aii)* Sigma(0,i-1){Aij*newX[j]}
 					e3=0;
 					if (it->first == i) it++;//skip the Ith element
 					//for (j=i+1; j<x.size(); j++){
@@ -94,8 +94,8 @@ vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<fl
 						e3 += Aij * oldXj;
 						//if (it == A.getRow(i).end()) break;
 						}
-					//e3 = e3*w/(Aii!=0?Aii:1); // (W/Aii)* Sigma(i+1,n){Aij*oldX[j]}
-					float iVal = norm(e1) - norm(e2) - norm(e3);
+					e3 = e3*w/(Aii!=0?Aii:1); // (W/Aii)* Sigma(i+1,n){Aij*oldX[j]}
+					float iVal = e1 - e2 - e3;
 					(*newX)[i] = iVal; //newX[i] = B[i]/Aii - (W/Aii)Sigma(0,i-1){Aij*newX[j]} - (W/Aii)Sigma(i+1,n){Aij*oldX[j]}
 				}
 			//temp = oldX;

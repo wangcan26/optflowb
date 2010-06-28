@@ -27,14 +27,9 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 	ImPyramid[0]=cvCloneImage(&image);
 	
 
-	nLevels=18;
-	//ratio=0.80;
-	//double altRatio=pow( ratio, nLevels );
-	 
-	//double baseSigma=(1/ratio-1);
-	//int n=log(0.25)/log(ratio);
-	//double nSigma=baseSigma*n;
-
+	nLevels=1;
+	
+/*
 	cout<<"nlevels:"<<nLevels<<endl;
 	for(int i=1;i<nLevels;i++)
 	{
@@ -44,4 +39,5 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 		ImPyramid[i] = cvCreateImage( cvSize( foo->width*ratio,foo->height*ratio ),foo->depth, foo->nChannels );
 		cvResize(foo,ImPyramid[i]);
 	}
+*/
 }

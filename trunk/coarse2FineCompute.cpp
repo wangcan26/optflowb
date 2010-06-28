@@ -353,11 +353,14 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		getDXsCVSobel(Ikx,Ixx,Ixy);
 		getDXsCVSobel(Iky,Iyx,Iyy);
 		
+		
 		//DXT of original images and their x&y gradiants
 	 	cvAbsDiff(Im1,Im2,Ikt_Org);//IKz
 		cvAbsDiff(Ikx,Ikx2,IXt_axis);
 		cvAbsDiff(Iky,Iky2,IYt_ayis);
-				
+		
+		
+		
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 						
@@ -388,11 +391,16 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			cout<<"end;"<<endl;
 			delete dUdV;
 			cout<<"freed"<<endl;
-				
-			cout<<"u"<<endl;
-			toolsKit::IPL_print(UV->getU());
-			cout<<"v"<<endl;
-			toolsKit::IPL_print(UV->getV());
+
+		//	toolsKit::cvShowManyImages("DUDV",2,Du,Dv);
+
+			//IplImage* tempUadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+			//IplImage* tempVadd=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+			
+			//	cout<<"u"<<endl;
+			///toolsKit::IPL_print(UV->getU());
+			//cout<<"v"<<endl;
+			//toolsKit::IPL_print(UV->getV());
 
 			cvNormalize(UV->getU(),UV->getU(),0,1,CV_L1); 
 			cvNormalize(UV->getV(),UV->getV(),0,1,CV_L2); 

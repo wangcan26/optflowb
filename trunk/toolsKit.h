@@ -17,9 +17,14 @@
 		
 		template <class PEL>
 		static void IPLsqrt_mul2(IplImageIterator<PEL> it){
-			while (!it) { 
-				if(0!=((float)*it))
-					*it= 1/(2*sqrt((float)*it)); 
+			while (!it) {
+				float temp=(float)*it;
+				
+				if(0!=temp){
+					float val=1/(2*sqrt(temp));
+					*it=val;
+				}
+					
 				++it;
 			}
 		}
