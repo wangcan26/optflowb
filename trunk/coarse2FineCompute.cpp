@@ -212,7 +212,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		//toolsKit::IPL_print( Pyramid1.getImageFromPyramid(k));
 		cout<<"img2:"<<endl;
 		//toolsKit::IPL_print( Pyramid2.getImageFromPyramid(k));
-
+*/
 
 		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
@@ -421,7 +421,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		/*	cout<<"u"<<endl;
 			toolsKit::IPL_print(UV->getU());
 			cout<<"v"<<endl;
-			toolsKit::IPL_print(UV->getV());
+			toolsKit::IPL_print(UV->getV());*/
 			cvShowImage("flow??",color_img);
 			cvWaitKey(0);
 			//toolsKit::cvShowManyImages("uinit,vinit du dv",4,UV->getU(),UV->getV(),Du,Dv);		
@@ -448,4 +448,3 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 
 }
 
-/////////////////////////////////////////////////tests///////////////////////////////////////
