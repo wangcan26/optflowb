@@ -38,7 +38,7 @@ void computeTheta(IplImage* theta,IplImage* x,IplImage* y,IplImage* epsilon){
 	cvReleaseImage( &tempx ); 
 	cvReleaseImage( &tempy ); 
 }
-//psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
+//psidashBCA=psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
 void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplImage* Ikx,IplImage* du,
 					   IplImage* Iky,IplImage* dv,double epsilon){
 						   
@@ -48,35 +48,48 @@ void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplIm
 						 
 						   cvMul(theta0,psidashBCA,psidashBCA);
 						  
+
+						   cout<<"psidashBCA-before epsilon add"<<endl;
+						   toolsKit::IPL_print(psidashBCA);
+
 						   toolsKit::psiDerivative(psidashBCA,epsilon);
 }
 
-//psiDerivative( gamma * (  theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2 + 
+//psidashGCA=psiDerivative( gamma * (  theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2 + 
 //						    theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 ) ) ;
 void computepsidashGCA(IplImage* psidashGCA,int gamma,IplImage* theta1,IplImage* Ixz,IplImage* Ixx,
 					   IplImage* du,IplImage* Ixy,IplImage* dv,IplImage* theta2,
 					   IplImage* Iyz,IplImage* Iyy,double epsilon){
+						
+						   if (gamma!=0){
+							   IplImage* temp=cvCreateImage(cvSize( psidashGCA->width, psidashGCA->height ),psidashGCA->depth,psidashGCA->nChannels);
+							   //theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2
+							   toolsKit::costumeLineCompute(psidashGCA,Ixz,Ixx,du,Ixy,dv);
+							   cvMul(theta1,psidashGCA,psidashGCA);
+							   //theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 )
+							   toolsKit::costumeLineCompute(temp,Iyz,Ixy,du,Iyy,dv);
+							   cvMul(theta2,temp,temp);
+							   cvAdd(psidashGCA,temp,psidashGCA);
+							   toolsKit::cvMulScalar(psidashGCA,gamma);
+						   }
+						   else{
+							cvZero(psidashGCA);
+						   }
+						   
+						   cout<<"psidashGCA-before epsilon add"<<endl;
+						   toolsKit::IPL_print(psidashGCA);
 
-						   IplImage* temp=cvCreateImage(cvSize( psidashGCA->width, psidashGCA->height ),psidashGCA->depth,psidashGCA->nChannels);
-						   //theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2
-						   toolsKit::costumeLineCompute(psidashGCA,Ixz,Ixx,du,Ixy,dv);
-						   cvMul(theta1,psidashGCA,psidashGCA);
-						   //theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 )
-						   toolsKit::costumeLineCompute(temp,Iyz,Ixy,du,Iyy,dv);
-						   cvMul(theta2,temp,temp);
-						   cvAdd(psidashGCA,temp,psidashGCA);
-						   toolsKit::cvMulScalar(psidashGCA,gamma);
 						   toolsKit::psiDerivative(psidashGCA,epsilon);
 }
 
 /*
 if gamma=0:
-uapp= psidashBCA * (theta0 * ( Ikx ^ 2 ))+ ==>ans
+			uapp= psidashBCA * (theta0 * ( Ikx ^ 2 ))+pdfsum ==>ans
 else:
-uapp= psidashBCA * (theta0 * ( Ikx ^ 2 ))+ ==>temp
-gamma * psidashGCA * ==>temp2
-(theta1 *  Ixx ^ 2 + theta2 * Ixy ^ 2 )  + ==>temp3
-pdfsum */
+			uapp= psidashBCA * (theta0 * ( Ikx ^ 2 ))+ ==>temp
+			gamma * psidashGCA * ==>temp2
+								(theta1 *  Ixx ^ 2 + theta2 * Ixy ^ 2 )  + ==>temp3
+																			pdfsum */
 void computeDiagonalPdfSum(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplImage* Ikx,double gamma,
 						   IplImage* psidashGCA,IplImage* theta1,IplImage* Ixx,
 						   IplImage* theta2,IplImage* Ixy,IplImage* pdfsum){
@@ -228,7 +241,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 														IplImage* psidashFS1,IplImage* psidashFS2,
 														IplImage* u,IplImage* v,
 														IplImage* du,IplImage* dv,
-														double gamma,double alpha, double _ERROR_CONST){
+														double gamma,double alpha, 
+														double _ERROR_CONST,int nInnerFPIterations){
 			 //init IPLs											
 			 IplImage* theta0=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			 IplImage* theta1=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
@@ -261,13 +275,6 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //theta2 = 1/(Iyy^2+Ixy^2+epsilon);
 			 computeTheta(theta2,Iyy,Ixy,epsilon);
 				
-			/*cout<<"theta0"<<endl;
-			toolsKit::IPL_print(theta0);
-		    cout<<"theta1"<<endl;
-		    toolsKit::IPL_print(theta1);
-			cout<<"theta2"<<endl;
-			toolsKit::IPL_print(theta2);*/
-		    
 			
 
 			 // First compute the values of the data  term
@@ -275,28 +282,27 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 
 			 //the brightness constancy assumption
-			 computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,du,Iky,dv,_ERROR_CONST);
-			//toolsKit::cvNormalizeEdges2(psidashBCA);
-			 //and the Gradient Constancy Assumption
-			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
-
-
-			/* cout<<"psidashBCA"<<endl;
-		    toolsKit::IPL_print(psidashBCA);
-			cout<<"psidashGCA"<<endl;
-		    toolsKit::IPL_print(psidashGCA);*/
 			 
+			 //psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
+			 computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,du,Iky,dv,_ERROR_CONST);
+			
+			 //and the Gradient Constancy Assumption
+
+			 //psidashGCA=psiDerivative( gamma * (  theta1 *  ( Ixz + Ixx * du + Ixy * dv ) ^ 2 + 
+			//			                            theta2 *  ( Iyz + Ixy * du + Iyy * dv ) ^ 2 ) ) ;
+			 computepsidashGCA(psidashGCA,gamma,theta1,Ixz,Ixx,du,Ixy,dv,theta2,Iyz,Iyy,_ERROR_CONST);
+ 
 			 //now compute the  smoothness term
 			 			 
 			 //compute pdfSum
-			 //pdfsum = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
+			 //pdfsum =pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 			 computePdfSum(pdfSum,psidashFS1,psidashFS2);
 			// toolsKit::cvNormalizeEdges(pdfSum);
 			
 			 
-			/* cout<<"pdfSum"<<endl;
-			 toolsKit::IPL_print(pdfSum);*/
+			 cout<<"pdfSum"<<endl;
+			 toolsKit::IPL_print(pdfSum);
 			 
 			 //prepare data for matrix A
 
@@ -320,10 +326,15 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			// cout<<"uvapp,vuapp"<<endl;
 			// toolsKit::IPL_print(uvapp);
 			 
+
+			  cout<<"psidashBCA"<<endl;
+			 toolsKit::IPL_print(psidashBCA);
+			  cout<<"psidashGCA"<<endl;
+			 toolsKit::IPL_print(psidashGCA);
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
-			// cout<<"vapp"<<endl;
-			// toolsKit::IPL_print(vapp);*/
+			 cout<<"vapp"<<endl;
+			 toolsKit::IPL_print(vapp);
 
 			 //insert to diagonals to matrix A
 			 
@@ -456,7 +467,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			A->clean();
 			//toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
 			//cout<<*A<<endl;
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,10);
+			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
 			
 			delete B;
 			delete A;

@@ -296,6 +296,11 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
 		
 	
+	cout<<"computePsidashFS_brox:before psiDerivative-fs1"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns1());
+	cout<<"computePsidashFS_brox:before psiDerivative-fs2"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns2());
+
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
 	
@@ -377,7 +382,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);					
 
-			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST);
+			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);
 			
 			
 			//[duv, err, it, flag] = sor( A, duv, b, omega, inner_iter, tol ) ;
@@ -402,8 +407,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 
 
 			
-			cout<<"u"<<endl;
-			toolsKit::IPL_print(UV->getU());
+			//cout<<"u"<<endl;
+			//toolsKit::IPL_print(UV->getU());
 			//cout<<"v"<<endl;
 			//toolsKit::IPL_print(UV->getV());
 
@@ -417,9 +422,9 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 			
 			
 
+			toolsKit::cvShowManyImages("plot flow",1,color_img);
 			
-			//cvShowImage("flow??",color_img);
-			//cvWaitKey(0);
+			cvWaitKey(0);
 			cvReleaseImage(&color_img);
 
 		}

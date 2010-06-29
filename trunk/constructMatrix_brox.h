@@ -25,7 +25,8 @@ public:
 								  IplImage* dv,
 								  double gamma,
 								  double alpha,
-								  double _ERROR_CONST );
+								  double _ERROR_CONST,
+								  int nInnerFPIterations);
 	virtual ~constructMatrix_brox(void);
 private:
 	

@@ -34,7 +34,7 @@ private:
 	IplImage* coarse2FineCompute::createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
 	
 	void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
-												  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma );
+												  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma,int nInnerFPIterations );
 	flowUV* SmoothFlowPDE(const IplImage* Im1, 
 						   const IplImage* Im2, 
 						   IplImage* warpIm2, 

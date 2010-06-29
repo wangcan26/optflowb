@@ -45,7 +45,7 @@ int main (int argc,char** argv)
 	double ratio=0.75;
 	int minWidth=1;
 	int outerIter=3;
-	int innerIter=50;
+	int innerIter=10;
 	double alpha = 2 ; // Global smoothness variable.
 	double gamma = 0 ; // Global weight for derivatives.
 
@@ -56,8 +56,8 @@ int main (int argc,char** argv)
 	// cvReleaseImage(&img); 
 	// cvDestroyWindow("TEST"); 
 
-	const IplImage* img1= cvLoadImage(argv[1],CV_LOAD_IMAGE_GRAYSCALE);//zero is for grayscale  CV_LOAD_IMAGE_GRAYSCALE
-	const IplImage* img2= cvLoadImage(argv[2],CV_LOAD_IMAGE_GRAYSCALE); //1 is for color CV_LOAD_IMAGE_COLOR
+	 IplImage* img1= cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);//zero is for grayscale  CV_LOAD_IMAGE_GRAYSCALE
+	 IplImage* img2= cvLoadImage(argv[2],CV_LOAD_IMAGE_COLOR); //1 is for color CV_LOAD_IMAGE_COLOR
 
 
 	//IplImage* img1g= cvCreateImage(cvSize(img1->width, img1->height),img1->depth, 1);
@@ -75,25 +75,42 @@ int main (int argc,char** argv)
 	//cvCvtColor( img1RGB, img1g, CV_RGB2GRAY );
 	//cvCvtColor( img2RGB, img2g, CV_RGB2GRAY );
 
-	//cvCvtColor( img1, img2g, CV_BGR2GRAY );
-	//cvCvtColor( img2, img2g, CV_BGR2GRAY );
+	
 
 	IplImage *img1_32 = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, img1->nChannels);
 	IplImage *img2_32 = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, img1->nChannels);
 
 	cvZero(img1_32);
 	cvZero(img2_32);
+	//upscale from char to float
 	cvConvertScale(img1, img1_32, 1.0/255);
 	cvConvertScale(img2, img2_32, 1.0/255);
 
-	cvNormalize(img1_32,img1_32,255,0); 
-	cvNormalize(img2_32,img2_32,255,0); 
+
+	cvSmooth(img1_32,img1_32,CV_GAUSSIAN);
+	cvSmooth(img2_32,img2_32,CV_GAUSSIAN);
+
+	IplImage *img1_32g = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, 1);
+	IplImage *img2_32g = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, 1);
+
+	cvCvtColor( img1_32, img1_32g, CV_BGR2GRAY );
+	cvCvtColor( img2_32, img2_32g, CV_BGR2GRAY );
+
+	/*cout<<"Im1:before smooth"<<endl;
+	toolsKit::IPL_print(img1);
+	
+	   cvSmooth(img1,img1,CV_GAUSSIAN);
+	   cvSmooth(img1,img2,CV_GAUSSIAN);*/
+
+
+	cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
+	cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
 
 
 	cout<<"Im1:after up scale"<<endl;
-	toolsKit::IPL_print(img1_32);
+	toolsKit::IPL_print(img1_32g);
 	cout<<"Im2:after up scale"<<endl;
-	toolsKit::IPL_print(img2_32);
+	toolsKit::IPL_print(img2_32g);
 	// toolsKit::cvShowManyImages("Image",2, img1_32,img1_32);
 	//cvWaitKey(0);
 
@@ -163,7 +180,7 @@ int main (int argc,char** argv)
 	*/
 
 	 coarse2fComp.Coarse2FineFlow(vx,vy, 
-								  *img1_32, *img2_32, 
+								  *img1_32g, *img2_32g, 
 								  alpha,gamma,
 								  ratio,minWidth, 
 								  outerIter,innerIter);

@@ -201,7 +201,7 @@
 			k=width-1;
 			for (i = 0; i < width*img->height; i++)
 			{
-				if(i<width)
+			/*	if(i<width)
 					((float*)img->imageData)[i]=130;
 				if(i> width*img->height-width-1)
 					((float*)img->imageData)[i]=130;
@@ -210,7 +210,7 @@
 				if(k==width-1)//apply to last column only										  
 					 ((float*)img->imageData)[i]=130;
 							 				
-				k==0?k=width-1:k--;
+				k==0?k=width-1:k--;*/
 			}
 
 			/*
@@ -253,16 +253,14 @@
 		return false;
 	}
 
-	void toolsKit::cvNormalizeEdges2(IplImage* img){				
+	void toolsKit::cvZeroNans(IplImage* img){				
 			float nan1 = sqrt(-1.0f);
 			for (int i = 0; i < img->width*img->height; i++)					
 				{					
-					if(AlmostEqualRelativeOrAbsolute(nan1,((float*)img->imageData)[i],0.00001,0.00001))
-						((float*)img->imageData)[i]=0;
-					if(AlmostEqualRelativeOrAbsolute(FLT_MAX,((float*)img->imageData)[i],0.00001,0.00001))
-						((float*)img->imageData)[i]=0;
-					if(AlmostEqualRelativeOrAbsolute(FLT_MIN,((float*)img->imageData)[i],0.0001,0.0001))
-						((float*)img->imageData)[i]=0;
+					//if(AlmostEqualRelativeOrAbsolute(FLT_MAX,((float*)img->imageData)[i],0.00001,0.00001))
+					//	((float*)img->imageData)[i]=0;
+					//if(AlmostEqualRelativeOrAbsolute(FLT_MIN,((float*)img->imageData)[i],0.0001,0.0001))
+					//	((float*)img->imageData)[i]=0;
 					if(IsNan(((float*)img->imageData)[i]))
 						((float*)img->imageData)[i]=0;
 
@@ -284,7 +282,14 @@
 	IplImage*  toolsKit::psiDerivative(IplImage* x,double epsilon){	
 		//double y=1 / (2 * sqrt( x + epsilon ) ) ;
 		
+		//cout<<"psiDerivative-before nan test"<<endl;
+		//toolsKit::IPL_print(x);
+		
+		cvZeroNans(x);
 		cvAddS(x,cvScalarAll(epsilon),x);
+		
+		cout<<"psiDerivative-after epsilon add"<<endl;
+		toolsKit::IPL_print(x);
 		
 		toolsKit::IPL_mul_inverse(x,0);	
 		
