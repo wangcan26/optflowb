@@ -201,7 +201,7 @@
 			k=width-1;
 			for (i = 0; i < width*img->height; i++)
 			{
-			/*	if(i<width)
+				if(i<width)
 					((float*)img->imageData)[i]=130;
 				if(i> width*img->height-width-1)
 					((float*)img->imageData)[i]=130;
@@ -210,7 +210,7 @@
 				if(k==width-1)//apply to last column only										  
 					 ((float*)img->imageData)[i]=130;
 							 				
-				k==0?k=width-1:k--;*/
+				k==0?k=width-1:k--;
 			}
 
 			/*
@@ -285,11 +285,11 @@
 		//cout<<"psiDerivative-before nan test"<<endl;
 		//toolsKit::IPL_print(x);
 		
-		cvZeroNans(x);
+		//cvZeroNans(x);
 		cvAddS(x,cvScalarAll(epsilon),x);
 		
-		cout<<"psiDerivative-after epsilon add"<<endl;
-		toolsKit::IPL_print(x);
+		//cout<<"psiDerivative-after epsilon add"<<endl;
+		//toolsKit::IPL_print(x);
 		
 		toolsKit::IPL_mul_inverse(x,0);	
 		

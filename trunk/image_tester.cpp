@@ -43,9 +43,9 @@ int main (int argc,char** argv)
 	//IPL_DEPTH_32F IPL_DEPTH_8U
 	coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
 	double ratio=0.75;
-	int minWidth=1;
+	int minWidth=30;
 	int outerIter=3;
-	int innerIter=10;
+	int innerIter=100;
 	double alpha = 2 ; // Global smoothness variable.
 	double gamma = 0 ; // Global weight for derivatives.
 
@@ -103,16 +103,15 @@ int main (int argc,char** argv)
 	   cvSmooth(img1,img2,CV_GAUSSIAN);*/
 
 
-	cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
-	cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
+//	cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
+//	cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
 
 
-	cout<<"Im1:after up scale"<<endl;
+	/*cout<<"Im1:after up scale"<<endl;
 	toolsKit::IPL_print(img1_32g);
 	cout<<"Im2:after up scale"<<endl;
-	toolsKit::IPL_print(img2_32g);
-	// toolsKit::cvShowManyImages("Image",2, img1_32,img1_32);
-	//cvWaitKey(0);
+	toolsKit::IPL_print(img2_32g);*/
+	
 
 	IplImage* vx= NULL;
 	IplImage* vy= NULL;
@@ -179,6 +178,10 @@ int main (int argc,char** argv)
 	toolsKit::IPL_print(imga1);
 	*/
 
+	toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
+	cvWaitKey(0);
+	toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
+	cvWaitKey(0);
 	 coarse2fComp.Coarse2FineFlow(vx,vy, 
 								  *img1_32g, *img2_32g, 
 								  alpha,gamma,

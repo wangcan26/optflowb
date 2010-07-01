@@ -296,10 +296,10 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
 		
 	
-	cout<<"computePsidashFS_brox:before psiDerivative-fs1"<<endl;
+	/*cout<<"computePsidashFS_brox:before psiDerivative-fs1"<<endl;
 	toolsKit::IPL_print(UV->getPsidashFSAns1());
 	cout<<"computePsidashFS_brox:before psiDerivative-fs2"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns2());
+	toolsKit::IPL_print(UV->getPsidashFSAns2());*/
 
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
@@ -370,10 +370,11 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		cvAbsDiff(Ikx,Ikx2,IXt_axis);
 		cvAbsDiff(Iky,Iky2,IYt_ayis);
 		
-		cout<<"Ikx"<<endl;
+		/*cout<<"Ikx"<<endl;
 		toolsKit::IPL_print(Ikx);
 			cout<<"Iky"<<endl;
-		toolsKit::IPL_print(Iky);
+
+		toolsKit::IPL_print(Iky);*/
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 						

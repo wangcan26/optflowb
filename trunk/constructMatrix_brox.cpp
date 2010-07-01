@@ -49,8 +49,8 @@ void computePsidashBCA(IplImage* psidashBCA,IplImage* theta0,IplImage* Ikz,IplIm
 						   cvMul(theta0,psidashBCA,psidashBCA);
 						  
 
-						   cout<<"psidashBCA-before epsilon add"<<endl;
-						   toolsKit::IPL_print(psidashBCA);
+						 //  cout<<"psidashBCA-before epsilon add"<<endl;
+						 //  toolsKit::IPL_print(psidashBCA);
 
 						   toolsKit::psiDerivative(psidashBCA,epsilon);
 }
@@ -76,8 +76,8 @@ void computepsidashGCA(IplImage* psidashGCA,int gamma,IplImage* theta1,IplImage*
 							cvZero(psidashGCA);
 						   }
 						   
-						   cout<<"psidashGCA-before epsilon add"<<endl;
-						   toolsKit::IPL_print(psidashGCA);
+						  // cout<<"psidashGCA-before epsilon add"<<endl;
+						  // toolsKit::IPL_print(psidashGCA);
 
 						   toolsKit::psiDerivative(psidashGCA,epsilon);
 }
@@ -301,8 +301,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			// toolsKit::cvNormalizeEdges(pdfSum);
 			
 			 
-			 cout<<"pdfSum"<<endl;
-			 toolsKit::IPL_print(pdfSum);
+			// cout<<"pdfSum"<<endl;
+			 //toolsKit::IPL_print(pdfSum);
 			 
 			 //prepare data for matrix A
 
@@ -317,8 +317,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 
 		
 			//only temp normalize!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			// toolsKit::cvNormalizeEdges(uapp);
-			// toolsKit::cvNormalizeEdges(vapp);
+			 toolsKit::cvNormalizeEdges(uapp);
+			 toolsKit::cvNormalizeEdges(vapp);
 			/* toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
@@ -327,10 +327,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			// toolsKit::IPL_print(uvapp);
 			 
 
-			  cout<<"psidashBCA"<<endl;
+			/*  cout<<"psidashBCA"<<endl;
 			 toolsKit::IPL_print(psidashBCA);
 			  cout<<"psidashGCA"<<endl;
-			 toolsKit::IPL_print(psidashGCA);
+			 toolsKit::IPL_print(psidashGCA);*/
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
 			 cout<<"vapp"<<endl;
