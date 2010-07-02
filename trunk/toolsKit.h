@@ -4,6 +4,8 @@
 #include <highgui.h>
 
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 #include <stdarg.h>
 #include "SparseToolKit.h"
 #include "IplImageIterator.h"
@@ -67,7 +69,9 @@
 
 		static bool AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError);
 		static bool IsNan(float A);
-	
+
+		static IplImage * IplFromFile(string filename);
+		static void IplToFile(IplImage* img, string filename);
 	
 		virtual ~toolsKit(void);
 	private:
