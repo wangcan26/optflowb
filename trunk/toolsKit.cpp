@@ -29,12 +29,25 @@ void toolsKit::IPL_mul_inverse(IplImage* img,int opType){
 
 void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
 	IplImageIterator<float> it(img);
-	IplImageIterator<float> it2(img);
+	IplImageIterator<float> it2(img2);
 	IplImageIterator<float> it3(dest);
 	while (!it) {      
 		//	cout<<"bef:"<<it.data;
 		*it3= ((float)*it)+((float)*it2); 
 		// cout<<"=>"<<it.data<<endl;
+		++it;
+		++it2;
+		++it3;
+		}
+	}
+void toolsKit::IPL_sub(IplImage* img,IplImage* img2,IplImage* dest){
+	IplImageIterator<float> it(img);
+	IplImageIterator<float> it2(img2);
+	IplImageIterator<float> it3(dest);
+	while (!it) {      
+	//		cout<<"bef:"<<*it<<" "<<*it2;
+		*it3=(float)( ((float)*it)-((float)*it2)); 
+	//	 cout<<"=>"<<*it<<" "<<*it2<<endl;
 		++it;
 		++it2;
 		++it3;
@@ -477,7 +490,7 @@ IplImage * toolsKit::IplFromFile(string filename){
 	for (int i = 0; i<height; i++)
 		for (int j = 0; j<width; j++){
 			thefile>>val;	
-			cvSetReal2D(ans,i,j,val);
+			cvSet2D(ans,i,j,cvScalar(val));
 		}
 		thefile.close();
 

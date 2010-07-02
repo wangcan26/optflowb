@@ -146,6 +146,7 @@ else
 												gamma * psidashGCA * 
 																	 (theta1 * Ixx * Ixy + theta2 * Iyy * Ixy ) ;
 */
+
 void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplImage* Ikx,IplImage* Iky,double gamma,
 						IplImage* psidashGCA,IplImage* theta1,IplImage* Ixx,IplImage* Ixy,
 						IplImage* theta2,IplImage* Iyy,IplImage* IxyB)
@@ -203,9 +204,14 @@ void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
 	cvReleaseImage(&temp1);
 	cvReleaseImage(&temp2);
 }
+				//fs2
+//pdfaltsumu = pdfs(2:2:end,  1:2:2*wt) * (u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + 
+//			   pdfs( 2:2:end,  3:2:end) * (u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + 
+//			   pdfs( 1:2:2*ht, 2:2:end) * (u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + 
+//			   pdfs( 3:2:end,  2:2:end) * (u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) ) 
 
 
-void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* u,IplImage* v){
+void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* UorV){
 	//init
 	IplImage* tempLeft1=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
 	IplImage* tempLeft2=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
@@ -213,16 +219,16 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* psidashFS1,IplImage*
 	IplImage* tempLeft4=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
 
 	//psidashFS2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
-	toolsKit::IPL_sub_left(u,u,tempLeft1);
+	toolsKit::IPL_sub_left(UorV,UorV,tempLeft1);
 	toolsKit::IPL_mul_left(tempLeft1,psidashFS2,tempLeft1);
 	//psidashFS2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
-	toolsKit::IPL_sub_right(u,u,tempLeft2);
+	toolsKit::IPL_sub_right(UorV,UorV,tempLeft2);
 	toolsKit::IPL_mul_right(tempLeft2,psidashFS2,tempLeft2);
 	//psidashFS1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
-	toolsKit::IPL_sub_top(u,u,tempLeft3);
+	toolsKit::IPL_sub_top(UorV,UorV,tempLeft3);
 	toolsKit::IPL_mul_top(tempLeft3,psidashFS1,tempLeft3);
 	//psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bottom ,ans1
-	toolsKit::IPL_sub_bottom(u,u,tempLeft4);
+	toolsKit::IPL_sub_bottom(UorV,UorV,tempLeft4);
 	toolsKit::IPL_mul_bottom(tempLeft4,psidashFS1,tempLeft4);
 
 	//temp1+temp2+temp3+temp4
@@ -317,8 +323,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 
 		
 			//only temp normalize!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			 toolsKit::cvNormalizeEdges(uapp);
-			 toolsKit::cvNormalizeEdges(vapp);
+			// toolsKit::cvNormalizeEdges(uapp);
+			// toolsKit::cvNormalizeEdges(vapp);
 			/* toolsKit::cvNormalizeEdges2(uvapp);*/
 
 			 vuapp=cvCloneImage(uvapp);
@@ -432,9 +438,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 
 			// Computing the constant terms for the first of the Euler Lagrange equations
-			computeVectBComponents(pdfaltSumU,psidashFS1,psidashFS2,u,v);
+			computeVectBComponents(pdfaltSumU,psidashFS1,psidashFS2,u);
 			// Computing the constant terms for the second of the Euler Lagrange equations
-			computeVectBComponents(pdfaltSumV,psidashFS1,psidashFS2,u,v);
+			computeVectBComponents(pdfaltSumV,psidashFS1,psidashFS2,v);
 
 
 			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 

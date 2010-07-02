@@ -108,9 +108,36 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 
 
 //need to recieve cvSobel with function pointer;
-int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy){	
-	cvSobel( src, dest_dx, 1, 0, 3);
-	cvSobel( src, dest_dy, 0, 1, 3);
+int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy,IplImage* dest_dz){	
+	//cvSobel(src, dest_dx, 1, 0, 1);
+
+	double x[3][3] =	{{0.0551,0,-0.0551},
+					     {0.1399,0,-0.1399},
+					     {0.0551,0,-0.0551}}	;
+	double y[3][3] =  {{0.0551,0.1399,0.0551},
+					   {0,0,0},
+					   {-0.0551,-0.1399,-0.0551}};
+
+	double z[3][3] = {{0.0485,  0.1232,   0.0485},
+					  {0.1232,   0.3133,   0.1232},
+					  {0.0485,   0.1232,   0.0485}};
+	//x derivative
+	CvMat* matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, x ); // 64FC1 for double
+	cvFilter2D(src,dest_dx,matScharr_3x3x2);//,cvPoint(-1,-1));*/
+	//y derivative
+	matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, y );
+	cvFilter2D(src,dest_dy,matScharr_3x3x2);
+	//z derivative
+	matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, z );
+	cvFilter2D(src,dest_dz,matScharr_3x3x2);
+	
+	//cvSobel(src, dest_dx, 1, 0, 1);
+	//cvSobel( src, dest_dy, 0, 1, 1);
+	//fix to fit matlab
+	toolsKit::cvMulScalar(dest_dx,-2);
+	toolsKit::cvMulScalar(dest_dy,-2);
+	toolsKit::cvMulScalar(dest_dz,-2);
+
 	return 0;
 }
 
@@ -224,7 +251,7 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//init masks
 	double a[] = {1,1};
 	double b[] = {1,-1};
-	double c[]={0.5,0.5};
+	double c[] = {0.5,0.5};
 	CvMat* matOnes = &cvMat( 1, 2, CV_64FC1, a ); // 64FC1 for double
 	CvMat* matOnesT=&cvMat( 2, 1, CV_64FC1, a );
 	cvTranspose(matOnes,matOnesT);
@@ -321,8 +348,8 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 //	return ans;
 }
 
-flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1, 
-											const IplImage* Im2, 
+flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1, 
+											IplImage* Im2, 
 											IplImage* warpIm2, 
 											IplImage* uinit, 
 											IplImage* vinit, 
@@ -336,7 +363,6 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		int width=Im1->width;
 		int channels=Im1->nChannels;
 		//this will hold the optical flow
-	    //flowUV* UV=new flowUV(width,height,IPL_DEPTH_8U,channels);
 		flowUV* UV=new flowUV(uinit,vinit);
 		//init for the different DX,DY & DT		
 		IplImage* Ikx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
@@ -356,25 +382,54 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  const IplImage* Im1,
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 	
 		//create the different DX of the pictures
-		getDXsCVSobel(Im1,Ikx,Iky);
-		getDXsCVSobel(Im2,Ikx2,Iky2);
+	
 		
 
-		//by brox we need to take the gradient of the gradient:
-		getDXsCVSobel(Ikx,Ixx,Ixy);
-		getDXsCVSobel(Iky,Iyx,Iyy);
+		getDXsCVSobel(Im2,Ikx2,Iky2,Ikt_Org);
+
+			getDXsCVSobel(Im1,Ikx,Iky,Ikt_Org);
 		
+		//by brox we need to take the gradient of the gradient:
+		getDXsCVSobel(Ikx,Ixx,Ixy,IXt_axis);
+		getDXsCVSobel(Iky,Iyx,Iyy,IYt_ayis);
 		
 		//DXT of original images and their x&y gradiants
-	 	cvAbsDiff(Im1,Im2,Ikt_Org);//IKz
-		cvAbsDiff(Ikx,Ikx2,IXt_axis);
-		cvAbsDiff(Iky,Iky2,IYt_ayis);
+	 	//cvAbsDiff(Im1,Im2,Ikt_Org);//IKz
+		//cvAbsDiff(Ikx,Ikx2,IXt_axis);
+		//cvAbsDiff(Iky,Iky2,IYt_ayis);
 		
-		/*cout<<"Ikx"<<endl;
+		//cvSub(Im2,Im1,Ikt_Org);
+		//cvSub(Ikx2,Ikx,IXt_axis);
+		//cvSub(Iky2,Iky,IYt_ayis);
+		
+		cout<<"Ikx"<<endl;
 		toolsKit::IPL_print(Ikx);
-			cout<<"Iky"<<endl;
+		cout<<"Iky"<<endl;
+		toolsKit::IPL_print(Iky);
+		
+		cout<<"Ikx2"<<endl;
+		toolsKit::IPL_print(Ikx2);
+		cout<<"Iky2"<<endl;
+		toolsKit::IPL_print(Iky2);	
+	
+	
+		//cout<<"Iyx"<<endl;
+		//toolsKit::IPL_print(Iyx);
+		cout<<"Iyy"<<endl;
+		toolsKit::IPL_print(Iyy);
 
-		toolsKit::IPL_print(Iky);*/
+		cout<<"Ixx"<<endl;
+		toolsKit::IPL_print(Ixx);
+		cout<<"Iyy"<<endl;
+		toolsKit::IPL_print(Iyy);
+
+		cout<<"Ikt_Org(ikz)"<<endl;
+		toolsKit::IPL_print(Ikt_Org);
+		cout<<"IXt_axis"<<endl;
+		toolsKit::IPL_print(IXt_axis);
+		cout<<"IYt_ayis"<<endl;
+		toolsKit::IPL_print(IYt_ayis);
+		
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 						

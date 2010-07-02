@@ -35,8 +35,8 @@ private:
 	
 	void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
 												  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma,int nInnerFPIterations );
-	flowUV* SmoothFlowPDE(const IplImage* Im1, 
-						   const IplImage* Im2, 
+	flowUV* SmoothFlowPDE( IplImage* Im1, 
+						   IplImage* Im2, 
 						   IplImage* warpIm2, 
 						   IplImage* du, 
 						   IplImage* dv, 
