@@ -172,6 +172,31 @@ void toolsKit::IPL_mul_left(IplImage* img,IplImage* shiftImg2,IplImage* dest){
 void toolsKit::IPL_mul_right(IplImage* img,IplImage* shiftImg2,IplImage* dest){
 	IPL_operate_right(img,shiftImg2,dest,MUL);
 	}
+
+void toolsKit::PrintMat(CvMat *A)
+{
+	int i, j;
+	for (i = 0; i < A->rows; i++)
+	{
+		printf("\n");
+		switch (CV_MAT_DEPTH(A->type))
+		{
+		case CV_32F:
+		case CV_64F:
+			for (j = 0; j < A->cols; j++)
+				printf ("%8.3f ", (float)cvGetReal2D(A, i, j));
+			break;
+		case CV_8U:
+		case CV_16U:
+			for(j = 0; j < A->cols; j++)
+				printf ("%6d",(int)cvGetReal2D(A, i, j));
+			break;
+		default:
+			break;
+		}
+	}
+	printf("\n");
+}
 void toolsKit::IPL_print(const IplImage *image) {
 	int ht= image->height; // number of lines
 	int wt= image->width ; // total number of element per line
@@ -187,6 +212,9 @@ void toolsKit::IPL_print(const IplImage *image) {
 			if(image->nChannels==3){
 				cout<<"["<<s.val[0]<<","<<s.val[1]<<","<<s.val[2]<<"] ";
 				}
+			if(image->nChannels==2){
+				cout<<"["<<s.val[0]<<","<<s.val[1]<<"] ";
+				}
 			else
 				cout<<s.val[0]<<" ";
 			// end of pixel processing ----------------
@@ -200,9 +228,51 @@ void toolsKit::IPL_print(const IplImage *image) {
 
 void toolsKit::cvMulScalar(IplImage* img,float scalar){
 	IplImageIterator<float> it(img);
-	while (!it) {      
-		*it= (float)scalar*(*it); 
+	while (!it) {   
+		if(*it!=0)
+			*it= (float)scalar*(*it); 
 		++it;
+		}
+	}
+
+void toolsKit::increaseImageSize(IplImage* src,IplImage* dst,int select){
+	int i,j,k;
+	int width=src->width;					
+	//for first cell
+	k=width;
+	cvZero(dst);
+
+	if (!select)//increase by on col
+		for (i = 0,j=0; i < width*src->height;j++, i++)
+			{
+				if(k){//do not compute last column			  
+					((float*)dst->imageData)[j]=((float*)src->imageData)[i];							
+					//cout<<((float*)dst->imageData)[j]<<" ";
+				}
+				if(k==0){//smaller pic is at row end
+					//cout<<endl;
+					k=width-1;
+					j++;
+				}
+				else
+					k--;
+				}
+	else
+		for (i = 0,j=0; i < width*src->height; i++,j++)					
+		{	
+			((float*)dst->imageData)[j]=((float*)src->imageData)[i];		
+		}
+
+}
+
+void toolsKit::cvZeroBottom(IplImage* img){
+	int i;
+	int width=img->width;					
+	//for first cell
+	for (i = 0; i < width*img->height; i++)
+		{
+		if(i> width*img->height-width-1)
+			((float*)img->imageData)[i]=0;
 		}
 	}
 
@@ -214,9 +284,9 @@ void toolsKit::cvNormalizeEdges(IplImage* img){
 	k=width-1;
 	for (i = 0; i < width*img->height; i++)
 		{
-		if(i<width)
+		if(i<width)//first row
 			((float*)img->imageData)[i]=130;
-		if(i> width*img->height-width-1)
+		if(i> width*img->height-width-1)//last row
 			((float*)img->imageData)[i]=130;
 		if(!k)//apply to last column only										  
 			((float*)img->imageData)[i]=130;

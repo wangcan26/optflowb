@@ -108,12 +108,17 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 
 
 //need to recieve cvSobel with function pointer;
-int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy,IplImage* dest_dz){	
-	//cvSobel(src, dest_dx, 1, 0, 1);
-
+int getDXsCVSobel(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy,IplImage* dest_dz){	
+	
 	double x[3][3] =	{{0.0551,0,-0.0551},
 					     {0.1399,0,-0.1399},
 					     {0.0551,0,-0.0551}}	;
+						/*{
+							{{0.0551,0.0551},{0,0},{-0.0551,-0.0551}},
+							{{0.1399,0.1399},{0,0},{-0.1399,-0.1399}},
+							{{0.0551,0.0551},{0,0},{-0.0551,-0.0551}}
+						};*/
+	
 	double y[3][3] =  {{0.0551,0.1399,0.0551},
 					   {0,0,0},
 					   {-0.0551,-0.1399,-0.0551}};
@@ -122,14 +127,27 @@ int getDXsCVSobel(const IplImage* src,IplImage* dest_dx,IplImage* dest_dy,IplIma
 					  {0.1232,   0.3133,   0.1232},
 					  {0.0485,   0.1232,   0.0485}};
 	//x derivative
+
+	/*IplImage* src2D=cvCreateImage(cvSize( src1->width, src1->height ),src1->depth,2);
+	IplImage* dest2D=cvCreateImage(cvSize( src1->width, src1->height ),src1->depth,2);
+	
+	cvMerge(src1,src2,NULL,NULL ,src2D);*/
+	
 	CvMat* matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, x ); // 64FC1 for double
-	cvFilter2D(src,dest_dx,matScharr_3x3x2);//,cvPoint(-1,-1));*/
+	//CvMatND* matScharr_3x3x22 = &CvMatND( 3, CV_64FC2, x ); // 64FC1 for double
+	
+	//toolsKit::PrintMat(matScharr_3x3x2);
+	cvFilter2D(src1,dest_dx,matScharr_3x3x2);//,cvPoint(-1,-1));*/
+	
+//	toolsKit::IPL_print(dest2D);
+
+	
 	//y derivative
 	matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, y );
-	cvFilter2D(src,dest_dy,matScharr_3x3x2);
+	cvFilter2D(src1,dest_dy,matScharr_3x3x2);
 	//z derivative
 	matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, z );
-	cvFilter2D(src,dest_dz,matScharr_3x3x2);
+	cvFilter2D(src1,dest_dz,matScharr_3x3x2);
 	
 	//cvSobel(src, dest_dx, 1, 0, 1);
 	//cvSobel( src, dest_dy, 0, 1, 1);
@@ -154,6 +172,21 @@ IplImage* coarse2FineCompute::createWarp(IplImage* WarpImage2, IplImage* img1,Ip
 	return WarpImage2;
 }
 
+
+
+//averaging as per the numerics section of the second chapter.for x and y
+void shiftImage(IplImage* uKK,IplImage* temp,int select){
+//	IplImage* temp=cvCreateImage(cvSize( uKK->width, uKK->height ),uKK->depth,uKK->nChannels);
+	cvZero(temp);
+	if(!select)//right
+		toolsKit::IPL_add_right(temp,uKK,temp);
+	else 
+		toolsKit::IPL_add_bottom(temp,uKK,temp);
+	//cvZero(uKKd);
+	//cvFilter2D(temp,uKKd,mat);
+	//cout<<"shiftImageAndFilter:temp"<<endl;
+	//toolsKit::IPL_print(temp);
+}
 void coarse2FineCompute::Coarse2FineFlow(IplImage* vx, 
 										 IplImage* vy, 
 										 const IplImage &Im1, 
@@ -250,86 +283,126 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV){	
 	//init masks
 	double a[] = {1,1};
-	double b[] = {1,-1};
-	double c[] = {0.5,0.5};
 	CvMat* matOnes = &cvMat( 1, 2, CV_64FC1, a ); // 64FC1 for double
-	CvMat* matOnesT=&cvMat( 2, 1, CV_64FC1, a );
+	CvMat* matOnesT= &cvMat( 2, 1, CV_64FC1, a );
 	cvTranspose(matOnes,matOnesT);
-
+	
+	double c[] = {0.5,0.5};
 	CvMat* matHalf = &cvMat( 1, 2, CV_64FC1, c ); // 64FC1 for double
-	CvMat* matHalfT=&cvMat( 2, 1, CV_64FC1, c );
+	CvMat* matHalfT= &cvMat( 2, 1, CV_64FC1, c );
 	cvTranspose(matHalf,matHalfT);
 	
-	
+	double b[] = {1,-1};
 	CvMat* matOneNegOne = &cvMat( 1, 2, CV_64FC1, b ); // 64FC1 for double
-	CvMat* matOneNegOneT=&cvMat( 2, 1, CV_64FC1, b );;
+	CvMat* matOneNegOneT= &cvMat( 2, 1, CV_64FC1, b );;
 	cvTranspose(matOneNegOne,matOneNegOneT);
 	//init temp params
 	IplImage* ux=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 	IplImage* uy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 	IplImage* vx=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 	IplImage* vy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* uxd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* vxd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* uyd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* vyd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* t=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* uxpd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* uypd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* vxpd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	IplImage* vypd=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
+	IplImage* uxd=cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);
+	IplImage* vxd=cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);
+	IplImage* uyd=cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
+	IplImage* vyd=cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
+	IplImage* t  =cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
+	IplImage* t2  =cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);
+	IplImage* uxpd=cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
+	IplImage* uypd=cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);
+	IplImage* vxpd=cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
+	IplImage* vypd=cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);
+
+	IplImage* temp=cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
+	IplImage* temp2=cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);;
+
 
 	//compute psidashFS
 
 	cvFilter2D(iterU,ux,matOneNegOne);// x and y derivatives of u by 2d convolution
+	toolsKit::cvMulScalar(ux,-1);	
 	cvFilter2D(iterU,uy,matOneNegOneT);// x and y derivatives of u by 2d convolution
+	toolsKit::cvMulScalar(uy,-1);
 	cvFilter2D(iterV,vx,matOneNegOne);// x and y derivatives of v by 2d convolution
+	toolsKit::cvMulScalar(vx,-1);
 	cvFilter2D(iterV,vy,matOneNegOneT);	// x and y derivatives of v by 2d convolution
-
-	//toolsKit::cvShowManyImages("Image22",6,iterU,iterV,ux,uy,vx,vy);		
-
-	cvFilter2D(ux,uxd,matHalf);//averaging as per the numerics section of the second chapter.for x
-	cvFilter2D(vx,vxd,matHalf);
-
-	cvFilter2D(uy,uyd,matHalfT);//averaging as per the numerics section of the second chapter.for y
-	cvFilter2D(vy,vyd,matHalfT);	
+	toolsKit::cvMulScalar(vy,-1);
+	/////////////////////////////////////////////////////	
+	toolsKit::increaseImageSize(ux,temp2,0);
+	cvFilter2D(temp2,uxd,matHalf);
 	
+	toolsKit::increaseImageSize(vx,temp2,0);
+	cvFilter2D(temp2,vxd,matHalf);	
+	
+	toolsKit::increaseImageSize(uy,temp,1);
+	cvFilter2D(temp,uyd,matHalfT);
+	
+	toolsKit::increaseImageSize(vy,temp,1);
+	cvFilter2D(temp,vyd,matHalfT);	
+	
+	//uxpd============================================================================================
 	cvFilter2D(uyd,t,matHalf);// Computes the delta u(i+1/2, j) and delta u(i-1/2, j).
 	cvPow(ux,ux,2);//ux^2
 	cvPow(t,t,2);//t^2
-	cvAdd(ux,t,uxpd);//uxpd = ux^2 + t^2 
-
+	toolsKit::increaseImageSize(ux,temp,1);
+	toolsKit::IPL_add_bottom(temp,t,uxpd);//uxpd = ux^2 + t^2  last line on uxpd shoud be deleted
 	
-	cvFilter2D(uxd,t,matHalfT);//Computes the delta u(i, j+1/2) and delta u(i, j-1/2).
+	//uypd============================================================================================
+	cvFilter2D(uxd,t2,matHalfT);//Computes the delta u(i, j+1/2) and delta u(i, j-1/2).
 	cvPow(uy,uy,2);//uy^2
-	cvPow(t,t,2);//t^2
-	cvAdd(uy,t,uypd);//uypd = uy^2 + t^2	
+	cvPow(t2,t2,2);//t2^2
+	toolsKit::increaseImageSize(uy,temp2,0);
+	//cvAdd(uy,t2,uypd);//uypd = uy^2 + t2^2	
+	toolsKit::IPL_add_bottom(temp2,t2,uypd);//uypd = uy^2 + t2^2 last line on uxpd shoud be deleted
 	
+	//vxpd============================================================================================
 	cvFilter2D(vyd,t,matHalf);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
 	cvPow(vx,vx,2);//vx^2
 	cvPow(t,t,2);//t^2
-	cvAdd(vx,t,vxpd);//vxpd = vx^2 + t^2
-
-	cvFilter2D(vxd,t,matHalfT);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
-	cvPow(vy,vy,2);//vx^2
-	cvPow(t,t,2);//t^2
-	cvAdd(vy,t,vypd);//vypd=vy^2 + t^2
+	toolsKit::increaseImageSize(vx,temp,1);
+	toolsKit::IPL_add_bottom(temp,t,vxpd);//vxpd = vx^2 + t^2 last line on uxpd shoud be deleted
 	
-	//toolsKit::cvShowManyImages("before:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
-	//toolsKit::cvShowManyImages("before:vxpd,vxpd,ans2",3,vxpd,vxpd,UV->getPsidashFSAns2());	
+	//vypd============================================================================================
+	cvFilter2D(vxd,t2,matHalfT);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
+	cvPow(vy,vy,2);//vy^2
+	cvPow(t2,t2,2);//t2^2
+	toolsKit::increaseImageSize(vy,temp2,0);
+	toolsKit::IPL_add_bottom(temp2,t2,vypd);//vypd=vy^2 + t2^2 last line on uxpd shoud be deleted
+	
+
+	cout<<"uxpd(add bottom)"<<endl;
+	toolsKit::IPL_print(uxpd);
+	cout<<"uypd(add bottom)"<<endl;
+	toolsKit::IPL_print(uypd);
+	cout<<"vxpd(add bottom)"<<endl;
+	toolsKit::IPL_print(vxpd);
+	cout<<"vypd(add bottom)"<<endl;
+	toolsKit::IPL_print(vypd);
+	
 	cvAdd(uypd,vypd,UV->getPsidashFSAns1());
 	cvAdd(uxpd,vxpd,UV->getPsidashFSAns2());
 	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
-	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());		
-		
-	
-	/*cout<<"computePsidashFS_brox:before psiDerivative-fs1"<<endl;
+	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());
+
+cout<<"UV->getPsidashFSAns1()-before der"<<endl;
 	toolsKit::IPL_print(UV->getPsidashFSAns1());
-	cout<<"computePsidashFS_brox:before psiDerivative-fs2"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns2());*/
+	cout<<"UV->getPsidashFSAns2()-before der"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns2());
+
+	toolsKit::cvZeroBottom(UV->getPsidashFSAns1());
+	toolsKit::cvZeroBottom(UV->getPsidashFSAns2());
+
+	cout<<"UV->getPsidashFSAns1()-before der"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns1());
+	cout<<"UV->getPsidashFSAns2()-before der"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns2());
 
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
+
+	cout<<"UV->getPsidashFSAns1()-after der"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns1());
+	cout<<"UV->getPsidashFSAns2()-after der"<<endl;
+	toolsKit::IPL_print(UV->getPsidashFSAns2());
 	
 	cvReleaseImage( &ux ); 
 	cvReleaseImage( &uy ); 
@@ -340,10 +413,13 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	cvReleaseImage( &uyd ); 
 	cvReleaseImage( &vyd ); 
 	cvReleaseImage( &t ); 
+	cvReleaseImage( &t2 ); 
 	cvReleaseImage( &uxpd ); 
 	cvReleaseImage( &uypd ); 
 	cvReleaseImage( &vxpd ); 
 	cvReleaseImage( &vypd ); 
+	cvReleaseImage( &temp ); 
+	cvReleaseImage( &temp2 ); 
 
 //	return ans;
 }
@@ -385,9 +461,11 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 	
 		
 
-		getDXsCVSobel(Im2,Ikx2,Iky2,Ikt_Org);
+		
 
-			getDXsCVSobel(Im1,Ikx,Iky,Ikt_Org);
+		getDXsCVSobel(Im1,Ikx,Iky,Ikt_Org);
+		
+		getDXsCVSobel(Im2,Ikx2,Iky2,Ikt_Org);
 		
 		//by brox we need to take the gradient of the gradient:
 		getDXsCVSobel(Ikx,Ixx,Ixy,IXt_axis);
@@ -401,14 +479,25 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//cvSub(Im2,Im1,Ikt_Org);
 		//cvSub(Ikx2,Ikx,IXt_axis);
 		//cvSub(Iky2,Iky,IYt_ayis);
-		
-		cout<<"Ikx"<<endl;
+		//////////////////////////
+		cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
+		//Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis
+		Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
+		Iky=toolsKit::IplFromFile("c:\\a\\Iy.txt");
+		Ikt_Org=toolsKit::IplFromFile("c:\\a\\Iz.txt");
+		Ixx=toolsKit::IplFromFile("c:\\a\\Ixx.txt");
+		Ixy=toolsKit::IplFromFile("c:\\a\\Ixy.txt");
+		Iyy=toolsKit::IplFromFile("c:\\a\\Iyy.txt");
+		IXt_axis=toolsKit::IplFromFile("c:\\a\\Ixz.txt");
+		IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");
+		//////////////////////////
+		/*cout<<"Ikx"<<endl;
 		toolsKit::IPL_print(Ikx);
 		cout<<"Iky"<<endl;
 		toolsKit::IPL_print(Iky);
 		
-		cout<<"Ikx2"<<endl;
-		toolsKit::IPL_print(Ikx2);
+		//cout<<"Ikx2"<<endl;
+		//toolsKit::IPL_print(Ikx2);
 		cout<<"Iky2"<<endl;
 		toolsKit::IPL_print(Iky2);	
 	
@@ -417,7 +506,9 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//toolsKit::IPL_print(Iyx);
 		cout<<"Iyy"<<endl;
 		toolsKit::IPL_print(Iyy);
-
+		
+		cout<<"Ixy"<<endl;
+		toolsKit::IPL_print(Ixy);
 		cout<<"Ixx"<<endl;
 		toolsKit::IPL_print(Ixx);
 		cout<<"Iyy"<<endl;
@@ -429,14 +520,28 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		toolsKit::IPL_print(IXt_axis);
 		cout<<"IYt_ayis"<<endl;
 		toolsKit::IPL_print(IYt_ayis);
-		
+		*/
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 						
-			computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
+			//computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
 			
+			cout<<"u 2 outer iter"<<endl;
+			toolsKit::IPL_print(toolsKit::IplFromFile("c:\\a\\u.txt"));
+			cout<<"v 2 outer iter"<<endl;
+			toolsKit::IPL_print(toolsKit::IplFromFile("c:\\a\\v.txt"));
+
+
+			computePsidashFS_brox(toolsKit::IplFromFile("c:\\a\\u.txt"),toolsKit::IplFromFile("c:\\a\\v.txt"),width,height,channels,UV);
+			
+
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);					
+
+			cout<<"UV->getPsidashFSAns1"<<endl;
+			toolsKit::IPL_print(UV->getPsidashFSAns1());
+			cout<<"UV->getPsidashFSAns2"<<endl;
+			toolsKit::IPL_print(UV->getPsidashFSAns2());
 
 			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);
 			

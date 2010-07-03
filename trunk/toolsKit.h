@@ -62,12 +62,14 @@
 		static void IPL_add(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_sub(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_print(const IplImage *image);
+		static void PrintMat(CvMat *A);
 		static void cvMulScalar(IplImage* img,float scalar);
+		static void cvZeroBottom(IplImage* img);
 		static void cvNormalizeEdges(IplImage* img);
 		static void cvZeroNans(IplImage* img);
 		static void costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5);
 		static IplImage* psiDerivative(IplImage* x,double epsilon);
-
+		static void increaseImageSize(IplImage* src,IplImage* dst,int select);
 		static bool AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError);
 		static bool IsNan(float A);
 
