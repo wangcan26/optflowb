@@ -172,21 +172,6 @@ IplImage* coarse2FineCompute::createWarp(IplImage* WarpImage2, IplImage* img1,Ip
 	return WarpImage2;
 }
 
-
-
-//averaging as per the numerics section of the second chapter.for x and y
-void shiftImage(IplImage* uKK,IplImage* temp,int select){
-//	IplImage* temp=cvCreateImage(cvSize( uKK->width, uKK->height ),uKK->depth,uKK->nChannels);
-	cvZero(temp);
-	if(!select)//right
-		toolsKit::IPL_add_right(temp,uKK,temp);
-	else 
-		toolsKit::IPL_add_bottom(temp,uKK,temp);
-	//cvZero(uKKd);
-	//cvFilter2D(temp,uKKd,mat);
-	//cout<<"shiftImageAndFilter:temp"<<endl;
-	//toolsKit::IPL_print(temp);
-}
 void coarse2FineCompute::Coarse2FineFlow(IplImage* vx, 
 										 IplImage* vy, 
 										 const IplImage &Im1, 
@@ -368,6 +353,10 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	toolsKit::increaseImageSize(vy,temp2,0);
 	toolsKit::IPL_add_bottom(temp2,t2,vypd);//vypd=vy^2 + t2^2 last line on uxpd shoud be deleted
 	
+	cout<<"vy^2"<<endl;
+	toolsKit::IPL_print(temp2);
+	cout<<"t2^2"<<endl;
+	toolsKit::IPL_print(t2);
 
 	cout<<"uxpd(add bottom)"<<endl;
 	toolsKit::IPL_print(uxpd);
@@ -383,26 +372,21 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());
 
-cout<<"UV->getPsidashFSAns1()-before der"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns1());
-	cout<<"UV->getPsidashFSAns2()-before der"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns2());
-
-	toolsKit::cvZeroBottom(UV->getPsidashFSAns1());
-	toolsKit::cvZeroBottom(UV->getPsidashFSAns2());
-
-	cout<<"UV->getPsidashFSAns1()-before der"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns1());
-	cout<<"UV->getPsidashFSAns2()-before der"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns2());
+	//toolsKit::cvZeroBottom(UV->getPsidashFSAns1());
+	//toolsKit::cvZeroBottom(UV->getPsidashFSAns2());
 
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
+	
+	toolsKit::cvZeroBottomLeft(UV->getPsidashFSAns1());
+	toolsKit::cvZeroBottomLeft(UV->getPsidashFSAns2());
 
-	cout<<"UV->getPsidashFSAns1()-after der"<<endl;
+	/*cout<<"UV->getPsidashFSAns1()-after der"<<endl;
 	toolsKit::IPL_print(UV->getPsidashFSAns1());
 	cout<<"UV->getPsidashFSAns2()-after der"<<endl;
 	toolsKit::IPL_print(UV->getPsidashFSAns2());
+*/
+
 	
 	cvReleaseImage( &ux ); 
 	cvReleaseImage( &uy ); 
@@ -526,21 +510,22 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 						
 			//computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
 			
-			cout<<"u 2 outer iter"<<endl;
-			toolsKit::IPL_print(toolsKit::IplFromFile("c:\\a\\u.txt"));
+			/*cout<<"u 2 outer iter"<<endl;
+			toolsKit::IPL_print(toolsKit::IplFromFile("c:\\a\\u_double.txt"));
 			cout<<"v 2 outer iter"<<endl;
-			toolsKit::IPL_print(toolsKit::IplFromFile("c:\\a\\v.txt"));
+			toolsKit::IPL_print(toolsKit::IplFromFile("c:\\a\\v_double.txt"));*/
 
 
-			computePsidashFS_brox(toolsKit::IplFromFile("c:\\a\\u.txt"),toolsKit::IplFromFile("c:\\a\\v.txt"),width,height,channels,UV);
+			computePsidashFS_brox(toolsKit::IplFromFile("c:\\a\\u_double.txt"),toolsKit::IplFromFile("c:\\a\\v_double.txt"),width,height,channels,UV);
 			
 
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
-			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);					
+			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
 
-			cout<<"UV->getPsidashFSAns1"<<endl;
+
+			cout<<"fs1*alpha"<<endl;
 			toolsKit::IPL_print(UV->getPsidashFSAns1());
-			cout<<"UV->getPsidashFSAns2"<<endl;
+			cout<<"fs2*alpha"<<endl;
 			toolsKit::IPL_print(UV->getPsidashFSAns2());
 
 			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);

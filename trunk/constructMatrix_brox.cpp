@@ -193,16 +193,45 @@ void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplI
 }
 
 
+//					fs1									fs1+shiftdown
 //pdfsum = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +
 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
-	IplImage* temp1=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* temp2=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	toolsKit::IPL_add_left(psidashFS1,psidashFS1,temp1);
-	toolsKit::IPL_add_top(psidashFS2,psidashFS2,temp2);
-	cvAdd(temp1,temp2,pdfSum);
+	IplImage* fs2_223=cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
+	IplImage* fs1_32 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+	IplImage* temp1 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+	IplImage* temp2 =cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
+	
+	toolsKit::shiftImage(psidashFS1,fs1_32,toolsKit::UP);
+	cvAdd(psidashFS1,fs1_32,temp1);
+	
+
+	/*cout<<"psidashFS1"<<endl;
+	toolsKit::IPL_print(psidashFS1);
+	cout<<"fs1_32"<<endl;
+	toolsKit::IPL_print(fs1_32);
+	cout<<"temp1"<<endl;*/
+	toolsKit::IPL_print(temp1);
+			
+
+	toolsKit::shiftImage(psidashFS2,fs2_223,toolsKit::RIGHT);
+	cvAdd(psidashFS2,fs2_223,temp2);
+	/*cout<<"psidashFS2"<<endl;
+	toolsKit::IPL_print(psidashFS2);
+	cout<<"fs2_223"<<endl;
+	toolsKit::IPL_print(fs2_223);*/
+	cout<<"temp2"<<endl;
+	toolsKit::IPL_print(temp2);
+
+
+	toolsKit::IPL_add_different_sizes(temp1,temp2,pdfSum);
 	cvReleaseImage(&temp1);
+	cout<<"pdfSum"<<endl;
+	toolsKit::IPL_print(pdfSum);
 	cvReleaseImage(&temp2);
+	cvReleaseImage(&fs2_223);
+	cvReleaseImage(&fs1_32);
+
 }
 				//fs2
 //pdfaltsumu = pdfs(2:2:end,  1:2:2*wt) * (u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + 

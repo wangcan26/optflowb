@@ -40,6 +40,24 @@ void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
 		++it3;
 		}
 	}
+//wt*(ht+1) +(ht+1)*wt matrixs only
+//dest size is x*y
+void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest){
+	int i,j,k;
+	
+	k=imgHorizonal->width-1;
+	for (i = 1,j=0; i < imgHorizonal->width*imgVertical->height; i++,j++)					
+	{	
+		if(k==0){//smaller pic is at row end		
+			k=imgHorizonal->width-1;
+			i++;
+		}
+		else
+			k--;		
+		 ((float*)dest->imageData)[j]=((float*)imgHorizonal->imageData)[i]+((float*)imgVertical->imageData)[j];			
+	}		
+}
+
 void toolsKit::IPL_sub(IplImage* img,IplImage* img2,IplImage* dest){
 	IplImageIterator<float> it(img);
 	IplImageIterator<float> it2(img2);
@@ -276,6 +294,23 @@ void toolsKit::cvZeroBottom(IplImage* img){
 		}
 	}
 
+void toolsKit::cvZeroBottomLeft(IplImage* img){
+	int i,k;
+	int width=img->width;					
+	//for first cell
+	k=width-1;
+	for (i = 0; i < width*img->height; i++)
+		{
+		if(i> width*img->height-width-1)
+			((float*)img->imageData)[i]=0;
+		if(k==width-1)//apply to first column only										  
+			((float*)img->imageData)[i]=0;
+		k==0?k=width-1:k--;
+		}
+		
+	}
+
+
 
 void toolsKit::cvNormalizeEdges(IplImage* img){
 	int i,k;
@@ -290,7 +325,7 @@ void toolsKit::cvNormalizeEdges(IplImage* img){
 			((float*)img->imageData)[i]=130;
 		if(!k)//apply to last column only										  
 			((float*)img->imageData)[i]=130;
-		if(k==width-1)//apply to last column only										  
+		if(k==width-1)//apply to first column only										  
 			((float*)img->imageData)[i]=130;
 
 		k==0?k=width-1:k--;
@@ -310,6 +345,21 @@ void toolsKit::cvNormalizeEdges(IplImage* img){
 
 
 	}
+
+//averaging as per the numerics section of the second chapter.for x and y
+//{UP=1,DOWN=2,LEFT=3,RIGHT=4};
+void toolsKit::shiftImage(IplImage* src,IplImage* emptyImage,int select){
+	cvZero(emptyImage);
+	if(select==RIGHT)//right 
+		toolsKit::IPL_add_right(emptyImage,src,emptyImage);
+	else if(select==LEFT)//down 
+		toolsKit::IPL_add_left(emptyImage,src,emptyImage);
+	else if(select==DOWN)//down 
+		toolsKit::IPL_add_bottom(emptyImage,src,emptyImage);
+	else if(select==UP)//down 
+		toolsKit::IPL_add_top(emptyImage,src,emptyImage);
+	
+}
 
 bool toolsKit::AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError)
 	{
