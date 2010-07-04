@@ -337,8 +337,8 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	cvPow(t2,t2,2);//t2^2
 	toolsKit::increaseImageSize(uy,temp2,0);
 	//cvAdd(uy,t2,uypd);//uypd = uy^2 + t2^2	
-	toolsKit::IPL_add_bottom(temp2,t2,uypd);//uypd = uy^2 + t2^2 last line on uxpd shoud be deleted
-	
+	toolsKit::IPL_add_right(temp2,t2,uypd);//uypd = uy^2 + t2^2 last line on uxpd shoud be deleted
+
 	//vxpd============================================================================================
 	cvFilter2D(vyd,t,matHalf);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
 	cvPow(vx,vx,2);//vx^2
@@ -351,43 +351,29 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	cvPow(vy,vy,2);//vy^2
 	cvPow(t2,t2,2);//t2^2
 	toolsKit::increaseImageSize(vy,temp2,0);
-	toolsKit::IPL_add_bottom(temp2,t2,vypd);//vypd=vy^2 + t2^2 last line on uxpd shoud be deleted
-	
-	cout<<"vy^2"<<endl;
-	toolsKit::IPL_print(temp2);
-	cout<<"t2^2"<<endl;
-	toolsKit::IPL_print(t2);
+	toolsKit::IPL_add_right(temp2,t2,vypd);//vypd=vy^2 + t2^2 last line on uxpd shoud be deleted
 
-	cout<<"uxpd(add bottom)"<<endl;
-	toolsKit::IPL_print(uxpd);
-	cout<<"uypd(add bottom)"<<endl;
-	toolsKit::IPL_print(uypd);
-	cout<<"vxpd(add bottom)"<<endl;
-	toolsKit::IPL_print(vxpd);
-	cout<<"vypd(add bottom)"<<endl;
-	toolsKit::IPL_print(vypd);
+	//cout<<"uxpd(add bottom)"<<endl;
+	//toolsKit::IPL_print(uxpd);
+	//cout<<"uypd(add right)"<<endl;
+	//toolsKit::IPL_print(uypd);
+	//cout<<"vxpd(add bottom)"<<endl;
+	//toolsKit::IPL_print(vxpd);
+	//cout<<"vypd(add right)"<<endl;
+	//toolsKit::IPL_print(vypd);
 	
-	cvAdd(uypd,vypd,UV->getPsidashFSAns1());
-	cvAdd(uxpd,vxpd,UV->getPsidashFSAns2());
+	toolsKit::IPL_add_different_sizes2(uypd,vypd,UV->getPsidashFSAns1());
+	toolsKit::IPL_add_different_sizes3(uxpd,vxpd,UV->getPsidashFSAns2());
+
 	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
 	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());
-
-	//toolsKit::cvZeroBottom(UV->getPsidashFSAns1());
-	//toolsKit::cvZeroBottom(UV->getPsidashFSAns2());
 
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
 	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
 	
-	toolsKit::cvZeroBottomLeft(UV->getPsidashFSAns1());
-	toolsKit::cvZeroBottomLeft(UV->getPsidashFSAns2());
+	//toolsKit::cvZeroRight(UV->getPsidashFSAns1());
+	//toolsKit::cvZeroBottomLeft(UV->getPsidashFSAns2());
 
-	/*cout<<"UV->getPsidashFSAns1()-after der"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns1());
-	cout<<"UV->getPsidashFSAns2()-after der"<<endl;
-	toolsKit::IPL_print(UV->getPsidashFSAns2());
-*/
-
-	
 	cvReleaseImage( &ux ); 
 	cvReleaseImage( &uy ); 
 	cvReleaseImage( &vx ); 

@@ -8,8 +8,8 @@ public:
 	{
 		innerU=u;
 		innerV=v;
-		PsidashFSAns1=cvCreateImage(cvSize( u->width+1, u->height ),u->depth,u->nChannels); 
-		PsidashFSAns2=cvCreateImage(cvSize( u->width, u->height+1 ),u->depth,u->nChannels); 
+		PsidashFSAns1=cvCreateImage(cvSize( u->width, u->height+1 ),u->depth,u->nChannels); 
+		PsidashFSAns2=cvCreateImage(cvSize( u->width+1, u->height ),u->depth,u->nChannels); 
 	
 	}
 	inline flowUV(int width,int height,int depth,int channels){

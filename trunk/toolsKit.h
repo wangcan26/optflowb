@@ -61,6 +61,8 @@
 
 
 		static void IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest);
+		static void IPL_add_different_sizes2(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest);
+		static void IPL_add_different_sizes3(IplImage* imgHorizonal,IplImage* imgHorizonal2,IplImage* dest);
 		static void IPL_add(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_sub(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_print(const IplImage *image);
@@ -68,6 +70,7 @@
 		static void cvMulScalar(IplImage* img,float scalar);
 		static void cvZeroBottom(IplImage* img);
 		static void cvZeroBottomLeft(IplImage* img);
+		static void cvZeroRight(IplImage* img);
 		static void cvNormalizeEdges(IplImage* img);
 		static void cvZeroNans(IplImage* img);
 		static void costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,IplImage* var3,IplImage* var4,IplImage* var5);
