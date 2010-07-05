@@ -43,18 +43,23 @@ void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
 //wt*(ht+1) +(ht+1)*wt matrixs only
 //dest size is x*y
 void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest){
-	int i,j,k;
+	int i,j,k,m;
 	
 	k=imgHorizonal->width-1;
-	for (i = 1,j=0; i < imgHorizonal->width*imgVertical->height; i++,j++)					
+	for (i=imgHorizonal->width,j=0,m=0; m < dest->width*dest->height; i++,j++,m++)					
 	{	
+	
+		float temp1=((float*)imgHorizonal->imageData)[i];
+		float temp2=((float*)imgVertical->imageData)[j];
+		((float*)dest->imageData)[m]=((float*)imgHorizonal->imageData)[i]+((float*)imgVertical->imageData)[j];			
+
 		if(k==0){//smaller pic is at row end		
 			k=imgHorizonal->width-1;
-			i++;
+			j++;			
 		}
 		else
-			k--;		
-		 ((float*)dest->imageData)[j]=((float*)imgHorizonal->imageData)[i]+((float*)imgVertical->imageData)[j];			
+			k--;	
+		
 	}		
 }
 void toolsKit::IPL_add_different_sizes2(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest){
@@ -356,17 +361,10 @@ void toolsKit::cvZeroLeftRight(IplImage* img){
 	k=width-1;
 	for (i = 0; i < width*img->height-width+1; )
 		{	
-
-		//if(!k==width-1)//apply to first column only										  
-			float b=((float*)img->imageData)[i];
 			((float*)img->imageData)[i]=0;
-			float a=((float*)img->imageData)[i];
-		//if(!k)//apply to first column only
-			float b2=((float*)img->imageData)[i+width-1];
 			((float*)img->imageData)[i+width-1]=0;
 			float a2=((float*)img->imageData)[i+width-1];
 			i=i+width;
-		//k==0?k=width-1:k--;
 		}
 		
 	}
@@ -491,19 +489,8 @@ void toolsKit::costumeLineCompute(IplImage* ans,IplImage* var1,IplImage* var2,Ip
 	}
 
 IplImage*  toolsKit::psiDerivative(IplImage* x,double epsilon){	
-	//double y=1 / (2 * sqrt( x + epsilon ) ) ;
-
-	//cout<<"psiDerivative-before nan test"<<endl;
-	//toolsKit::IPL_print(x);
-
-	//cvZeroNans(x);
 	cvAddS(x,cvScalarAll(epsilon),x);
-
-	//cout<<"psiDerivative-after epsilon add"<<endl;
-	//toolsKit::IPL_print(x);
-
 	toolsKit::IPL_mul_inverse(x,0);	
-
 	return x;
 	}
 
