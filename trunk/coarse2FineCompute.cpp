@@ -105,6 +105,160 @@ int warpImage(IplImage* pWarpIm2,const IplImage* pIm1, const IplImage* pIm2, con
 		return 0;
 }
 
+IplImage** coarse2FineCompute::meshgrid(int cols, int rows){
+	IplImage ** ans = new IplImage*[2];
+	ans[0] = cvCreateImage(cvSize(cols,rows),IPL_DEPTH_32F,1);
+	ans[1] = cvCreateImage(cvSize(cols,rows),IPL_DEPTH_32F,1);
+	int count2=1;
+	for(int i =0; i<rows; i++){
+		int count1 = 1;
+		for(int j =0; j<cols; j++){
+			cvSet2D(ans[0],i,j,cvScalar(count1++));
+			cvSet2D(ans[1],i,j,cvScalar( count2));
+			}
+		count2++;
+		}
+
+
+	return ans;
+	}
+
+void vectorMin(vector<float>* v, float val){
+	for (vector<float>::iterator it = v->begin(); it != v->end(); it++)
+		*it = (*it<val?*it:val);
+	}
+
+void vectorMax(vector<float>* v, float val){
+		for (vector<float>::iterator it = v->begin(); it != v->end(); it++)
+			*it = (*it>val?*it:val);
+	}
+
+vector<float> * vectorFloor(vector<float> * v){
+		vector<float> * ans = new vector<float>();
+		for (vector<float>::iterator it = v->begin(); it != v->end(); it++){
+			ans->push_back((float)(((int)*it)/1));
+			}
+		return ans;
+	}
+
+vector<float> * vectorCeil(vector<float> * v){
+		vector<float> * ans = new vector<float>();
+		for (vector<float>::iterator it = v->begin(); it != v->end(); it++){
+			ans->push_back(ceil(*it));
+			}
+		return ans;
+	}
+
+vector<float> * vectorSub(vector<float> * a, vector<float>* b){
+		vector<float>* ans = new vector<float>();
+		vector<float>::iterator ait = a->begin();
+		vector<float>::iterator bit = b->begin();
+		
+		while(ait != a->end() && bit != b->end()){
+			ans->push_back(*ait - *bit);
+			ait++; bit++;
+			}
+		return ans;
+	}
+
+vector<float>* vectorMul(vector<float>* a, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	vector<float>::iterator ait = a->begin();
+		vector<float>::iterator bit = b->begin();
+		
+		while(ait != a->end() && bit != b->end()){
+			ans->push_back((*ait) * (*bit));
+			ait++; bit++;
+			}
+	return ans;
+	}
+
+vector<float>* vectorAdd(vector<float>* a, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	vector<float>::iterator ait = a->begin();
+		vector<float>::iterator bit = b->begin();
+		
+		while(ait != a->end() && bit != b->end()){
+			ans->push_back((*ait) + (*bit));
+			ait++; bit++;
+			}
+	return ans;
+	}
+
+IplImage** coarse2FineCompute::RGBwarp(IplImage* img, IplImage* u, IplImage* v){
+
+	int height = img->height;
+	int width = img->width;
+	int nChannels = img->nChannels;
+	IplImage ** XY = meshgrid(width, height);
+	IplImage * X = XY[0];
+	IplImage * Y = XY[1];
+	
+	IplImage * Xu = cvCreateImage(cvSize(X->width,X->height),X->depth,X->nChannels);
+	cvAdd(X,u,Xu);
+	cvReleaseImage(&Xu);
+
+	IplImage * Yv = cvCreateImage(cvSize(Y->width,Y->height),Y->depth,Y->nChannels);
+	cvAdd(Y,v,Yv);
+	cvReleaseImage(&Yv);
+
+	vector<float>* XI = toolsKit::IplImageToCoulmnVector(Xu);
+	vector<float>* YI = toolsKit::IplImageToCoulmnVector(Yv);
+	float eM6 = 0.00247875218; //1E-6
+	//XI = max(1, min(sx - 1E-6, XI));
+	vectorMin(XI, height-eM6);
+	vectorMax(XI, 1);
+
+	//XI = max(1, min(sx - 1E-6, XI));
+	vectorMin(YI, width-eM6);
+	vectorMax(YI, 1);
+ 
+	//fXI = floor(XI);
+	vector<float>* fXI = vectorFloor(XI);
+	//cXI = ceil(XI);
+	vector<float>* cXI = vectorCeil(XI);
+	//fYI = floor(YI);
+	vector<float>* fYI = vectorFloor(YI);
+	//cYI = ceil(YI);
+	vector<float>* cYI = vectorCeil(YI);
+
+	//alpha_x = XI - fXI;
+	vector<float>* alpha_x = vecotrSub(XI, fXI);
+	//alpha_y = YI - fYI;
+	vector<float>* alpha_y = vecotrSub(YI, fYI);
+
+
+	/*note:
+		A([i1 i2 i3]) is a vector of matrix A elements (as a column vecotr) in index i1 i2 i3...
+		example:
+			A = [1 2 3; 4 5 6; 7 8 9]
+			A(:) = 1 4 7 2 5 8 3 6 9
+			A([1 3 5]) = 1 7 5
+			A([3 3 3]) = 7 7 7*/
+
+	//O = (1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1)) + ...
+	//	  alpha_x .* (1 - alpha_y) .* I(fYI + sy * (cXI - 1)) + ...
+	//    (1 - alpha_x) .* alpha_y .* I(cYI + sy * (fXI - 1)) + ...
+	//    alpha_x .* alpha_y .* I(cYI + sy * (cXI - 1));
+
+
+
+	//O = reshape(O, sy, sx); -> from vector to IPLImage
+
+	delete XI;
+	delete YI;
+	delete fXI;
+	delete cXI;
+	delete fYI;
+	delete cYI;
+	//delete alpha_x;
+	//delete alpha_y;
+	cvReleaseImage(&X);
+	cvReleaseImage(&Y);
+	delete[] XY;
+	return NULL;
+	}
+
 
 
 //need to recieve cvSobel with function pointer;
@@ -234,8 +388,8 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			//create the warp image
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
 			cvZero(WarpImage2);
-			WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
-			
+			//WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
+			RGBwarp(WarpImage2,vx,vy);
 			
 					  
 		}
@@ -472,24 +626,24 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		toolsKit::IPL_print(Iky2);	
 	
 	
-		//cout<<"Iyx"<<endl;
-		//toolsKit::IPL_print(Iyx);
-		cout<<"Iyy"<<endl;
-		toolsKit::IPL_print(Iyy);
+		////cout<<"Iyx"<<endl;
+		////toolsKit::IPL_print(Iyx);
+		//cout<<"Iyy"<<endl;
+		//toolsKit::IPL_print(Iyy);
 		
 		cout<<"Ixy"<<endl;
 		toolsKit::IPL_print(Ixy);
-		cout<<"Ixx"<<endl;
-		toolsKit::IPL_print(Ixx);
-		cout<<"Iyy"<<endl;
-		toolsKit::IPL_print(Iyy);
+		//cout<<"Ixx"<<endl;
+		//toolsKit::IPL_print(Ixx);
+		//cout<<"Iyy"<<endl;
+		//toolsKit::IPL_print(Iyy);
 
-		cout<<"Ikt_Org(ikz)"<<endl;
-		toolsKit::IPL_print(Ikt_Org);
-		cout<<"IXt_axis"<<endl;
-		toolsKit::IPL_print(IXt_axis);
-		cout<<"IYt_ayis"<<endl;
-		toolsKit::IPL_print(IYt_ayis);
+		//cout<<"Ikt_Org(ikz)"<<endl;
+		//toolsKit::IPL_print(Ikt_Org);
+		//cout<<"IXt_axis"<<endl;
+		//toolsKit::IPL_print(IXt_axis);
+		//cout<<"IYt_ayis"<<endl;
+		//toolsKit::IPL_print(IYt_ayis);
 		*/
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){

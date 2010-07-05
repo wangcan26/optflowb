@@ -8,6 +8,7 @@
 #include "flowUV.h"
 #include "IplImageIterator.h"
 #include "constructMatrix_brox.h"
+#include <math.h>
 
 class coarse2FineCompute
 {
@@ -27,11 +28,13 @@ public:
 						 int nInnerFPIterations);
 						
 	virtual ~coarse2FineCompute(void);
+	static IplImage** meshgrid(int cols, int rows);
 private:
 	
 
 	IplImage* LaplaceCompute(IplImage* input,IplImage* input2);
-	IplImage* coarse2FineCompute::createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
+	IplImage* createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
+	IplImage** RGBwarp(IplImage* img, IplImage* u, IplImage* v);
 	
 	void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
 												  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma,int nInnerFPIterations );
