@@ -315,14 +315,24 @@ void toolsKit::increaseImageSize(IplImage* src,IplImage* dst,int select){
 		}
 
 }
+void toolsKit::cvZeroTop(IplImage* img){
+	int i;
+	int width=img->width;					
+	//for first cell
+	for (i = 0; i < width; i++)
+		{
+		if(i<width)//first row
+			((float*)img->imageData)[i]=0;
+		}
+	}
 
 void toolsKit::cvZeroBottom(IplImage* img){
 	int i;
 	int width=img->width;					
 	//for first cell
-	for (i = 0; i < width*img->height; i++)
+	for (i = width*img->height-width; i < width*img->height; i++)
 		{
-		if(i> width*img->height-width-1)
+		//if(i> width*img->height-width-1)
 			((float*)img->imageData)[i]=0;
 		}
 	}
@@ -338,6 +348,29 @@ void toolsKit::cvZeroRight(IplImage* img){
 		k==0?k=width-1:k--;
 		}
 	}
+
+void toolsKit::cvZeroLeftRight(IplImage* img){
+	int i,k;
+	int width=img->width;					
+	//for first cell
+	k=width-1;
+	for (i = 0; i < width*img->height-width+1; )
+		{	
+
+		//if(!k==width-1)//apply to first column only										  
+			float b=((float*)img->imageData)[i];
+			((float*)img->imageData)[i]=0;
+			float a=((float*)img->imageData)[i];
+		//if(!k)//apply to first column only
+			float b2=((float*)img->imageData)[i+width-1];
+			((float*)img->imageData)[i+width-1]=0;
+			float a2=((float*)img->imageData)[i+width-1];
+			i=i+width;
+		//k==0?k=width-1:k--;
+		}
+		
+	}
+
 
 void toolsKit::cvZeroBottomLeft(IplImage* img){
 	int i,k;

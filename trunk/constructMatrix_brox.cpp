@@ -201,21 +201,27 @@ void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
 	IplImage* fs1_32 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
 	IplImage* temp1 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
 	IplImage* temp2 =cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
+		
+	temp1=cvCloneImage(psidashFS1);
+	toolsKit::cvZeroTop(temp1);
+	toolsKit::cvZeroBottom(temp1);
+	toolsKit::shiftImage(temp1,fs1_32,toolsKit::UP);
 	
-	toolsKit::shiftImage(psidashFS1,fs1_32,toolsKit::UP);
-	cvAdd(psidashFS1,fs1_32,temp1);
+	cvAdd(temp1,fs1_32,temp1);
 	
 
 	/*cout<<"psidashFS1"<<endl;
 	toolsKit::IPL_print(psidashFS1);
 	cout<<"fs1_32"<<endl;
-	toolsKit::IPL_print(fs1_32);
-	cout<<"temp1"<<endl;*/
+	toolsKit::IPL_print(fs1_32);*/
+	cout<<"temp1"<<endl;
 	toolsKit::IPL_print(temp1);
 			
+	temp2=cvCloneImage(psidashFS2);
+	toolsKit::cvZeroLeftRight(temp2);
+	toolsKit::shiftImage(temp2,fs2_223,toolsKit::RIGHT);
+	cvAdd(temp2,fs2_223,temp2);
 
-	toolsKit::shiftImage(psidashFS2,fs2_223,toolsKit::RIGHT);
-	cvAdd(psidashFS2,fs2_223,temp2);
 	/*cout<<"psidashFS2"<<endl;
 	toolsKit::IPL_print(psidashFS2);
 	cout<<"fs2_223"<<endl;
@@ -225,9 +231,12 @@ void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
 
 
 	toolsKit::IPL_add_different_sizes(temp1,temp2,pdfSum);
-	cvReleaseImage(&temp1);
+
+
 	cout<<"pdfSum"<<endl;
 	toolsKit::IPL_print(pdfSum);
+
+	cvReleaseImage(&temp1);
 	cvReleaseImage(&temp2);
 	cvReleaseImage(&fs2_223);
 	cvReleaseImage(&fs1_32);

@@ -69,6 +69,8 @@
 		static void PrintMat(CvMat *A);
 		static void cvMulScalar(IplImage* img,float scalar);
 		static void cvZeroBottom(IplImage* img);
+		static void cvZeroTop(IplImage* img);
+		static void cvZeroLeftRight(IplImage* img);
 		static void cvZeroBottomLeft(IplImage* img);
 		static void cvZeroRight(IplImage* img);
 		static void cvNormalizeEdges(IplImage* img);
