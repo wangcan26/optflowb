@@ -2,6 +2,7 @@
 #include "cv.h"
 #include "coarse2FineCompute.h"
 #include "toolsKit.h"
+#include "SparseToolKit.h"
 
 
 

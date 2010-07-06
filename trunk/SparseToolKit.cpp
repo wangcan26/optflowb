@@ -57,6 +57,14 @@ static CvSparseMat * upperTriangle(CvSparseMat * mat){
 	}
 
 
+	SparseMat<float> * SparseToolKit::creaseSparse(IplImage* im, int diag){
+		vector<float> * colVector = toolsKit::IplImageToCoulmnVector(im);
+		SparseMat<float> * ans = new SparseMat<float>(im->height * im->width);
+		ans->addDiag(diag,*colVector);
+		delete colVector;
+		return ans;
+		}
+
 vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations){
 		int k,i,j;
 		float e1,e2,e3,Aii,Aij;

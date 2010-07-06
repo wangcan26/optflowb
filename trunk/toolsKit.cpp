@@ -43,11 +43,11 @@ void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
 //srcHorizontal is wt+1
 void toolsKit::IPL_mul_different_sizes(IplImage* src,IplImage* srcHorizontal,IplImage* dest){
 	int j,k,m;
-	
+
 	k=src->width-1;
 	for (j=0,m=0; m < dest->width*dest->height;j++,m++)					
-	{	
-	
+		{	
+
 		float temp1=((float*)src->imageData)[m];
 		float temp2=((float*)srcHorizontal->imageData)[j];
 		((float*)dest->imageData)[m]=((float*)src->imageData)[m]+((float*)srcHorizontal->imageData)[j];			
@@ -55,28 +55,28 @@ void toolsKit::IPL_mul_different_sizes(IplImage* src,IplImage* srcHorizontal,Ipl
 		if(k==0){//smaller pic is at row end		
 			k=srcHorizontal->width-1;
 			j++;			
-		}
+			}
 		else
 			k--;			
-	}		
-}
+		}		
+	}
 //srcVertical is ht+1
 void toolsKit::IPL_mul_different_sizes2(IplImage* src,IplImage* srcVertical,IplImage* dest){
 	int m;
 	for (m=0; m < dest->width*dest->height;m++)					
-	{	
+		{	
 		((float*)dest->imageData)[m]=((float*)src->imageData)[m]+((float*)srcVertical->imageData)[m];					
-	}		
-}
+		}		
+	}
 //wt*(ht+1) +(ht+1)*wt matrixs only
 //dest size is x*y
 void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest){
 	int i,j,k,m;
-	
+
 	k=imgHorizonal->width-1;
 	for (i=imgHorizonal->width,j=0,m=0; m < dest->width*dest->height; i++,j++,m++)					
-	{	
-	
+		{	
+
 		//float temp1=((float*)imgHorizonal->imageData)[i];
 		//float temp2=((float*)imgVertical->imageData)[j];
 		((float*)dest->imageData)[m]=((float*)imgHorizonal->imageData)[i]+((float*)imgVertical->imageData)[j];			
@@ -84,54 +84,54 @@ void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVerti
 		if(k==0){//smaller pic is at row end		
 			k=imgHorizonal->width-1;
 			j++;			
-		}
+			}
 		else
 			k--;	
-		
-	}		
-}
+
+		}		
+	}
 void toolsKit::IPL_add_different_sizes2(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest){
 	int i,j,k;
 	cvZero(dest);
 	k=dest->width-1;
 	for (i = 1,j=1; i < dest->width*dest->height-1; i++,j++)					
-	{				
+		{				
 		if(k==0){//smaller pic is at row end		
 			k=dest->width-1;
 			i++;
-		}
+			}
 		else
 			k--;
 		if (k!=dest->width)
-		 ((float*)dest->imageData)[j]=((float*)imgVertical->imageData)[i]+((float*)imgVertical2->imageData)[i];			
-	}		
-}
+			((float*)dest->imageData)[j]=((float*)imgVertical->imageData)[i]+((float*)imgVertical2->imageData)[i];			
+		}		
+	}
 
 void toolsKit::IPL_add_different_sizes3(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest){
 	int i,j,k;
 	cvZero(dest);
 	k=dest->width-1;
 	for (i = 1,j=1; i < imgVertical->width*dest->height; i++,j++)					
-	{				
+		{				
 		if(k==0){//smaller pic is at row end		
 			k=imgVertical->width-1;
 			j++;
-		}
+			}
 		else
 			k--;
 		if (k!=dest->width)
-		 ((float*)dest->imageData)[j]=((float*)imgVertical->imageData)[i]+((float*)imgVertical2->imageData)[i];			
-	}		
-}
+			((float*)dest->imageData)[j]=((float*)imgVertical->imageData)[i]+((float*)imgVertical2->imageData)[i];			
+		}		
+	}
 
 void toolsKit::IPL_sub(IplImage* img,IplImage* img2,IplImage* dest){
 	IplImageIterator<float> it(img);
 	IplImageIterator<float> it2(img2);
 	IplImageIterator<float> it3(dest);
 	while (!it) {      
-	//		cout<<"bef:"<<*it<<" "<<*it2;
+		//		cout<<"bef:"<<*it<<" "<<*it2;
 		*it3=(float)( ((float)*it)-((float)*it2)); 
-	//	 cout<<"=>"<<*it<<" "<<*it2<<endl;
+		//	 cout<<"=>"<<*it<<" "<<*it2<<endl;
 		++it;
 		++it2;
 		++it3;
@@ -258,29 +258,29 @@ void toolsKit::IPL_mul_right(IplImage* img,IplImage* shiftImg2,IplImage* dest){
 	}
 
 void toolsKit::PrintMat(CvMat *A)
-{
+	{
 	int i, j;
 	for (i = 0; i < A->rows; i++)
-	{
+		{
 		printf("\n");
 		switch (CV_MAT_DEPTH(A->type))
-		{
-		case CV_32F:
-		case CV_64F:
-			for (j = 0; j < A->cols; j++)
-				printf ("%8.3f ", (float)cvGetReal2D(A, i, j));
-			break;
-		case CV_8U:
-		case CV_16U:
-			for(j = 0; j < A->cols; j++)
-				printf ("%6d",(int)cvGetReal2D(A, i, j));
-			break;
-		default:
-			break;
+			{
+			case CV_32F:
+			case CV_64F:
+				for (j = 0; j < A->cols; j++)
+					printf ("%8.3f ", (float)cvGetReal2D(A, i, j));
+				break;
+			case CV_8U:
+			case CV_16U:
+				for(j = 0; j < A->cols; j++)
+					printf ("%6d",(int)cvGetReal2D(A, i, j));
+				break;
+			default:
+				break;
+			}
 		}
-	}
 	printf("\n");
-}
+	}
 void toolsKit::IPL_print(const IplImage *image) {
 	int ht= image->height; // number of lines
 	int wt= image->width ; // total number of element per line
@@ -329,25 +329,25 @@ void toolsKit::increaseImageSize(IplImage* src,IplImage* dst,int select){
 	if (!select)//increase by on col
 		for (i = 0,j=0; i < width*src->height;j++, i++)
 			{
-				if(k){//do not compute last column			  
-					((float*)dst->imageData)[j]=((float*)src->imageData)[i];							
-					//cout<<((float*)dst->imageData)[j]<<" ";
+			if(k){//do not compute last column			  
+				((float*)dst->imageData)[j]=((float*)src->imageData)[i];							
+				//cout<<((float*)dst->imageData)[j]<<" ";
 				}
-				if(k==0){//smaller pic is at row end
-					//cout<<endl;
-					k=width-1;
-					j++;
+			if(k==0){//smaller pic is at row end
+				//cout<<endl;
+				k=width-1;
+				j++;
 				}
-				else
-					k--;
-				}
+			else
+				k--;
+			}
 	else
 		for (i = 0,j=0; i < width*src->height; i++,j++)					
-		{	
+			{	
 			((float*)dst->imageData)[j]=((float*)src->imageData)[i];		
-		}
+			}
 
-}
+	}
 void toolsKit::cvZeroTop(IplImage* img){
 	int i;
 	int width=img->width;					
@@ -366,7 +366,7 @@ void toolsKit::cvZeroBottom(IplImage* img){
 	for (i = width*img->height-width; i < width*img->height; i++)
 		{
 		//if(i> width*img->height-width-1)
-			((float*)img->imageData)[i]=0;
+		((float*)img->imageData)[i]=0;
 		}
 	}
 void toolsKit::cvZeroRight(IplImage* img){
@@ -389,12 +389,12 @@ void toolsKit::cvZeroLeftRight(IplImage* img){
 	k=width-1;
 	for (i = 0; i < width*img->height-width+1; )
 		{	
-			((float*)img->imageData)[i]=0;
-			((float*)img->imageData)[i+width-1]=0;
-			float a2=((float*)img->imageData)[i+width-1];
-			i=i+width;
+		((float*)img->imageData)[i]=0;
+		((float*)img->imageData)[i+width-1]=0;
+		float a2=((float*)img->imageData)[i+width-1];
+		i=i+width;
 		}
-		
+
 	}
 
 
@@ -411,7 +411,7 @@ void toolsKit::cvZeroBottomLeft(IplImage* img){
 			((float*)img->imageData)[i]=0;
 		k==0?k=width-1:k--;
 		}
-		
+
 	}
 
 
@@ -462,8 +462,8 @@ void toolsKit::shiftImage(IplImage* src,IplImage* emptyImage,int select){
 		toolsKit::IPL_add_bottom(emptyImage,src,emptyImage);
 	else if(select==UP)//down 
 		toolsKit::IPL_add_top(emptyImage,src,emptyImage);
-	
-}
+
+	}
 
 bool toolsKit::AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError)
 	{
@@ -704,7 +704,7 @@ IplImage * toolsKit::IplFromFile(string filename){
 		for (int j = 0; j<width; j++){
 			thefile>>val;	
 			cvSet2D(ans,i,j,cvScalar(val));
-		}
+			}
 		thefile.close();
 
 		return ans;
@@ -726,4 +726,66 @@ void toolsKit::IplToFile(IplImage* img, string  filename){
 		thefile<<"\n";
 		}
 	thefile.close();
+	}
+
+void toolsKit::vectorTools::vectorMin(vector<float>* v, float val){
+	for (vector<float>::iterator it = v->begin(); it != v->end(); it++)
+		*it = (*it<val?*it:val);
+	}
+
+void toolsKit::vectorTools::vectorMax(vector<float>* v, float val){
+	for (vector<float>::iterator it = v->begin(); it != v->end(); it++)
+		*it = (*it>val?*it:val);
+	}
+
+vector<float> * toolsKit::vectorTools::vectorFloor(vector<float> * v){
+	vector<float> * ans = new vector<float>();
+	for (vector<float>::iterator it = v->begin(); it != v->end(); it++){
+		ans->push_back((float)(((int)*it)/1));
+		}
+	return ans;
+	}
+
+vector<float> * toolsKit::vectorTools::vectorCeil(vector<float> * v){
+	vector<float> * ans = new vector<float>();
+	for (vector<float>::iterator it = v->begin(); it != v->end(); it++){
+		ans->push_back(ceil(*it));
+		}
+	return ans;
+	}
+
+vector<float> * toolsKit::vectorTools::vectorSub(vector<float> * a, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	vector<float>::iterator ait = a->begin();
+	vector<float>::iterator bit = b->begin();
+
+	while(ait != a->end() && bit != b->end()){
+		ans->push_back(*ait - *bit);
+		ait++; bit++;
+		}
+	return ans;
+	}
+
+vector<float>* toolsKit::vectorTools::vectorMul(vector<float>* a, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	vector<float>::iterator ait = a->begin();
+	vector<float>::iterator bit = b->begin();
+
+	while(ait != a->end() && bit != b->end()){
+		ans->push_back((*ait) * (*bit));
+		ait++; bit++;
+		}
+	return ans;
+	}
+
+vector<float>* toolsKit::vectorTools::vectorAdd(vector<float>* a, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	vector<float>::iterator ait = a->begin();
+	vector<float>::iterator bit = b->begin();
+
+	while(ait != a->end() && bit != b->end()){
+		ans->push_back((*ait) + (*bit));
+		ait++; bit++;
+		}
+	return ans;
 	}

@@ -123,67 +123,6 @@ IplImage** coarse2FineCompute::meshgrid(int cols, int rows){
 	return ans;
 	}
 
-void vectorMin(vector<float>* v, float val){
-	for (vector<float>::iterator it = v->begin(); it != v->end(); it++)
-		*it = (*it<val?*it:val);
-	}
-
-void vectorMax(vector<float>* v, float val){
-		for (vector<float>::iterator it = v->begin(); it != v->end(); it++)
-			*it = (*it>val?*it:val);
-	}
-
-vector<float> * vectorFloor(vector<float> * v){
-		vector<float> * ans = new vector<float>();
-		for (vector<float>::iterator it = v->begin(); it != v->end(); it++){
-			ans->push_back((float)(((int)*it)/1));
-			}
-		return ans;
-	}
-
-vector<float> * vectorCeil(vector<float> * v){
-		vector<float> * ans = new vector<float>();
-		for (vector<float>::iterator it = v->begin(); it != v->end(); it++){
-			ans->push_back(ceil(*it));
-			}
-		return ans;
-	}
-
-vector<float> * vectorSub(vector<float> * a, vector<float>* b){
-		vector<float>* ans = new vector<float>();
-		vector<float>::iterator ait = a->begin();
-		vector<float>::iterator bit = b->begin();
-		
-		while(ait != a->end() && bit != b->end()){
-			ans->push_back(*ait - *bit);
-			ait++; bit++;
-			}
-		return ans;
-	}
-
-vector<float>* vectorMul(vector<float>* a, vector<float>* b){
-	vector<float>* ans = new vector<float>();
-	vector<float>::iterator ait = a->begin();
-		vector<float>::iterator bit = b->begin();
-		
-		while(ait != a->end() && bit != b->end()){
-			ans->push_back((*ait) * (*bit));
-			ait++; bit++;
-			}
-	return ans;
-	}
-
-vector<float>* vectorAdd(vector<float>* a, vector<float>* b){
-	vector<float>* ans = new vector<float>();
-	vector<float>::iterator ait = a->begin();
-		vector<float>::iterator bit = b->begin();
-		
-		while(ait != a->end() && bit != b->end()){
-			ans->push_back((*ait) + (*bit));
-			ait++; bit++;
-			}
-	return ans;
-	}
 
 IplImage** coarse2FineCompute::RGBwarp(IplImage* img, IplImage* u, IplImage* v){
 
@@ -206,26 +145,26 @@ IplImage** coarse2FineCompute::RGBwarp(IplImage* img, IplImage* u, IplImage* v){
 	vector<float>* YI = toolsKit::IplImageToCoulmnVector(Yv);
 	float eM6 = 0.00247875218; //1E-6
 	//XI = max(1, min(sx - 1E-6, XI));
-	vectorMin(XI, height-eM6);
-	vectorMax(XI, 1);
+	toolsKit::vectorTools::vectorMin(XI, height-eM6);
+	toolsKit::vectorTools::vectorMax(XI, 1);
 
 	//XI = max(1, min(sx - 1E-6, XI));
-	vectorMin(YI, width-eM6);
-	vectorMax(YI, 1);
+	toolsKit::vectorTools::vectorMin(YI, width-eM6);
+	toolsKit::vectorTools::vectorMax(YI, 1);
  
 	//fXI = floor(XI);
-	vector<float>* fXI = vectorFloor(XI);
+	vector<float>* fXI = toolsKit::vectorTools::vectorFloor(XI);
 	//cXI = ceil(XI);
-	vector<float>* cXI = vectorCeil(XI);
+	vector<float>* cXI = toolsKit::vectorTools::vectorCeil(XI);
 	//fYI = floor(YI);
-	vector<float>* fYI = vectorFloor(YI);
+	vector<float>* fYI = toolsKit::vectorTools::vectorFloor(YI);
 	//cYI = ceil(YI);
-	vector<float>* cYI = vectorCeil(YI);
+	vector<float>* cYI = toolsKit::vectorTools::vectorCeil(YI);
 
 	//alpha_x = XI - fXI;
-	vector<float>* alpha_x = vecotrSub(XI, fXI);
+	vector<float>* alpha_x = toolsKit::vectorTools::vectorSub(XI, fXI);
 	//alpha_y = YI - fYI;
-	vector<float>* alpha_y = vecotrSub(YI, fYI);
+	vector<float>* alpha_y = toolsKit::vectorTools::vectorSub(YI, fYI);
 
 
 	/*note:

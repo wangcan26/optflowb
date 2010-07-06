@@ -10,27 +10,27 @@
 #include "SparseToolKit.h"
 #include "IplImageIterator.h"
 
-	class toolsKit
+class toolsKit
 	{
 	public:
 		enum operations {ADD=1,SUB=2,MUL=3};
 		enum directions {UP=1,DOWN=2,LEFT=3,RIGHT=4};
 		toolsKit();
 		static void cvShowManyImages(char* title, int nArgs, ...);
-		
+
 		template <class PEL>
 		static void IPLsqrt_mul2(IplImageIterator<PEL> it){
 			while (!it) {
 				float temp=(float)*it;
-				
+
 				if(0!=temp){
 					float val=1/(2*sqrt(temp));
 					*it=val;
-				}
-					
+					}
+
 				++it;
+				}
 			}
-		}
 		template <class PEL>
 		static void IPL_mul_inverse_loop(IplImageIterator<PEL> it){
 			double one=1;
@@ -38,8 +38,8 @@
 				if(0!=((float)*it))
 					*it= one/((float)*it); 
 				++it;
+				}
 			}
-		}
 		static vector<float> * IplImageToCoulmnVector(IplImage* img);
 
 		static void IPL_mul_inverse(IplImage* img,int opType);
@@ -86,13 +86,31 @@
 
 		static IplImage * IplFromFile(string filename);
 		static void IplToFile(IplImage* img, string filename);
-	
+
+		class vectorTools{
+		public:
+			static void vectorMin(vector<float>* v, float val);
+
+			static void vectorMax(vector<float>* v, float val);
+
+			static vector<float> * vectorFloor(vector<float> * v);
+
+			static vector<float> * vectorCeil(vector<float> * v);
+
+			static vector<float> * vectorSub(vector<float> * a, vector<float>* b);
+
+			static vector<float>* vectorMul(vector<float>* a, vector<float>* b);
+		
+			static	vector<float>* vectorAdd(vector<float>* a, vector<float>* b);
+
+			};
+
 		virtual ~toolsKit(void);
 	private:
 		static void IPL_operate_left(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
 		static void IPL_operate_right(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
 		static void IPL_operate_top(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
 		static void IPL_operate_bottom(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
-		
+
 
 	};

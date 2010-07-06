@@ -267,6 +267,10 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 	cvReleaseImage(&tempLeft3);
 	cvReleaseImage(&tempLeft4);	
 }
+
+
+
+
 vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,
 														IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,											
 														IplImage* psidashFS1,IplImage* psidashFS2,
@@ -360,37 +364,41 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 
 
 		
-			 cout<<"uapp"<<endl;
-			 toolsKit::IPL_print(uapp);
-			 cout<<"vapp"<<endl;
-			 toolsKit::IPL_print(vapp);
+			 //cout<<"uapp"<<endl;
+			 //toolsKit::IPL_print(uapp);
+			 //cout<<"vapp"<<endl;
+			 //toolsKit::IPL_print(vapp);
 
 			 //insert to diagonals to matrix A
 			 
 			 //uu = spdiags( uapp(:),   0, wt*ht, wt*ht);
-			 vector<float> * uuappCol = toolsKit::IplImageToCoulmnVector(uapp);
-			 SparseMat<float> uu(height*width);
-			 uu.addDiag(0,*uuappCol);
-			 delete uuappCol;
+			 //vector<float> * uuappCol = toolsKit::IplImageToCoulmnVector(uapp);
+			 //SparseMat<float> uu(height*width);
+			 //uu.addDiag(0,*uuappCol);
+			 //delete uuappCol;
+			SparseMat<float> * uu= SparseToolKit::creaseSparse(uapp);
 			// cout<<"UU:"<<endl<<uu<<endl;
-
+				
 			 //vv = spdiags( vapp(:),   0, wt*ht, wt*ht);
-			 vector<float> * vvappCol = toolsKit::IplImageToCoulmnVector(vapp);
-			 SparseMat<float> vv(height*width);
-			 vv.addDiag(0,*vvappCol);
-			 delete vvappCol;
+			 //vector<float> * vvappCol = toolsKit::IplImageToCoulmnVector(vapp);
+			 //SparseMat<float> vv(height*width);
+			 //vv.addDiag(0,*vvappCol);
+			 //delete vvappCol;
+			SparseMat<float>* vv = SparseToolKit::creaseSparse(vapp);
 
 			 //uv = spdiags( uvapp(:), 0, wt*ht, wt*ht);
-			 vector<float> * uvappCol = toolsKit::IplImageToCoulmnVector(uvapp);
-			 SparseMat<float> uv(height*width);
-			 uv.addDiag(0,*uvappCol);
-			 delete uvappCol;
+			 //vector<float> * uvappCol = toolsKit::IplImageToCoulmnVector(uvapp);
+			 //SparseMat<float> uv(height*width);
+			 //uv.addDiag(0,*uvappCol);
+			 //delete uvappCol;
+			SparseMat<float>* uv = SparseToolKit::creaseSparse(vuapp);
 
 			 //vu = spdiags( vuapp(:), 0, wt*ht, wt*ht);
-			 vector<float> * vuappCol = toolsKit::IplImageToCoulmnVector(vuapp);
-			 SparseMat<float> vu(height*width);
-			 vu.addDiag(0,*vuappCol);
-			 delete vuappCol;	
+			 //vector<float> * vuappCol = toolsKit::IplImageToCoulmnVector(vuapp);
+			 //SparseMat<float> vu(height*width);
+			 //vu.addDiag(0,*vuappCol);
+			 //delete vuappCol;	
+			SparseMat<float>* vu = SparseToolKit::creaseSparse(vuapp);
 
 			//arguments to u(j) in the linear Euler Lagrange equations.
 			//arguments to v(j) in the linear Euler Lagrange equations.
@@ -401,14 +409,22 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			negfs2_22122wt=cvCloneImage(fs2_22122wt);
 			toolsKit::cvMulScalar(negfs2_22122wt,-1);
 			
-			vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(negfs2_22122wt);
-			SparseMat<float> ul1(height*width);
-			ul1.addDiag(height,*tmp2Col);
+			//vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(negfs2_22122wt);
+			//SparseMat<float> ul1(height*width);
+			//ul1.addDiag(height,*tmp2Col);
+			SparseMat<float>* ul1 = SparseToolKit::creaseSparse(negfs2_22122wt, height);
+
+
+			delete uu;
+
 			//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
-			SparseMat<float> vl1(height*width);
-			vl1.addDiag(height,*tmp2Col);
+			//SparseMat<float> vl1(height*width);
+			//vl1.addDiag(height,*tmp2Col);
+			//delete tmp2Col;
+			SparseMat<float>* vl1 = SparseToolKit::creaseSparse(negfs2_22122wt,height);
+
+			
 			cvReleaseImage(&negfs2_22122wt);
-			delete tmp2Col;
 			//==========================================
 
 			//negfs2_2232 = pdfs( 2 : 2 : end, 3 : 2 : end ) 
@@ -417,14 +433,20 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			negfs2_2232=cvCloneImage(fs2_2232);
 			toolsKit::cvMulScalar(negfs2_2232,-1);
 			
-			vector<float> * tmp2Col2  = toolsKit::IplImageToCoulmnVector(negfs2_2232);
-			SparseMat<float> ur1(height*width);
-			ur1.addDiag(-height,*tmp2Col2);
+			//vector<float> * tmp2Col2  = toolsKit::IplImageToCoulmnVector(negfs2_2232);
+			//SparseMat<float> ur1(height*width);
+			//ur1.addDiag(-height,*tmp2Col2);
+			SparseMat<float>* ur1 = SparseToolKit::creaseSparse(negfs2_2232,-height);
+
+			
+
 			//vr1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
-			SparseMat<float> vr1(height*width);
-			vr1.addDiag(-height, *tmp2Col2);
-			//no need for tmp2Col			
-			delete tmp2Col2;
+			//SparseMat<float> vr1(height*width);
+			//vr1.addDiag(-height, *tmp2Col2);
+			////no need for tmp2Col			
+			//delete tmp2Col2;
+			SparseMat<float>* vr1 = SparseToolKit::creaseSparse(negfs2_2232);
+
 			cvReleaseImage(&negfs2_2232);
 			//==========================================
 			
@@ -432,40 +454,68 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			IplImage* negfs1_122ht22=cvCreateImage(cvSize(fs1_122ht22->width, fs1_122ht22->height ),fs1_122ht22->depth,fs1_122ht22->nChannels);
 			negfs1_122ht22=cvCloneImage(fs1_122ht22);
 			toolsKit::cvMulScalar(negfs1_122ht22,1);
-			vector<float> * tmp1Col  = toolsKit::IplImageToCoulmnVector(negfs1_122ht22);
-			//ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
-			SparseMat<float> ul2(height*width);
-			ul2.addDiag(1,*tmp1Col);
+			
+			
+			//vector<float> * tmp1Col  = toolsKit::IplImageToCoulmnVector(negfs1_122ht22);
+			////ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
+			//SparseMat<float> ul2(height*width);
+			//ul2.addDiag(1,*tmp1Col);
+			SparseMat<float>* ul2 = SparseToolKit::creaseSparse(negfs1_122ht22,1);
+
+			
 			//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
-			SparseMat<float> vl2(height*width);						
-			vl2.addDiag(1, *tmp1Col);			
+			//SparseMat<float> vl2(height*width);						
+			//vl2.addDiag(1, *tmp1Col);			
+			SparseMat<float>* vl2 = SparseToolKit::creaseSparse(negfs1_122ht22,1);
+
 			//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
-			delete tmp1Col;					
+			//delete tmp1Col;					
 			cvReleaseImage(&negfs1_122ht22);
 			//==================================
 			//tmp = pdfs( 3 : 2 : end, 2 : 2 : end )
 			IplImage* negfs1_3222=cvCreateImage(cvSize(fs1_3222->width, fs1_3222->height ),fs1_3222->depth,fs1_3222->nChannels);
 			negfs1_3222=cvCloneImage(fs1_3222);
 			toolsKit::cvMulScalar(negfs1_3222,-1);
-			vector<float> * tmp1Col2  = toolsKit::IplImageToCoulmnVector(negfs1_3222);//-tmp(:)
-			SparseMat<float> ur2(height*width);
-			ur2.addDiag(-1, *tmp1Col2);
+
+
+			//vector<float> * tmp1Col2  = toolsKit::IplImageToCoulmnVector(negfs1_3222);//-tmp(:)
+			//SparseMat<float> ur2(height*width);
+			//ur2.addDiag(-1, *tmp1Col2);
+
+			SparseMat<float> * ur2 = SparseToolKit::creaseSparse(negfs1_3222,-1);
+
+
 			//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
-			SparseMat<float> vr2(height*width);
-			vr2.addDiag(-1, *tmp1Col2);
+			//SparseMat<float> vr2(height*width);
+			//vr2.addDiag(-1, *tmp1Col2);
+			SparseMat<float>* vr2 = SparseToolKit::creaseSparse(negfs1_3222,-1);
+
+			delete vv;
+
 			//no need for negfs1_122ht22, tmp1Col2
 			cvReleaseImage(&negfs1_122ht22);
-			delete tmp1Col2;
+			//delete tmp1Col2;
 
 			//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
 
-			SparseMat<float> uuul1ul2ur1ur2 = uu+ul1+ul2+ur2;
+			SparseMat<float>  uuul1ul2ur1ur2 = (*uu)+(*ul1)+(*ul2)+(*ur2);
 			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
-			SparseMat<float> vvvl1vl2vr1vr2 = vv+vl1+vl2+vr1+vr2;
+			SparseMat<float>  vvvl1vl2vr1vr2 = (*vv)+(*vl1)+(*vl2)+(*vr1)+(*vr2);
 			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
 			//cout<<"uuul1ul2ur1ur2(Q1):"<<endl<<uuul1ul2ur1ur2<<endl;
 			//cout<<"vvvl1vl2vr1vr2(Q4):"<<endl<<vvvl1vl2vr1vr2<<endl;
-			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);
+			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,*uv,*vu,vvvl1vl2vr1vr2);
+			
+			delete uv;
+			delete vu;
+			delete ul1;
+			delete vl1;
+			delete ur1;
+			delete vr1;
+			delete ul1;
+			delete vl2;
+			delete ur2;
+			delete vr2;
 			//cout<<"A: "<<endl<<*A<<endl;
 			//////////////////////build vector B//////////////////////
 
@@ -511,5 +561,4 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			delete B;
 			delete A;
 			return dUdV;
-
 }

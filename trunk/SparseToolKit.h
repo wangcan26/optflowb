@@ -19,7 +19,7 @@ public:
 	/* return new Sparse Matrix with the elemets above the main diagonal of mat
 		does not include the main diagonal*/
 	static CvSparseMat * upperTriangle(CvSparseMat * mat);
-
+	static SparseMat<float> * creaseSparse(IplImage* im, int diag=0);
 
 	static vector<float>* SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations); 
 
