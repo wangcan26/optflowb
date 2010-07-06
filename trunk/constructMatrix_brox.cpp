@@ -195,39 +195,28 @@ void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplI
 
 //					fs1									fs1+shiftdown
 //pdfsum = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +
+//					fs2									fs2+shift left
 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
-void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
-	IplImage* fs2_223=cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
-	IplImage* fs1_32 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* temp1 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+void computePdfSum(IplImage* pdfSum,  IplImage* psidashFS1, IplImage* psidashFS2,
+				   IplImage* fs1_3222,IplImage* fs1_122ht22,IplImage* fs2_2232,IplImage* fs2_22122wt){	
+	
+	IplImage* temp1 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);	
 	IplImage* temp2 =cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
 		
-	temp1=cvCloneImage(psidashFS1);
-	toolsKit::cvZeroTop(temp1);
-	toolsKit::cvZeroBottom(temp1);
-	toolsKit::shiftImage(temp1,fs1_32,toolsKit::UP);
+	toolsKit::cvZeroTop(fs1_122ht22);
+	toolsKit::cvZeroBottom(fs1_122ht22);	
+	toolsKit::shiftImage(fs1_122ht22,fs1_3222,toolsKit::UP);
+	cvAdd(fs1_122ht22,fs1_3222,temp1);
 	
-	cvAdd(temp1,fs1_32,temp1);
-	
+	//cout<<"temp1"<<endl;
+	//toolsKit::IPL_print(temp1);
+    
+	toolsKit::cvZeroLeftRight(fs2_22122wt);
+	toolsKit::shiftImage(fs2_22122wt,fs2_2232,toolsKit::RIGHT);
+	cvAdd(fs2_22122wt,fs2_2232,temp2);
 
-	/*cout<<"psidashFS1"<<endl;
-	toolsKit::IPL_print(psidashFS1);
-	cout<<"fs1_32"<<endl;
-	toolsKit::IPL_print(fs1_32);*/
-	cout<<"temp1"<<endl;
-	toolsKit::IPL_print(temp1);
-			
-	temp2=cvCloneImage(psidashFS2);
-	toolsKit::cvZeroLeftRight(temp2);
-	toolsKit::shiftImage(temp2,fs2_223,toolsKit::RIGHT);
-	cvAdd(temp2,fs2_223,temp2);
-
-	/*cout<<"psidashFS2"<<endl;
-	toolsKit::IPL_print(psidashFS2);
-	cout<<"fs2_223"<<endl;
-	toolsKit::IPL_print(fs2_223);*/
-	cout<<"temp2"<<endl;
-	toolsKit::IPL_print(temp2);
+	//cout<<"temp2"<<endl;
+	//toolsKit::IPL_print(temp2);
 
 
 	toolsKit::IPL_add_different_sizes(temp1,temp2,pdfSum);
@@ -238,9 +227,6 @@ void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
 
 	cvReleaseImage(&temp1);
 	cvReleaseImage(&temp2);
-	cvReleaseImage(&fs2_223);
-	cvReleaseImage(&fs1_32);
-
 }
 				//fs2
 //pdfaltsumu = pdfs(2:2:end,  1:2:2*wt) * (u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + 
@@ -249,25 +235,26 @@ void computePdfSum(IplImage* pdfSum,IplImage* psidashFS1,IplImage* psidashFS2){
 //			   pdfs( 3:2:end,  2:2:end) * (u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) ) 
 
 
-void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* psidashFS1,IplImage* psidashFS2,IplImage* UorV){
+void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* fs1_122ht22,
+							IplImage* fs2_2232,IplImage* fs2_22122wt,IplImage* UorV){
 	//init
-	IplImage* tempLeft1=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* tempLeft2=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* tempLeft3=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* tempLeft4=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+	IplImage* tempLeft1=cvCreateImage(cvSize( UorV->width, UorV->height ),UorV->depth,UorV->nChannels);
+	IplImage* tempLeft2=cvCreateImage(cvSize( UorV->width, UorV->height ),UorV->depth,UorV->nChannels);
+	IplImage* tempLeft3=cvCreateImage(cvSize( UorV->width, UorV->height ),UorV->depth,UorV->nChannels);
+	IplImage* tempLeft4=cvCreateImage(cvSize( UorV->width, UorV->height ),UorV->depth,UorV->nChannels);
 
 	//psidashFS2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
 	toolsKit::IPL_sub_left(UorV,UorV,tempLeft1);
-	toolsKit::IPL_mul_left(tempLeft1,psidashFS2,tempLeft1);
+	toolsKit::IPL_mul_different_sizes(tempLeft1,fs2_22122wt,tempLeft1);
 	//psidashFS2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
 	toolsKit::IPL_sub_right(UorV,UorV,tempLeft2);
-	toolsKit::IPL_mul_right(tempLeft2,psidashFS2,tempLeft2);
+	toolsKit::IPL_mul_different_sizes(tempLeft2,fs2_2232,tempLeft2);
 	//psidashFS1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
 	toolsKit::IPL_sub_top(UorV,UorV,tempLeft3);
-	toolsKit::IPL_mul_top(tempLeft3,psidashFS1,tempLeft3);
+	toolsKit::IPL_mul_different_sizes2(tempLeft3,fs1_122ht22,tempLeft3);
 	//psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bottom ,ans1
 	toolsKit::IPL_sub_bottom(UorV,UorV,tempLeft4);
-	toolsKit::IPL_mul_bottom(tempLeft4,psidashFS1,tempLeft4);
+	toolsKit::IPL_mul_different_sizes2(tempLeft4,fs1_3222,tempLeft4);
 
 	//temp1+temp2+temp3+temp4
 	cvAdd(tempLeft1,tempLeft2,pdfaltSumXX);
@@ -303,8 +290,14 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 IplImage* constv=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			 IplImage* pdfaltSumU=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			 IplImage* pdfaltSumV=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
-
-
+			
+			//fs1 & fs2 break down
+			 IplImage* fs1_3222 =  cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+		  	 IplImage* fs1_122ht22=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+			 fs1_122ht22=cvCloneImage(psidashFS1);				
+			 IplImage* fs2_2232=   cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);	
+			 IplImage* fs2_22122wt=cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
+			 fs2_22122wt=cvCloneImage(psidashFS2);
 			 //epsilon = 1e-3*ones(size(Ikx))==>zeroing and adding instead
 			 cvZero(epsilon);
 			 cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
@@ -322,11 +315,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			
 
 			 // First compute the values of the data  term
-			 //the brightness constancy assumption
-
-
-			 //the brightness constancy assumption
-			 
+			 //the brightness constancy assumption			 
 			 //psiDerivative( theta0 * ( Ikz + Ikx * du + Iky * dv ) ^ 2 );
 			 computePsidashBCA(psidashBCA,theta0,Ikz,Ikx,du,Iky,dv,_ERROR_CONST);
 			
@@ -341,13 +330,19 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //compute pdfSum
 			 //pdfsum =pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
-			 computePdfSum(pdfSum,psidashFS1,psidashFS2);
-			// toolsKit::cvNormalizeEdges(pdfSum);
-			
 			 
-			// cout<<"pdfSum"<<endl;
-			 //toolsKit::IPL_print(pdfSum);
+			 computePdfSum(pdfSum, psidashFS1,psidashFS2,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt);					
 			 
+
+			 cout<<"fs1_122ht22"<<endl;
+			 toolsKit::IPL_print(fs1_122ht22);
+			 cout<<"fs1_3222"<<endl;
+			 toolsKit::IPL_print(fs1_3222);
+			 cout<<"fs2_22122wt"<<endl;
+			 toolsKit::IPL_print(fs2_22122wt);
+			 cout<<"fs2_2232"<<endl;
+			 toolsKit::IPL_print(fs2_2232);
+
 			 //prepare data for matrix A
 
 			 //uapp  = psidashBCA * theta0 * ( Ikx ^ 2) +   gamma * psidashGCA * (theta1 *  Ixx ^ 2 +  theta2 * Ixy ^ 2 )  + pdfsum ;
@@ -357,24 +352,14 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 computeDiagonalPdfSum(vapp, psidashBCA,theta0,Iky,gamma,psidashGCA,theta2,Iyy,theta1,Ixy,pdfSum);
 			 //uvapp = psidashBCA * theta0* (Ikx*Iky)+ gamma*psidashGCA*(theta1*Ixx*Ixy + theta2*Iyy*Ixy ) ;			
 			 computeDiagonalReg   (uvapp,psidashBCA,theta0,Ikx,Iky,gamma,psidashGCA,theta1,Ixx,Ixy,theta2,Iyy,Ixy);
-			 //vuapp =   uvapp
-			 
-		
-			//only temp normalize!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			// toolsKit::cvNormalizeEdges(uapp);
-			// toolsKit::cvNormalizeEdges(vapp);
-			/* toolsKit::cvNormalizeEdges2(uvapp);*/
-
+			 //vuapp =   uvapp			 			
 			 vuapp=cvCloneImage(uvapp);
 			
 			// cout<<"uvapp,vuapp"<<endl;
 			// toolsKit::IPL_print(uvapp);
 			 
 
-			/*  cout<<"psidashBCA"<<endl;
-			 toolsKit::IPL_print(psidashBCA);
-			  cout<<"psidashGCA"<<endl;
-			 toolsKit::IPL_print(psidashGCA);*/
+		
 			 cout<<"uapp"<<endl;
 			 toolsKit::IPL_print(uapp);
 			 cout<<"vapp"<<endl;
@@ -405,62 +390,72 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 vector<float> * vuappCol = toolsKit::IplImageToCoulmnVector(vuapp);
 			 SparseMat<float> vu(height*width);
 			 vu.addDiag(0,*vuappCol);
-			 delete vuappCol;
+			 delete vuappCol;	
 
-			//create tmp clone of psidaFS1 and psidaFS2
-			IplImage* tmp2=	 cvCreateImage(cvSize(psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
-			tmp2 = cvCloneImage(psidashFS2);
-			IplImage* tmp1=	 cvCreateImage(cvSize(psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-			tmp1 = cvCloneImage(psidashFS1);
-			toolsKit::cvMulScalar(tmp2,-1);
-			toolsKit::cvMulScalar(tmp1,-1);
-			
-			/*cout<<"psidashFS1"<<endl;
-			toolsKit::IPL_print(psidashFS1);
-		    cout<<"psidashFS2"<<endl;
-		    toolsKit::IPL_print(psidashFS2);*/
+			//arguments to u(j) in the linear Euler Lagrange equations.
+			//arguments to v(j) in the linear Euler Lagrange equations.
 
-			// arguments to u(j) in the linear Euler Lagrange equations.
-			//tmp = pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) ; => -psidaFS2 = tmp2			 		 
+			//negfs1_122ht22 = pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) 	 		 
 			//ul1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
-			vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(tmp2);//-tmp(:)
+			IplImage* negfs2_22122wt=cvCreateImage(cvSize(fs2_22122wt->width, fs2_22122wt->height ),fs2_22122wt->depth,fs2_22122wt->nChannels);
+			negfs2_22122wt=cvCloneImage(fs2_22122wt);
+			toolsKit::cvMulScalar(negfs2_22122wt,-1);
+			
+			vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(negfs2_22122wt);
 			SparseMat<float> ul1(height*width);
 			ul1.addDiag(height,*tmp2Col);
-
 			//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
 			SparseMat<float> vl1(height*width);
 			vl1.addDiag(height,*tmp2Col);
-			//tmp = pdfs( 2 : 2 : end, 3 : 2 : end ) ; => -psidaFS2 = tmp2;
+			cvReleaseImage(&negfs2_22122wt);
+			delete tmp2Col;
+			//==========================================
+
+			//negfs2_2232 = pdfs( 2 : 2 : end, 3 : 2 : end ) 
 			//ur1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
+			IplImage* negfs2_2232=cvCreateImage(cvSize(fs2_2232->width, fs2_2232->height ),fs2_2232->depth,fs2_2232->nChannels);
+			negfs2_2232=cvCloneImage(fs2_2232);
+			toolsKit::cvMulScalar(negfs2_2232,-1);
+			
+			vector<float> * tmp2Col2  = toolsKit::IplImageToCoulmnVector(negfs2_2232);
 			SparseMat<float> ur1(height*width);
-			ur1.addDiag(-height,*tmp2Col);
+			ur1.addDiag(-height,*tmp2Col2);
 			//vr1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
 			SparseMat<float> vr1(height*width);
-			vr1.addDiag(-height, *tmp2Col);
-
-			//no need for tmp2 or tmp2Col
-			cvReleaseImage(&tmp2);
-			delete tmp2Col;
-
-			//% arguments to v(j) in the linear Euler Lagrange equations.
-			//tmp = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) ; => -psidaFS1 = tmp1;
-			vector<float> * tmp1Col  = toolsKit::IplImageToCoulmnVector(tmp1);//-tmp(:)
+			vr1.addDiag(-height, *tmp2Col2);
+			//no need for tmp2Col			
+			delete tmp2Col2;
+			cvReleaseImage(&negfs2_2232);
+			//==========================================
+			
+			//negfs1_122ht22 = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end )
+			IplImage* negfs1_122ht22=cvCreateImage(cvSize(fs1_122ht22->width, fs1_122ht22->height ),fs1_122ht22->depth,fs1_122ht22->nChannels);
+			negfs1_122ht22=cvCloneImage(fs1_122ht22);
+			toolsKit::cvMulScalar(negfs1_122ht22,1);
+			vector<float> * tmp1Col  = toolsKit::IplImageToCoulmnVector(negfs1_122ht22);
 			//ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
 			SparseMat<float> ul2(height*width);
 			ul2.addDiag(1,*tmp1Col);
 			//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
-			SparseMat<float> vl2(height*width);
-			vl2.addDiag(1, *tmp1Col);
-			//tmp = pdfs( 3 : 2 : end, 2 : 2 : end ) ; => -psidaFS1 = tmp1;
+			SparseMat<float> vl2(height*width);						
+			vl2.addDiag(1, *tmp1Col);			
 			//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
+			delete tmp1Col;					
+			cvReleaseImage(&negfs1_122ht22);
+			//==================================
+			//tmp = pdfs( 3 : 2 : end, 2 : 2 : end )
+			IplImage* negfs1_3222=cvCreateImage(cvSize(fs1_3222->width, fs1_3222->height ),fs1_3222->depth,fs1_3222->nChannels);
+			negfs1_3222=cvCloneImage(fs1_3222);
+			toolsKit::cvMulScalar(negfs1_3222,-1);
+			vector<float> * tmp1Col2  = toolsKit::IplImageToCoulmnVector(negfs1_3222);//-tmp(:)
 			SparseMat<float> ur2(height*width);
-			ur2.addDiag(-1, *tmp1Col);
+			ur2.addDiag(-1, *tmp1Col2);
 			//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			SparseMat<float> vr2(height*width);
-			vr2.addDiag(-1, *tmp1Col);
-			//no need for tmp1, tmp1Col
-			cvReleaseImage(&tmp1);
-			delete tmp1Col;
+			vr2.addDiag(-1, *tmp1Col2);
+			//no need for negfs1_122ht22, tmp1Col2
+			cvReleaseImage(&negfs1_122ht22);
+			delete tmp1Col2;
 
 			//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
 
@@ -476,9 +471,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 
 			// Computing the constant terms for the first of the Euler Lagrange equations
-			computeVectBComponents(pdfaltSumU,psidashFS1,psidashFS2,u);
+			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,u);
 			// Computing the constant terms for the second of the Euler Lagrange equations
-			computeVectBComponents(pdfaltSumV,psidashFS1,psidashFS2,v);
+			computeVectBComponents(pdfaltSumV,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,v);
 
 
 			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 

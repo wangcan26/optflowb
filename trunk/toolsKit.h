@@ -59,7 +59,8 @@
 		static void IPL_mul_top(IplImage* img,IplImage* shiftImg2,IplImage* dest);
 		static void IPL_mul_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest);
 
-
+		static void IPL_mul_different_sizes(IplImage* src,IplImage* srcHorizontal,IplImage* dest);
+		static void IPL_mul_different_sizes2(IplImage* src,IplImage* srcVertical,IplImage* dest);
 		static void IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest);
 		static void IPL_add_different_sizes2(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest);
 		static void IPL_add_different_sizes3(IplImage* imgHorizonal,IplImage* imgHorizonal2,IplImage* dest);

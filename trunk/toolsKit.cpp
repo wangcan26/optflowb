@@ -40,6 +40,34 @@ void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
 		++it3;
 		}
 	}
+//srcHorizontal is wt+1
+void toolsKit::IPL_mul_different_sizes(IplImage* src,IplImage* srcHorizontal,IplImage* dest){
+	int j,k,m;
+	
+	k=src->width-1;
+	for (j=0,m=0; m < dest->width*dest->height;j++,m++)					
+	{	
+	
+		float temp1=((float*)src->imageData)[m];
+		float temp2=((float*)srcHorizontal->imageData)[j];
+		((float*)dest->imageData)[m]=((float*)src->imageData)[m]+((float*)srcHorizontal->imageData)[j];			
+
+		if(k==0){//smaller pic is at row end		
+			k=srcHorizontal->width-1;
+			j++;			
+		}
+		else
+			k--;			
+	}		
+}
+//srcVertical is ht+1
+void toolsKit::IPL_mul_different_sizes2(IplImage* src,IplImage* srcVertical,IplImage* dest){
+	int m;
+	for (m=0; m < dest->width*dest->height;m++)					
+	{	
+		((float*)dest->imageData)[m]=((float*)src->imageData)[m]+((float*)srcVertical->imageData)[m];					
+	}		
+}
 //wt*(ht+1) +(ht+1)*wt matrixs only
 //dest size is x*y
 void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest){
@@ -49,8 +77,8 @@ void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVerti
 	for (i=imgHorizonal->width,j=0,m=0; m < dest->width*dest->height; i++,j++,m++)					
 	{	
 	
-		float temp1=((float*)imgHorizonal->imageData)[i];
-		float temp2=((float*)imgVertical->imageData)[j];
+		//float temp1=((float*)imgHorizonal->imageData)[i];
+		//float temp2=((float*)imgVertical->imageData)[j];
 		((float*)dest->imageData)[m]=((float*)imgHorizonal->imageData)[i]+((float*)imgVertical->imageData)[j];			
 
 		if(k==0){//smaller pic is at row end		
