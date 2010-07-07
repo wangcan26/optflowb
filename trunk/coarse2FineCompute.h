@@ -10,6 +10,9 @@
 #include "constructMatrix_brox.h"
 #include <math.h>
 
+typedef toolsKit::vectorTools vtools;
+
+
 class coarse2FineCompute
 {
 public:

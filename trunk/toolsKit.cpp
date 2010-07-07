@@ -766,6 +766,21 @@ vector<float> * toolsKit::vectorTools::vectorSub(vector<float> * a, vector<float
 	return ans;
 	}
 
+vector<float>* toolsKit::vectorTools::vectorSub(float val, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	for (vector<float>::iterator it = b->begin(); it != b->end(); it++)
+		ans->push_back(val-*it);
+	return ans;
+	}
+
+vector<float>* toolsKit::vectorTools::vectorSub(vector<float>* a, float val){
+	vector<float>* ans = new vector<float>();
+	for (vector<float>::iterator it = a->begin(); it != a->end(); it++)
+		ans->push_back(*it-val);
+	return ans;
+
+	}
+
 vector<float>* toolsKit::vectorTools::vectorMul(vector<float>* a, vector<float>* b){
 	vector<float>* ans = new vector<float>();
 	vector<float>::iterator ait = a->begin();
@@ -776,6 +791,17 @@ vector<float>* toolsKit::vectorTools::vectorMul(vector<float>* a, vector<float>*
 		ait++; bit++;
 		}
 	return ans;
+	}
+
+vector<float>* toolsKit::vectorTools::vectorMul(float val, vector<float>* b){
+	vector<float>* ans = new vector<float>();
+	for (vector<float>::iterator it = b->begin(); it != b->end(); it++)
+		ans->push_back((*it) * val);
+	return ans;
+	}
+
+vector<float>* toolsKit::vectorTools::vectorMul(vector<float>* a, float val){
+	return toolsKit::vectorTools::vectorMul(val,a);
 	}
 
 vector<float>* toolsKit::vectorTools::vectorAdd(vector<float>* a, vector<float>* b){
@@ -789,3 +815,15 @@ vector<float>* toolsKit::vectorTools::vectorAdd(vector<float>* a, vector<float>*
 		}
 	return ans;
 	}
+
+vector<float>* toolsKit::vectorTools::vectorAdd(vector<float>* a, float val){
+	vector<float>* ans = new vector<float>();
+	for (vector<float>::iterator it = a->begin(); it != a->end(); it++)
+		ans->push_back(*it+val);
+	return ans;
+	}
+
+vector<float>* toolsKit::vectorTools::vectorAdd(float val, vector<float>* b){
+	return toolsKit::vectorTools::vectorAdd(b,val);
+	}
+

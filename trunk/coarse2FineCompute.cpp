@@ -124,48 +124,55 @@ IplImage** coarse2FineCompute::meshgrid(int cols, int rows){
 	}
 
 
-IplImage** coarse2FineCompute::RGBwarp(IplImage* img, IplImage* u, IplImage* v){
+IplImage** coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 
-	int height = img->height;
-	int width = img->width;
-	int nChannels = img->nChannels;
+	int height = I->height;
+	int width = I->width;
+	int nChannels = I->nChannels;
 	IplImage ** XY = meshgrid(width, height);
 	IplImage * X = XY[0];
 	IplImage * Y = XY[1];
 	
 	IplImage * Xu = cvCreateImage(cvSize(X->width,X->height),X->depth,X->nChannels);
 	cvAdd(X,u,Xu);
-	cvReleaseImage(&Xu);
+	cvReleaseImage(&X);
 
 	IplImage * Yv = cvCreateImage(cvSize(Y->width,Y->height),Y->depth,Y->nChannels);
 	cvAdd(Y,v,Yv);
-	cvReleaseImage(&Yv);
+	cvReleaseImage(&Y);
 
 	vector<float>* XI = toolsKit::IplImageToCoulmnVector(Xu);
 	vector<float>* YI = toolsKit::IplImageToCoulmnVector(Yv);
 	float eM6 = 0.00247875218; //1E-6
 	//XI = max(1, min(sx - 1E-6, XI));
-	toolsKit::vectorTools::vectorMin(XI, height-eM6);
-	toolsKit::vectorTools::vectorMax(XI, 1);
+	vtools::vectorMin(XI, height-eM6);
+	vtools::vectorMax(XI, 1);
 
 	//XI = max(1, min(sx - 1E-6, XI));
-	toolsKit::vectorTools::vectorMin(YI, width-eM6);
-	toolsKit::vectorTools::vectorMax(YI, 1);
+	vtools::vectorMin(YI, width-eM6);
+	vtools::vectorMax(YI, 1);
  
 	//fXI = floor(XI);
-	vector<float>* fXI = toolsKit::vectorTools::vectorFloor(XI);
+	vector<float>* fXI = vtools::vectorFloor(XI);
 	//cXI = ceil(XI);
-	vector<float>* cXI = toolsKit::vectorTools::vectorCeil(XI);
+	vector<float>* cXI = vtools::vectorCeil(XI);
 	//fYI = floor(YI);
-	vector<float>* fYI = toolsKit::vectorTools::vectorFloor(YI);
+	vector<float>* fYI = vtools::vectorFloor(YI);
 	//cYI = ceil(YI);
-	vector<float>* cYI = toolsKit::vectorTools::vectorCeil(YI);
+	vector<float>* cYI = vtools::vectorCeil(YI);
 
 	//alpha_x = XI - fXI;
-	vector<float>* alpha_x = toolsKit::vectorTools::vectorSub(XI, fXI);
+	vector<float>* alpha_x = vtools::vectorSub(XI, fXI);
 	//alpha_y = YI - fYI;
-	vector<float>* alpha_y = toolsKit::vectorTools::vectorSub(YI, fYI);
+	vector<float>* alpha_y = vtools::vectorSub(YI, fYI);
 
+
+	//O=(1 - alpha_x) .* (1 - alpha_y)
+	vector<float> * O = vtools::vectorMul(vtools::vectorSub(1, alpha_x),vtools::vectorSub(1,alpha_y));
+	//fYI + sy * (fXI - 1)
+	vector<float>* args = vtools::vectorAdd(fYI, vtools::vectorMul(height,vtools::vectorSub(fXI,1))); 
+
+	
 
 	/*note:
 		A([i1 i2 i3]) is a vector of matrix A elements (as a column vecotr) in index i1 i2 i3...
@@ -540,8 +547,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		
 		//cout<<"Ikx2"<<endl;
 		//toolsKit::IPL_print(Ikx2);
-		cout<<"Iky2"<<endl;
-		toolsKit::IPL_print(Iky2);	
+		//cout<<"Iky2"<<endl;
+		//toolsKit::IPL_print(Iky2);	
 	
 	
 		////cout<<"Iyx"<<endl;
@@ -549,8 +556,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//cout<<"Iyy"<<endl;
 		//toolsKit::IPL_print(Iyy);
 		
-		cout<<"Ixy"<<endl;
-		toolsKit::IPL_print(Ixy);
+		/*cout<<"Ixy"<<endl;
+		toolsKit::IPL_print(Ixy);*/
 		//cout<<"Ixx"<<endl;
 		//toolsKit::IPL_print(Ixx);
 		//cout<<"Iyy"<<endl;
@@ -562,7 +569,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//toolsKit::IPL_print(IXt_axis);
 		//cout<<"IYt_ayis"<<endl;
 		//toolsKit::IPL_print(IYt_ayis);
-		*/
+		
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 			

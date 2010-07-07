@@ -13,6 +13,7 @@
 class toolsKit
 	{
 	public:
+		
 		enum operations {ADD=1,SUB=2,MUL=3};
 		enum directions {UP=1,DOWN=2,LEFT=3,RIGHT=4};
 		toolsKit();
@@ -87,6 +88,7 @@ class toolsKit
 		static IplImage * IplFromFile(string filename);
 		static void IplToFile(IplImage* img, string filename);
 
+
 		class vectorTools{
 		public:
 			static void vectorMin(vector<float>* v, float val);
@@ -99,12 +101,26 @@ class toolsKit
 
 			static vector<float> * vectorSub(vector<float> * a, vector<float>* b);
 
+			static vector<float>* vectorSub(float val, vector<float>* b);
+
+			static vector<float>* vectorSub(vector<float>* a, float val);
+
 			static vector<float>* vectorMul(vector<float>* a, vector<float>* b);
+
+			static vector<float>* vectorMul(float val, vector<float>* b);
+
+			static vector<float>* vectorMul(vector<float>* a, float val);
 		
-			static	vector<float>* vectorAdd(vector<float>* a, vector<float>* b);
+			static vector<float>* vectorAdd(vector<float>* a, vector<float>* b);
+
+			static vector<float>* vectorAdd(vector<float>* a, float val);
+
+			static vector<float>* vectorAdd(float val, vector<float>* b);
+
+			static vector<float>* elementsFromIpl(IplImage* I, vector<float> * p);
 
 			};
-
+		
 		virtual ~toolsKit(void);
 	private:
 		static void IPL_operate_left(IplImage* img,IplImage* img2,IplImage* dest,operations oper);
