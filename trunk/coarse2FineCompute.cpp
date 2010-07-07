@@ -509,17 +509,23 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			cout<<"end;"<<endl;
 			delete dUdV;
 			cout<<"freed"<<endl;
-
-
 			
+		
+
+
+			cvAdd(UV->getU(),Du,UV->getU());
+			cvAdd(UV->getV(),Dv,UV->getV());
+
+			cout<<"Du"<<endl;
+			toolsKit::IPL_print(Du);
+			cout<<"Dv"<<endl;
+			toolsKit::IPL_print(Dv);
+
 			cout<<"u"<<endl;
 			toolsKit::IPL_print(UV->getU());
 			cout<<"v"<<endl;
 			toolsKit::IPL_print(UV->getV());
 
-
-			cvAdd(UV->getU(),Du,UV->getU());
-			cvAdd(UV->getV(),Dv,UV->getV());
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);
 				
