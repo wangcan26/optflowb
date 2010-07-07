@@ -214,10 +214,10 @@ int getDXsCVSobel(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){
 
 	double y[7] =  {0.016667,-0.15, 0.75,0,-0.75,0.15,-0.016667};
 
-    CvPoint point = cvPoint(-1,-1);
+    //CvPoint point = cvPoint(1,1);
 	//x derivative
 	CvMat* weickert = &cvMat(1, 7, CV_64FC1, x ); // 64FC1 for double
-	cvFilter2D(src1,dest_dx,weickert,point);
+	cvFilter2D(src1,dest_dx,weickert);
 	
 	//y derivative
 	weickert = &cvMat( 7, 1, CV_64FC1, y );
@@ -517,7 +517,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//cvAbsDiff(Ikx,Ikx2,IXt_axis);
 		//cvAbsDiff(Iky,Iky2,IYt_ayis);
 		
-		cvSub(Im2,Im1,Ikt_Org);
+		cvSub(Im1,Im2,Ikt_Org);
 		cvSub(Ikx2,Ikx,IXt_axis);
 		cvSub(Iky2,Iky,IYt_ayis);
 		//////////////////////////
@@ -533,7 +533,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		IXt_axis=toolsKit::IplFromFile("c:\\a\\Ixz.txt");
 		IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");*/
 		//////////////////////////
-		cout<<"Ikx"<<endl;
+	/*	cout<<"Ikx"<<endl;
 		toolsKit::IPL_print(Ikx);
 		cout<<"Iky"<<endl;
 		toolsKit::IPL_print(Iky);
@@ -562,14 +562,14 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//toolsKit::IPL_print(IXt_axis);
 		//cout<<"IYt_ayis"<<endl;
 		//toolsKit::IPL_print(IYt_ayis);
-		
+		*/
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 			
-			if (iter==0){
+			/*if (iter==0){
 				iter=1;
 				computePsidashFS_brox(toolsKit::IplFromFile("c:\\a\\u_double.txt"),toolsKit::IplFromFile("c:\\a\\v_double.txt"),width,height,channels,UV);
-			}else
+			}else*/
 				computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
 		
 			
@@ -579,10 +579,10 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
 
 
-			cout<<"fs1*alpha"<<endl;
+			/*cout<<"fs1*alpha"<<endl;
 			toolsKit::IPL_print(UV->getPsidashFSAns1());
 			cout<<"fs2*alpha"<<endl;
-			toolsKit::IPL_print(UV->getPsidashFSAns2());
+			toolsKit::IPL_print(UV->getPsidashFSAns2());*/
 
 			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);
 			

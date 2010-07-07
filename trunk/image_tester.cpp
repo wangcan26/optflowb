@@ -41,7 +41,7 @@ void test(){
 	((float*)imga1->imageData)[5]=6;
 	((float*)imga1->imageData)[6]=7;
 	((float*)imga1->imageData)[7]=8;
-	((float*)imga1->imageData)[8]=9;*/
+	((float*)imga1->imageData)[8]=9;
 
 	((float*)u->imageData)[0]=1;
 	((float*)u->imageData)[1]=1;
@@ -71,7 +71,7 @@ void test(){
 	((float*)psidashFS1->imageData)[5]=3;
 	((float*)psidashFS1->imageData)[6]=1;
 	((float*)psidashFS1->imageData)[7]=2;
-	((float*)psidashFS1->imageData)[8]=3;
+	((float*)psidashFS1->imageData)[8]=3;*/
 	//cout<<"FS1"<<endl;
 	//toolsKit::IPL_print(psidashFS1);
 	//cout<<"FS2"<<endl;
@@ -217,38 +217,6 @@ int main (int argc,char** argv)
 	IplImage* vx= NULL;
 	IplImage* vy= NULL;
 	
-
-	//test();
-
-	IplImage *img1_33=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-	IplImage *img2_33=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-
-	((float*)img2_33->imageData)[0]=4;
-	((float*)img2_33->imageData)[1]=5;
-	((float*)img2_33->imageData)[2]=6;
-	((float*)img2_33->imageData)[3]=4;
-	((float*)img2_33->imageData)[4]=5;
-	((float*)img2_33->imageData)[5]=6;
-	((float*)img2_33->imageData)[6]=4;
-	((float*)img2_33->imageData)[7]=5;
-	((float*)img2_33->imageData)[8]=6;
-	
-	((float*)img1_33->imageData)[0]=1;
-	((float*)img1_33->imageData)[1]=2;
-	((float*)img1_33->imageData)[2]=3;
-	((float*)img1_33->imageData)[3]=4;
-	((float*)img1_33->imageData)[4]=5;
-	((float*)img1_33->imageData)[5]=6;
-	((float*)img1_33->imageData)[6]=7;
-	((float*)img1_33->imageData)[7]=8;
-	((float*)img1_33->imageData)[8]=9;
-	
-	cout<<"Im1:3*3"<<endl;
-	toolsKit::IPL_print(img1_33);
-	cout<<"Im2:3*3"<<endl;
-	toolsKit::IPL_print(img2_33);
-	
-	
 	IplImage *img1_33_file=NULL;
 	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
 	IplImage *img2_33_file=NULL;
@@ -260,28 +228,28 @@ int main (int argc,char** argv)
 	//cvConvertScale(img1_33_file, img1_33_32, 1.0/255);
 	//cvNormalize(img1_33_32,img1_33_32,256,0,CV_MINMAX);
 
-	cout<<"Im1:fromfile"<<endl;
-	toolsKit::IPL_print(img1_33_file);
-	cout<<"Im2:fromfile"<<endl;
-	toolsKit::IPL_print(img2_33_file);
+	//cout<<"Im1:fromfile"<<endl;
+	//toolsKit::IPL_print(img1_33_file);
+	//cout<<"Im2:fromfile"<<endl;
+	//toolsKit::IPL_print(img2_33_file);
 
-	coarse2fComp.Coarse2FineFlow(vx,vy, 
-								  *img1_33_file, *img2_33_file, 
-								  alpha,gamma,
-								  1,1, 
-								  outerIter,innerIter);
+	//coarse2fComp.Coarse2FineFlow(vx,vy, 
+	//							  *img1_33_file, *img2_33_file, 
+	//							  alpha,gamma,
+	//							  1,1, 
+	//							  outerIter,innerIter);
 
 		/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
 	cvWaitKey(0);
 	toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
 	cvWaitKey(0);
 */
-	/* coarse2fComp.Coarse2FineFlow(vx,vy, 
+	 coarse2fComp.Coarse2FineFlow(vx,vy, 
 								  *img1_32g, *img2_32g, 
 								  alpha,gamma,
 								  ratio,minWidth, 
 								  outerIter,innerIter);
-*/
+
 	cout<<"fin"<<endl;
 } 
 
