@@ -75,7 +75,7 @@ class SparseMat
 			const_col_iter jj;
 			for (ii; ii != rhs.mat.end(); ii++){
 				for (jj=ii->second.begin(); jj != ii->second.end(); jj++){
-					lhs<<"["<<ii->first<<","<<jj->first<<"]"<<"="<<jj->second<<" ; ";
+					lhs<<"("<<ii->first<<","<<jj->first<<")"<<"\t"<<jj->second<<endl;
 					}
 				cout<<endl;
 				}			
