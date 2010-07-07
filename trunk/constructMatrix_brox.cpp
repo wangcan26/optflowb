@@ -199,27 +199,43 @@ void computeDiagonalReg(IplImage* ans,IplImage* psidashBCA,IplImage* theta0,IplI
 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 void computePdfSum(IplImage* pdfSum,  IplImage* psidashFS1, IplImage* psidashFS2,
 				   IplImage* fs1_3222,IplImage* fs1_122ht22,IplImage* fs2_2232,IplImage* fs2_22122wt){	
+
+	IplImage* temp1 =cvCreateImage(cvSize( pdfSum->width, pdfSum->height ),pdfSum->depth,pdfSum->nChannels);	
+	IplImage* temp2 =cvCreateImage(cvSize( pdfSum->width, pdfSum->height ),pdfSum->depth,pdfSum->nChannels);
 	
-	IplImage* temp1 =cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);	
-	IplImage* temp2 =cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
-		
+	cvZero(fs1_3222);
+	cvZero(fs2_2232);
 	toolsKit::cvZeroTop(fs1_122ht22);
 	toolsKit::cvZeroBottom(fs1_122ht22);	
-	toolsKit::shiftImage(fs1_122ht22,fs1_3222,toolsKit::UP);
+
+	cvSetImageROI(fs1_122ht22, cvRect(0,1,fs1_122ht22->width, fs1_122ht22->height));	
+	cvCopy(fs1_122ht22, fs1_3222, NULL);
+	cvResetImageROI(fs1_122ht22);
+
+
+	fs1_122ht22->height=fs1_122ht22->height-1;
+	//toolsKit::shiftImage(fs1_122ht22,fs1_3222,toolsKit::UP);
 	cvAdd(fs1_122ht22,fs1_3222,temp1);
-	
+
 	//cout<<"temp1"<<endl;
 	//toolsKit::IPL_print(temp1);
-    
+
+   
 	toolsKit::cvZeroLeftRight(fs2_22122wt);
-	toolsKit::shiftImage(fs2_22122wt,fs2_2232,toolsKit::RIGHT);
+
+	cvSetImageROI(fs2_22122wt, cvRect(1,0,fs2_22122wt->width, fs2_22122wt->height));
+	cvCopy(fs2_22122wt, fs2_2232, NULL);
+	cvResetImageROI(fs2_22122wt);
+	//toolsKit::shiftImage(fs2_22122wt,fs2_2232,toolsKit::RIGHT);
+	fs2_22122wt->width=fs2_22122wt->width-1;
 	cvAdd(fs2_22122wt,fs2_2232,temp2);
 
 	//cout<<"temp2"<<endl;
 	//toolsKit::IPL_print(temp2);
 
 
-	toolsKit::IPL_add_different_sizes(temp1,temp2,pdfSum);
+	//toolsKit::IPL_add_different_sizes(temp1,temp2,pdfSum);
+	cvAdd(temp1,temp2,pdfSum);
 
 	cvReleaseImage(&temp1);
 	cvReleaseImage(&temp2);
@@ -292,12 +308,13 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 IplImage* pdfaltSumV=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			
 			//fs1 & fs2 break down
-			 IplImage* fs1_3222 =  cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
+			 IplImage* fs1_3222 =  cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels);
 		  	 IplImage* fs1_122ht22=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
 			 fs1_122ht22=cvCloneImage(psidashFS1);				
-			 IplImage* fs2_2232=   cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);	
+			 IplImage* fs2_2232=   cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels);	
 			 IplImage* fs2_22122wt=cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
-			 fs2_22122wt=cvCloneImage(psidashFS2);
+			 fs2_22122wt=cvCloneImage(psidashFS2);			
+
 			 //epsilon = 1e-3*ones(size(Ikx))==>zeroing and adding instead
 			 cvZero(epsilon);
 			 cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
@@ -332,9 +349,14 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 			 
 			 computePdfSum(pdfSum, psidashFS1,psidashFS2,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt);					
+	//		 fs1_122ht22->height=height;						 
 			 
-			//cout<<"pdfSum"<<endl;
-			//toolsKit::IPL_print(pdfSum);
+			 
+
+
+
+			cout<<"pdfSum"<<endl;
+			toolsKit::IPL_print(pdfSum);
 
 			 cout<<"fs1_122ht22"<<endl;
 			 toolsKit::IPL_print(fs1_122ht22);
@@ -357,15 +379,15 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vuapp =   uvapp			 			
 			 vuapp=cvCloneImage(uvapp);
 			
-			// cout<<"uvapp,vuapp"<<endl;
-			// toolsKit::IPL_print(uvapp);
+			 cout<<"uvapp,vuapp"<<endl;
+			 toolsKit::IPL_print(uvapp);
 			 
 
 		
-			 //cout<<"uapp"<<endl;
-			 //toolsKit::IPL_print(uapp);
-			 //cout<<"vapp"<<endl;
-			 //toolsKit::IPL_print(vapp);
+			 cout<<"uapp"<<endl;
+			 toolsKit::IPL_print(uapp);
+			 cout<<"vapp"<<endl;
+			 toolsKit::IPL_print(vapp);
 
 			 //insert to diagonals to matrix A
 			 
@@ -375,6 +397,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //uu.addDiag(0,*uuappCol);
 			 //delete uuappCol;
 			SparseMat<float> * uu= SparseToolKit::creaseSparse(uapp);
+			
 			// cout<<"UU:"<<endl<<uu<<endl;
 				
 			 //vv = spdiags( vapp(:),   0, wt*ht, wt*ht);
@@ -383,6 +406,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vv.addDiag(0,*vvappCol);
 			 //delete vvappCol;
 			SparseMat<float>* vv = SparseToolKit::creaseSparse(vapp);
+				cout<<*vv;
 
 			 //uv = spdiags( uvapp(:), 0, wt*ht, wt*ht);
 			 //vector<float> * uvappCol = toolsKit::IplImageToCoulmnVector(uvapp);
@@ -405,8 +429,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//ul1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
 			IplImage* negfs2_22122wt=cvCreateImage(cvSize(fs2_22122wt->width, fs2_22122wt->height ),fs2_22122wt->depth,fs2_22122wt->nChannels);
 			negfs2_22122wt=cvCloneImage(fs2_22122wt);
-			toolsKit::cvMulScalar(negfs2_22122wt,-1);
-			negfs2_22122wt->width=negfs2_22122wt->width-1;
+			toolsKit::cvMulScalar(negfs2_22122wt,-1);			
 			//vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(negfs2_22122wt);
 			//SparseMat<float> ul1(height*width);
 			//ul1.addDiag(height,*tmp2Col);
@@ -427,7 +450,6 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//ur1 = spdiags(-tmp(:), -ht, wt*ht, wt*ht);
 			IplImage* negfs2_2232=cvCreateImage(cvSize(fs2_2232->width, fs2_2232->height ),fs2_2232->depth,fs2_2232->nChannels);		
 			negfs2_2232=cvCloneImage(fs2_2232);
-			negfs2_2232->width=negfs2_2232->width-1;
 			toolsKit::cvMulScalar(negfs2_2232,-1);
 			
 			//vector<float> * tmp2Col2  = toolsKit::IplImageToCoulmnVector(negfs2_2232);
@@ -450,7 +472,6 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//negfs1_122ht22 = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end )
 			IplImage* negfs1_122ht22=cvCreateImage(cvSize(fs1_122ht22->width, fs1_122ht22->height ),fs1_122ht22->depth,fs1_122ht22->nChannels);
 			negfs1_122ht22=cvCloneImage(fs1_122ht22);
-			negfs1_122ht22->height=negfs1_122ht22->height-1;
 			toolsKit::cvMulScalar(negfs1_122ht22,1);
 			
 			
@@ -473,7 +494,6 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//tmp = pdfs( 3 : 2 : end, 2 : 2 : end )
 			IplImage* negfs1_3222=cvCreateImage(cvSize(fs1_3222->width, fs1_3222->height ),fs1_3222->depth,fs1_3222->nChannels);
 			negfs1_3222=cvCloneImage(fs1_3222);
-			negfs1_3222->height=negfs1_3222->height-1;
 			toolsKit::cvMulScalar(negfs1_3222,-1);
 
 

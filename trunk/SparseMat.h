@@ -77,7 +77,7 @@ class SparseMat
 				for (jj=ii->second.begin(); jj != ii->second.end(); jj++){
 					lhs<<"("<<ii->first<<","<<jj->first<<")"<<"\t"<<jj->second<<endl;
 					}
-				cout<<endl;
+				//cout<<endl;
 				}			
 			return lhs;
 			}

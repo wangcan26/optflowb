@@ -24,7 +24,7 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 		delete []ImPyramid;
 
 
-	//nLevels=1;
+	nLevels=1;
 
 	ImPyramid=new IplImage*[nLevels];
 	
@@ -34,7 +34,7 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 
 
 	
-
+/*
 	cout<<"nlevels:"<<nLevels<<endl;
 	for(int i=1;i<nLevels;i++)
 	{
@@ -44,5 +44,5 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 		ImPyramid[i] = cvCreateImage( cvSize( foo->width*ratio,foo->height*ratio ),foo->depth, foo->nChannels );
 		cvResize(foo,ImPyramid[i]);
 	}
-
+*/
 }
