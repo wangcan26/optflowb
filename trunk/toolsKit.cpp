@@ -424,13 +424,13 @@ void toolsKit::cvNormalizeEdges(IplImage* img){
 	for (i = 0; i < width*img->height; i++)
 		{
 		if(i<width)//first row
-			((float*)img->imageData)[i]=130;
+			((float*)img->imageData)[i]=0;
 		if(i> width*img->height-width-1)//last row
-			((float*)img->imageData)[i]=130;
+			((float*)img->imageData)[i]=0;
 		if(!k)//apply to last column only										  
-			((float*)img->imageData)[i]=130;
+			((float*)img->imageData)[i]=0;
 		if(k==width-1)//apply to first column only										  
-			((float*)img->imageData)[i]=130;
+			((float*)img->imageData)[i]=0;
 
 		k==0?k=width-1:k--;
 		}

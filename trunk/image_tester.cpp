@@ -239,11 +239,11 @@ int main (int argc,char** argv)
 								  1,1, 
 								  outerIter,innerIter);
 
-		/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
+	/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
 	cvWaitKey(0);
 	toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
-	cvWaitKey(0);
-*/
+	cvWaitKey(0);*/
+
 	 /*coarse2fComp.Coarse2FineFlow(vx,vy, 
 								  *img1_32g, *img2_32g, 
 								  alpha,gamma,

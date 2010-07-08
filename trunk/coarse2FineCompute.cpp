@@ -424,7 +424,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		cvSub(Ikx2,Ikx,IXt_axis);
 		cvSub(Iky2,Iky,IYt_ayis);
 		//////////////////////////
-		cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
+		/*cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
 		//Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis
 		
 		Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
@@ -434,7 +434,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		Ixy=toolsKit::IplFromFile("c:\\a\\Ixy.txt");
 		Iyy=toolsKit::IplFromFile("c:\\a\\Iyy.txt");
 		IXt_axis=toolsKit::IplFromFile("c:\\a\\Ixz.txt");
-		IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");
+		IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");*/
 		//////////////////////////
 	/*	cout<<"Ikx"<<endl;
 		toolsKit::IPL_print(Ikx);
@@ -469,15 +469,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//outer fixed point iteration
 		for(int iter=0;iter<nOuterFPIterations;iter++){
 			
-			/*if (iter==0){
-				iter=1;*
-				computePsidashFS_brox(toolsKit::IplFromFile("c:\\a\\u_double.txt"),toolsKit::IplFromFile("c:\\a\\v_double.txt"),width,height,channels,UV);
-			}else*/
-				computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
-		
-			
-			
-
+			computePsidashFS_brox(UV->getU(),UV->getV(),width,height,channels,UV);
+	
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
 
@@ -516,6 +509,10 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			cvAdd(UV->getU(),Du,UV->getU());
 			cvAdd(UV->getV(),Dv,UV->getV());
 
+			//erase edges
+			toolsKit::cvNormalizeEdges(Du);
+			toolsKit::cvNormalizeEdges(Dv);
+				
 			cout<<"Du"<<endl;
 			toolsKit::IPL_print(Du);
 			cout<<"Dv"<<endl;

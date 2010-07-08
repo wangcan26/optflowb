@@ -260,6 +260,7 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 	IplImage* tempLeft4=cvCreateImage(cvSize( UorV->width, UorV->height ),UorV->depth,UorV->nChannels);
 	IplImage* tempLeft4Reduced=cvCreateImage(cvSize( pdfaltSumXX->width, pdfaltSumXX->height ),pdfaltSumXX->depth,pdfaltSumXX->nChannels);	
 	cvZero(UorV);
+	cvZero(pdfaltSumXX);
 
 	//pad flow with zeros	
 	cvSetImageROI(UorV, cvRect(1,1,UorV_Org->width,UorV_Org->width));	
@@ -309,18 +310,13 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 	cvMul(tempLeft4Reduced,fs1_3222,tempLeft4Reduced);
 
 	//temp1+temp2+temp3+temp4
-	cvZero(pdfaltSumXX);
-
-	cout<<"tempLeft1Reduced"<<endl;
-	toolsKit::IPL_print(tempLeft1Reduced);
-	cout<<"tempLeft2Reduced"<<endl;
-	toolsKit::IPL_print(tempLeft2Reduced);
-
 	cvAdd(tempLeft1Reduced,tempLeft2Reduced,pdfaltSumXX);
 	cvAdd(pdfaltSumXX,tempLeft3Reduced,pdfaltSumXX);
 	cvAdd(pdfaltSumXX,tempLeft4Reduced,pdfaltSumXX);
 	//- 1*pdfaltsumXX - needed for use in the next computation
 	toolsKit::cvMulScalar(pdfaltSumXX,-1);
+
+	//release
 	cvReleaseImage(&tempLeft1);
 	cvReleaseImage(&tempLeft1Reduced);
 	cvReleaseImage(&tempLeft2);
@@ -406,17 +402,17 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 
 
-			cout<<"pdfSum"<<endl;
-			toolsKit::IPL_print(pdfSum);
+			//cout<<"pdfSum"<<endl;
+			//toolsKit::IPL_print(pdfSum);
 
-			 cout<<"fs1_122ht22"<<endl;
+			 /*cout<<"fs1_122ht22"<<endl;
 			 toolsKit::IPL_print(fs1_122ht22);
 			 cout<<"fs1_3222"<<endl;
 			 toolsKit::IPL_print(fs1_3222);
 			 cout<<"fs2_22122wt"<<endl;
 			 toolsKit::IPL_print(fs2_22122wt);
 			 cout<<"fs2_2232"<<endl;
-			 toolsKit::IPL_print(fs2_2232);
+			 toolsKit::IPL_print(fs2_2232);*/
 
 			 //prepare data for matrix A
 
@@ -606,7 +602,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);
 			cvAdd(constv,pdfaltSumV,constv);
 			
-			 cout<<"pdfaltSumU"<<endl;
+			 /*cout<<"pdfaltSumU"<<endl;
 			 toolsKit::IPL_print(pdfaltSumU);
 			 cout<<"pdfaltSumV"<<endl;
 			 toolsKit::IPL_print(pdfaltSumV);
@@ -614,7 +610,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 cout<<"constu"<<endl;
 			 toolsKit::IPL_print(constu);
 			 cout<<"constv"<<endl;
-			 toolsKit::IPL_print(constv);
+			 toolsKit::IPL_print(constv);*/
 
 			//insert data to B vector:b = [-constu(:) ; -constv(:) ];
 			IplImage * Mconstu  =  cvCreateImage(cvSize(constu->width,constu->height),constu->depth,constu->nChannels);

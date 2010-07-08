@@ -33,8 +33,8 @@ void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int min
 	
 
 
-	
-/*
+	/*
+
 	cout<<"nlevels:"<<nLevels<<endl;
 	for(int i=1;i<nLevels;i++)
 	{
