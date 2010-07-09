@@ -10,14 +10,16 @@ public:
 		innerV=v;
 		PsidashFSAns1=cvCreateImage(cvSize( u->width, u->height+1 ),u->depth,u->nChannels); 
 		PsidashFSAns2=cvCreateImage(cvSize( u->width+1, u->height ),u->depth,u->nChannels); 
+		cvZero(PsidashFSAns1);
+		cvZero(PsidashFSAns2);
 	
 	}
-	inline flowUV(int width,int height,int depth,int channels){
+	/*inline flowUV(int width,int height,int depth,int channels){
 		innerU=cvCreateImage(cvSize( width, height ),depth,channels); 
 		innerV=cvCreateImage(cvSize( width, height ),depth,channels); 
 		PsidashFSAns1=cvCreateImage(cvSize( width, height ),depth,channels); 
 		PsidashFSAns2=cvCreateImage(cvSize( width, height ),depth,channels); 
-	}
+	}*/
 	inline virtual ~flowUV(void)
 	{
 		innerU=NULL;

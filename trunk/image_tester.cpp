@@ -233,22 +233,22 @@ int main (int argc,char** argv)
 	//cout<<"Im2:fromfile"<<endl;
 	//toolsKit::IPL_print(img2_33_file);
 
-	coarse2fComp.Coarse2FineFlow(vx,vy, 
-								  *img1_33_file, *img2_33_file, 
-								  alpha,gamma,
-								  1,1, 
-								  outerIter,innerIter);
+	//coarse2fComp.Coarse2FineFlow(vx,vy, 
+	//							  *img1_33_file, *img2_33_file, 
+	//							  alpha,gamma,
+	//							  1,3, 
+	//							  outerIter,innerIter);
 
-	/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
+		/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
 	cvWaitKey(0);
 	toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
-	cvWaitKey(0);*/
-
-	 /*coarse2fComp.Coarse2FineFlow(vx,vy, 
+	cvWaitKey(0);
+*/
+	 coarse2fComp.Coarse2FineFlow(vx,vy, 
 								  *img1_32g, *img2_32g, 
 								  alpha,gamma,
 								  ratio,minWidth, 
-								  outerIter,innerIter);*/
+								  outerIter,innerIter);
 
 	cout<<"fin"<<endl;
 } 

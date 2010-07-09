@@ -261,11 +261,17 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 	IplImage* tempLeft4Reduced=cvCreateImage(cvSize( pdfaltSumXX->width, pdfaltSumXX->height ),pdfaltSumXX->depth,pdfaltSumXX->nChannels);	
 	cvZero(UorV);
 	cvZero(pdfaltSumXX);
-
+	cvZero(tempLeft1);cvZero(tempLeft1Reduced);cvZero(tempLeft2);cvZero(tempLeft2Reduced);
+	cvZero(tempLeft3);cvZero(tempLeft3Reduced);cvZero(tempLeft4);cvZero(tempLeft4Reduced);
+	
+	
 	//pad flow with zeros	
-	cvSetImageROI(UorV, cvRect(1,1,UorV_Org->width,UorV_Org->width));	
-	cvCopy(UorV_Org, UorV, NULL);	
-	cvResetImageROI(UorV);
+	
+	//cvSetImageROI(UorV, cvRect(0,0,UorV->width-2,UorV->height-2));	
+	toolsKit::increaseImageSize(UorV_Org,UorV,2);
+
+	//cvCopy(UorV_Org, UorV, NULL);		
+	//cvResetImageROI(UorV);
 	
 	//for testing!
 	//UorV=toolsKit::IplFromFile("c:\\a\\upad_test.txt");	
@@ -296,10 +302,6 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 	cvSetImageROI(tempLeft3, cvRect(1,0,tempLeft3->width, tempLeft3->height));	
 	cvCopy(tempLeft3, tempLeft3Reduced, NULL);	
 	cvMul(tempLeft3Reduced,fs1_122ht22,tempLeft3Reduced);
-	 
-
-
-
 
 	//psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bottom ,ans1
 	toolsKit::IPL_sub_top(UorV,UorV,tempLeft4);
@@ -325,6 +327,7 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 	cvReleaseImage(&tempLeft3Reduced);
 	cvReleaseImage(&tempLeft4);	
 	cvReleaseImage(&tempLeft4Reduced);
+	cvReleaseImage(&UorV);
 }
 
 
@@ -426,15 +429,12 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vuapp =   uvapp			 			
 			 vuapp=cvCloneImage(uvapp);
 			
-			 cout<<"uvapp,vuapp"<<endl;
-			 toolsKit::IPL_print(uvapp);
-			 
-
-		
-			 cout<<"uapp"<<endl;
-			 toolsKit::IPL_print(uapp);
-			 cout<<"vapp"<<endl;
-			 toolsKit::IPL_print(vapp);
+			 //cout<<"uvapp,vuapp"<<endl;
+			 //toolsKit::IPL_print(uvapp);	
+			 //cout<<"uapp"<<endl;
+			 //toolsKit::IPL_print(uapp);
+			 //cout<<"vapp"<<endl;
+			 //toolsKit::IPL_print(vapp);
 
 			 //insert to diagonals to matrix A
 			 
@@ -569,7 +569,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"uuul1ul2ur1ur2(Q1):"<<endl<<uuul1ul2ur1ur2<<endl;
 			//cout<<"vvvl1vl2vr1vr2(Q4):"<<endl<<vvvl1vl2vr1vr2<<endl;
 			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,*uv,*vu,vvvl1vl2vr1vr2);
-			
+			cout<<"finished building mat A"<<endl;
 			delete vv;
 			delete uu;
 			delete uv;
@@ -586,22 +586,51 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//////////////////////build vector B//////////////////////
 				
 			// Computing the constant terms for the first of the Euler Lagrange equations
-							
+	
+			cout<<"breaking point"<<endl;							
+			cout<<"[pdfaltSumU] ht:"<<pdfaltSumU->height<<" wt:"<<pdfaltSumV->width<<" depth:"<<pdfaltSumU->depth<<endl;
+			cout<<"[pdfaltSumU] ht:"<<pdfaltSumU->height<<" wt:"<<pdfaltSumV->width<<" depth:"<<pdfaltSumU->depth<<endl;
+			cout<<"[fs1_3222] ht:"<<fs1_3222->height<<" wt:"<<fs1_3222->width<<" depth:"<<fs1_3222->depth<<endl;
+			cout<<"[fs1_122ht22] ht:"<<fs1_122ht22->height<<" wt:"<<fs1_122ht22->width<<" depth:"<<fs1_122ht22->depth<<endl;
+			cout<<"[fs2_2232] ht:"<<fs2_2232->height<<" wt:"<<fs2_2232->width<<" depth:"<<fs2_2232->depth<<endl;
+			cout<<"[fs2_22122wt] ht:"<<fs2_22122wt->height<<" wt:"<<fs2_22122wt->width<<" depth:"<<fs2_22122wt->depth<<endl;
+			cout<<"[u] ht:"<<u->height<<" wt:"<<u->width<<" depth:"<<u->depth<<endl;
+
 			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,u);
 
-
-
+			cout<<"recover"<<endl;	
 			
 			// Computing the constant terms for the second of the Euler Lagrange equations
 			computeVectBComponents(pdfaltSumV,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,v);
-
+							
 			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 		
-			computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);
-			cvAdd(constu,pdfaltSumU,constu);			
+			computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);					
+			cvAdd(constu,pdfaltSumU,constu);
+						
 			//constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) - 1*pdfaltsumv ;
-			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);
+			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);					
 			cvAdd(constv,pdfaltSumV,constv);
-			
+
+			///////////////release all temp iplImages////////////
+			cvReleaseImage(&theta0);
+			cvReleaseImage(&theta1);
+			cvReleaseImage(&theta2);
+			cvReleaseImage(&psidashBCA);
+			cvReleaseImage(&psidashGCA);
+			cvReleaseImage(&epsilon);
+			cvReleaseImage(&uapp);
+			cvReleaseImage(&vapp);
+			cvReleaseImage(&uvapp);
+			cvReleaseImage(&vuapp);
+			cvReleaseImage(&pdfSum);
+			cvReleaseImage(&pdfaltSumU);
+			cvReleaseImage(&pdfaltSumV);
+			cvReleaseImage(&fs1_3222);
+			cvReleaseImage(&fs1_122ht22);
+			cvReleaseImage(&fs2_2232);
+			cvReleaseImage(&fs2_22122wt);
+			/////////////////////////////////////////////////////
+					
 			 /*cout<<"pdfaltSumU"<<endl;
 			 toolsKit::IPL_print(pdfaltSumU);
 			 cout<<"pdfaltSumV"<<endl;
@@ -611,7 +640,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 toolsKit::IPL_print(constu);
 			 cout<<"constv"<<endl;
 			 toolsKit::IPL_print(constv);*/
-
+			
+			cout<<"starting building B"<<endl;
 			//insert data to B vector:b = [-constu(:) ; -constv(:) ];
 			IplImage * Mconstu  =  cvCreateImage(cvSize(constu->width,constu->height),constu->depth,constu->nChannels);
 			toolsKit::cvMulScalar(Mconstu,-1);
@@ -627,16 +657,21 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 				B->push_back(*it);
 			delete MconstuCol;
 			delete MconstvCol;
+			cvReleaseImage(&constu);
+			cvReleaseImage(&constv);
 			
 			vector<float> * x = new vector<float>(B->size());
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
-			A->clean();
-			//toolsKit::cvShowManyImages("constructMatrix_b:uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv",8,uapp,vapp,uvapp,vuapp,pdfaltSumU,pdfaltSumV,constu,constv);
-			//cout<<*A<<endl;
+			A->clean();			
+			cout<<"starting SOR"<<endl;
 			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
-			
+			cout<<"SOR ended!"<<endl;
 			delete B;
 			delete A;
 			return dUdV;
+
+
+			
+			 
 }

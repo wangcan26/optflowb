@@ -117,18 +117,18 @@ IplImage** coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 
 
 //need to recieve cvSobel with function pointer;
-int getDXsCVSobel(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){	
-	
+int getDXsCVSobel(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){		
 	double x[7] =	{0.016667,
 						-0.15,
 						 0.75,
 							0,
 						-0.75,
 						 0.15,
-					-0.016667}	;
-						
-
+					-0.016667}	;					
 	double y[7] =  {0.016667,-0.15, 0.75,0,-0.75,0.15,-0.016667};
+
+	cvZero(dest_dx);
+	cvZero(dest_dy);
 
     //CvPoint point = cvPoint(1,1);
 	//x derivative
@@ -213,8 +213,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			vy=tempVy;			
 			//create the warp image
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
-			cvZero(WarpImage2);
-			//WarpImage2=createWarp(WarpImage2,Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),vx,vy);
+			cvZero(WarpImage2);			
 			RGBwarp(WarpImage2,vx,vy);
 			
 					  
@@ -223,20 +222,12 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		IplImage *temp1 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
 		IplImage *temp2 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
 		IplImage *temp3 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
-		
-		//cvNormalize(WarpImage2,temp1,0,1,CV_MINMAX);
-		//cvNormalize(Pyramid1.getImageFromPyramid(k),temp2,0,1,CV_MINMAX);
-		//cvNormalize(Pyramid2.getImageFromPyramid(k),temp3,0,1,CV_MINMAX);
+				
 
 		//toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,temp3);
 		
 		start = std::clock();
-		/*cout<<"img1:"<<endl;
-		//toolsKit::IPL_print( Pyramid1.getImageFromPyramid(k));
-		cout<<"img2:"<<endl;
-		//toolsKit::IPL_print( Pyramid2.getImageFromPyramid(k));
-*/
-
+		
 		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 		std::cout<<"printf: "<< diff <<'\n';
@@ -406,7 +397,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	
+		cvZero(Du);cvZero(Dv);cvZero(Ikt_Org);cvZero(IXt_axis);cvZero(IYt_ayis);
 		//create the different DX of the pictures
 	
 		getDXsCVSobel(Im1,Ikx,Iky);	
@@ -415,11 +406,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		getDXsCVSobel(Ikx,Ixx,Ixy);
 		getDXsCVSobel(Iky,Iyx,Iyy);
 		
-		//DXT of original images and their x&y gradiants
-	 	//cvAbsDiff(Im1,Im2,Ikt_Org);//IKz
-		//cvAbsDiff(Ikx,Ikx2,IXt_axis);
-		//cvAbsDiff(Iky,Iky2,IYt_ayis);
-		
+		//DXT of original images and their x&y gradiants	 			
 		cvSub(Im1,Im2,Ikt_Org);
 		cvSub(Ikx2,Ikx,IXt_axis);
 		cvSub(Iky2,Iky,IYt_ayis);
@@ -513,15 +500,15 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
 				
-			cout<<"Du"<<endl;
-			toolsKit::IPL_print(Du);
-			cout<<"Dv"<<endl;
-			toolsKit::IPL_print(Dv);
+			//cout<<"Du"<<endl;
+			//toolsKit::IPL_print(Du);
+			//cout<<"Dv"<<endl;
+			//toolsKit::IPL_print(Dv);
 
-			cout<<"u"<<endl;
-			toolsKit::IPL_print(UV->getU());
-			cout<<"v"<<endl;
-			toolsKit::IPL_print(UV->getV());
+			//cout<<"u"<<endl;
+			//toolsKit::IPL_print(UV->getU());
+			//cout<<"v"<<endl;
+			//toolsKit::IPL_print(UV->getV());
 
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);
@@ -552,6 +539,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 	cvReleaseImage( &Iyy ); 
 	cvReleaseImage( &Du ); 
 	cvReleaseImage( &Dv ); 
+	UV->releaseAns1and2();
 		
 	return UV;
 

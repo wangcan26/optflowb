@@ -42,9 +42,10 @@ void toolsKit::IPL_add(IplImage* img,IplImage* img2,IplImage* dest){
 	}
 //srcHorizontal is wt+1
 void toolsKit::IPL_mul_different_sizes(IplImage* src,IplImage* srcHorizontal,IplImage* dest){
-	int j,k,m;
+	int j=0;
+	int k=src->width-1;
+	int m=0;
 
-	k=src->width-1;
 	for (j=0,m=0; m < dest->width*dest->height;j++,m++)					
 		{	
 
@@ -61,9 +62,8 @@ void toolsKit::IPL_mul_different_sizes(IplImage* src,IplImage* srcHorizontal,Ipl
 		}		
 	}
 //srcVertical is ht+1
-void toolsKit::IPL_mul_different_sizes2(IplImage* src,IplImage* srcVertical,IplImage* dest){
-	int m;
-	for (m=0; m < dest->width*dest->height;m++)					
+void toolsKit::IPL_mul_different_sizes2(IplImage* src,IplImage* srcVertical,IplImage* dest){	
+	for (int m=0; m < dest->width*dest->height;m++)					
 		{	
 		((float*)dest->imageData)[m]=((float*)src->imageData)[m]+((float*)srcVertical->imageData)[m];					
 		}		
@@ -71,9 +71,11 @@ void toolsKit::IPL_mul_different_sizes2(IplImage* src,IplImage* srcVertical,IplI
 //wt*(ht+1) +(ht+1)*wt matrixs only
 //dest size is x*y
 void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVertical,IplImage* dest){
-	int i,j,k,m;
-
-	k=imgHorizonal->width-1;
+	int i=0;
+	int j=0;
+	int m=0;
+	int k=imgHorizonal->width-1;
+	
 	for (i=imgHorizonal->width,j=0,m=0; m < dest->width*dest->height; i++,j++,m++)					
 		{	
 
@@ -91,9 +93,10 @@ void toolsKit::IPL_add_different_sizes(IplImage* imgHorizonal,IplImage* imgVerti
 		}		
 	}
 void toolsKit::IPL_add_different_sizes2(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest){
-	int i,j,k;
+	int i=1;
+	int j=1;
+	int k=dest->width-1;
 	cvZero(dest);
-	k=dest->width-1;
 	for (i = 1,j=1; i < dest->width*dest->height-1; i++,j++)					
 		{				
 		if(k==0){//smaller pic is at row end		
@@ -108,9 +111,10 @@ void toolsKit::IPL_add_different_sizes2(IplImage* imgVertical,IplImage* imgVerti
 	}
 
 void toolsKit::IPL_add_different_sizes3(IplImage* imgVertical,IplImage* imgVertical2,IplImage* dest){
-	int i,j,k;
-	cvZero(dest);
-	k=dest->width-1;
+	int i=1;
+	int j=1;
+	int k=dest->width-1;
+	cvZero(dest);	
 	for (i = 1,j=1; i < imgVertical->width*dest->height; i++,j++)					
 		{				
 		if(k==0){//smaller pic is at row end		
@@ -139,9 +143,9 @@ void toolsKit::IPL_sub(IplImage* img,IplImage* img2,IplImage* dest){
 	}
 //img2 is the shifted image
 void toolsKit::IPL_operate_top(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
-	int i,j;
-	int width=img->width;
-
+	int i=0;
+	int j=0;
+	int width=img->width;	
 	for (i = width,j=0; i < width*img->height; i++,j++)					
 		{	
 		switch (operation){					  
@@ -156,7 +160,8 @@ void toolsKit::IPL_operate_top(IplImage* img,IplImage* shiftImg2,IplImage* dest,
 	}
 //img2 is the shifted image
 void toolsKit::IPL_operate_bottom(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
-	int i,j;
+	int i=0;
+	int j=0;
 	int width=img->width;				
 	for (i = 0,j=width; i < width*img->height-width; i++,j++)					
 		{	
@@ -173,15 +178,14 @@ void toolsKit::IPL_operate_bottom(IplImage* img,IplImage* shiftImg2,IplImage* de
 	}
 //img2 is the shifted image
 void toolsKit::IPL_operate_left(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
-	int i;
 	int width=img->width;
 	if (img->nChannels==3)
-		for (i = 1; i < img->width*img->height*3; i+=3)
+		for (int i = 1; i < img->width*img->height*3; i+=3)
 			{
 			// 
 			}
 	else				
-		for (i = 1; i < width*img->height; i++)					
+		for (int i = 1; i < width*img->height; i++)					
 			{
 			if(i %width  !=0)//do not compute first column
 				switch (operation){					  
@@ -197,11 +201,10 @@ void toolsKit::IPL_operate_left(IplImage* img,IplImage* shiftImg2,IplImage* dest
 	}
 //img2 is the shifted image
 void toolsKit::IPL_operate_right(IplImage* img,IplImage* shiftImg2,IplImage* dest,toolsKit::operations operation){
-	int i,k;
 	int width=img->width;					
-	//for first cell
-	k=width-1;
-	for (i = 0; i < width*img->height; i++)
+	int k=width-1;	
+	//for first cell	
+	for (int i = 0; i < width*img->height; i++)
 		{
 		if(k)//do not compute last column
 			switch (operation){					  
@@ -320,13 +323,14 @@ void toolsKit::cvMulScalar(IplImage* img,float scalar){
 	}
 
 void toolsKit::increaseImageSize(IplImage* src,IplImage* dst,int select){
-	int i,j,k;
+	int i=0;
+	int j=0;
 	int width=src->width;					
-	//for first cell
-	k=width;
+	int k=width;	
+	//for first cell	
 	cvZero(dst);
 
-	if (!select)//increase by on col
+	if (!select)//increase by one col
 		for (i = 0,j=0; i < width*src->height;j++, i++)
 			{
 			if(k){//do not compute last column			  
@@ -341,7 +345,27 @@ void toolsKit::increaseImageSize(IplImage* src,IplImage* dst,int select){
 			else
 				k--;
 			}
-	else
+	if (select==2)//pad with zeros
+		for (i = 0,j=dst->width+1; i < width*src->height;j++, i++)
+			{
+			
+			if(k){//do not compute last column			  
+				((float*)dst->imageData)[j]=((float*)src->imageData)[i];							
+				//cout<<((float*)dst->imageData)[j]<<" ";			
+				}
+			if(k==0){//smaller pic is at row end
+				//cout<<endl;
+				k=width-1;
+				j=j+2;		
+				((float*)dst->imageData)[j]=((float*)src->imageData)[i];	
+				}
+			else
+				k--;
+
+
+			}
+			
+	else if(select==1)//increase by one row
 		for (i = 0,j=0; i < width*src->height; i++,j++)					
 			{	
 			((float*)dst->imageData)[j]=((float*)src->imageData)[i];		
@@ -349,7 +373,7 @@ void toolsKit::increaseImageSize(IplImage* src,IplImage* dst,int select){
 
 	}
 void toolsKit::cvZeroTop(IplImage* img){
-	int i;
+	int i=0;
 	int width=img->width;					
 	//for first cell
 	for (i = 0; i < width; i++)
@@ -360,7 +384,7 @@ void toolsKit::cvZeroTop(IplImage* img){
 	}
 
 void toolsKit::cvZeroBottom(IplImage* img){
-	int i;
+	int i=0;
 	int width=img->width;					
 	//for first cell
 	for (i = width*img->height-width; i < width*img->height; i++)
@@ -370,10 +394,10 @@ void toolsKit::cvZeroBottom(IplImage* img){
 		}
 	}
 void toolsKit::cvZeroRight(IplImage* img){
-	int i,k;
+	int i=0;
 	int width=img->width;					
-	//for first cell
-	k=width-1;
+	int k=width-1;
+		
 	for (i = 0; i < width*img->height; i++)
 		{		
 		if(!k)//apply to first column only										  
@@ -383,10 +407,9 @@ void toolsKit::cvZeroRight(IplImage* img){
 	}
 
 void toolsKit::cvZeroLeftRight(IplImage* img){
-	int i,k;
+	int i=0;
 	int width=img->width;					
-	//for first cell
-	k=width-1;
+	int k=width-1;		
 	for (i = 0; i < width*img->height-width+1; )
 		{	
 		((float*)img->imageData)[i]=0;
@@ -394,15 +417,13 @@ void toolsKit::cvZeroLeftRight(IplImage* img){
 		float a2=((float*)img->imageData)[i+width-1];
 		i=i+width;
 		}
-
 	}
 
-
 void toolsKit::cvZeroBottomLeft(IplImage* img){
-	int i,k;
+	int i=0;
 	int width=img->width;					
-	//for first cell
-	k=width-1;
+	int k=width-1;
+		
 	for (i = 0; i < width*img->height; i++)
 		{
 		if(i> width*img->height-width-1)
@@ -417,7 +438,8 @@ void toolsKit::cvZeroBottomLeft(IplImage* img){
 
 
 void toolsKit::cvNormalizeEdges(IplImage* img){
-	int i,k;
+	int i=0;
+	int k=0;
 	int width=img->width;					
 	//for first cell
 	k=width-1;
@@ -434,20 +456,6 @@ void toolsKit::cvNormalizeEdges(IplImage* img){
 
 		k==0?k=width-1:k--;
 		}
-
-	/*
-	const double x_max = -log(FLT_EPSILON);		
-	for (int i = 0; i < img->width*img->height; i++)					
-	{	
-	float t=img->imageData[i]+img->imageData[i];
-	//if(((float*)img->imageData)[i] > x_max); 
-	//	((float*)img->imageData)[i]=0;
-	if(t==((float*)img->imageData)[i])
-	((float*)img->imageData)[i]=0;
-
-	}*/
-
-
 	}
 
 //averaging as per the numerics section of the second chapter.for x and y
