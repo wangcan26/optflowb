@@ -69,19 +69,32 @@ class SparseMat
 			if(i>=m || j>=n) throw;
 			return mat[i][j];
 			}
+
+
 		friend ostream& operator <<(ostream& lhs, const SparseMat& rhs)
 			{
 			const_row_iter ii = rhs.mat.begin();
 			const_col_iter jj;
 			for (ii; ii != rhs.mat.end(); ii++){
 				for (jj=ii->second.begin(); jj != ii->second.end(); jj++){
-					lhs<<"("<<ii->first+1<<","<<jj->first+1<<")"<<"\t"<<jj->second<<endl;
+					lhs<<"("<<(ii->first)<<","<<(jj->first)<<")"<<"\t"<<jj->second<<endl;
 					}
 				//cout<<endl;
 				}			
 			return lhs;
 			}
 
+		friend ofstream& operator <<(ofstream& lhs, SparseMat& rhs)
+			{
+			for (int j=0; j<rhs.m; j++)
+				for (int i=0; i<rhs.n; i++){
+					if (rhs.mat[i][j]!=0)
+						lhs<<"("<<i+1<<","<<j+1<<")"<<"\t"<<rhs.mat[i][j]<<endl;
+					}
+			return lhs;
+			}
+
+			
 
 		SparseMat operator*(const T& val)const {
 
@@ -110,19 +123,19 @@ class SparseMat
 			}
 
 
-		SparseMat operator+(const T& val)const {
+		//SparseMat operator+(const T& val)const {
 
-			SparseMat<T> ans (this->m,this->n);
+		//	SparseMat<T> ans (this->m,this->n);
 
-			for (const_row_iter ii = mat.begin(); ii != mat.end(); ii++){
-				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
+		//	for (const_row_iter ii = mat.begin(); ii != mat.end(); ii++){
+		//		for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
 
-					ans(ii->first,jj->first) = jj->second + val;
-					}
-				}
+		//			ans(ii->first,jj->first) = jj->second + val;
+		//			}
+		//		}
 
-			return ans;
-			}
+		//	return ans;
+		//	}
 
 
 		SparseMat& operator+=(const T& val){
@@ -147,7 +160,6 @@ class SparseMat
 			//ans.mat = this->mat;
 			for (const_row_iter ii = this->mat.begin(); ii != this->mat.end(); ii++){
 				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
-
 					ans(ii->first,jj->first) = jj->second ;
 					}
 				}
@@ -156,7 +168,6 @@ class SparseMat
 
 			for (const_row_iter ii = other.mat.begin(); ii != other.mat.end(); ii++){
 				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
-
 					ans(ii->first,jj->first) += jj->second ;
 					}
 				}
@@ -209,19 +220,35 @@ class SparseMat
 			if (abs(pos) > n || abs(pos) >m)
 				return -1;
 			if (pos >0){
-				i+=pos;
+				j+=pos;
 				}
-			if (pos <0){
-				j+=pos*-1;
+			else if (pos <0){
+				i+=pos*-1;
+				}
+			int in=0,out=0;
+			vector<T>::iterator it = elements.begin();
+			if (pos>0){
+				for (int k=0; k<j; k++)
+					it++;
+
+				}
+			else if (pos < 0){
+				for (int k=0; k<i; k++)
+					elements.pop_back();
 				}
 
-			for (vector<T>::iterator it = elements.begin(); it != elements.end() && i<n && j<m; it++, ans++){
-				if (*it!=0)
+
+			for (it; it != elements.end() && i<n && j<m; it++, ans++){
+				if (*it!=0){
 					mat[i++][j++] = *it;
+					in++;
+					}
 				else{
 					i++;j++;
+					out++;
 					}
 				}
+			cout<<"in:"<<in<<" out:"<<out<<endl;
 			return ans;
 			}
 
