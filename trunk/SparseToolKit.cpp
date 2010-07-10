@@ -57,11 +57,18 @@ static CvSparseMat * upperTriangle(CvSparseMat * mat){
 	}
 
 
-	SparseMat<float> * SparseToolKit::creaseSparse(IplImage* im, int diag){
+	SparseMat<float> * SparseToolKit::creaseSparse(IplImage* im, int diag, string filename){
 		vector<float> * colVector = toolsKit::IplImageToCoulmnVector(im);
 		SparseMat<float> * ans = new SparseMat<float>(im->height * im->width);
 		ans->addDiag(diag,*colVector);
 		delete colVector;
+		if (filename!=""){
+			ofstream thefile(filename.c_str(), ios::out & ios::trunc);
+			//if (thefile.good()){
+				thefile<<*ans<<endl;
+			//	}
+			thefile.close();
+			}
 		return ans;
 		}
 
