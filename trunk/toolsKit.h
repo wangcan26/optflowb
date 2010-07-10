@@ -42,6 +42,7 @@ class toolsKit
 				}
 			}
 		static vector<float> * IplImageToCoulmnVector(IplImage* img);
+		static void ColumnVectorToIplImage(vector<float>* vCol, IplImage* image);
 
 		static void IPL_mul_inverse(IplImage* img,int opType);
 		//adders
@@ -118,6 +119,8 @@ class toolsKit
 			static vector<float>* vectorAdd(float val, vector<float>* b);
 
 			static vector<float>* elementsFromIpl(IplImage* I, vector<float> * p);
+
+			
 
 			};
 		

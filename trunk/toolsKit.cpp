@@ -698,6 +698,19 @@ vector<float> * toolsKit::IplImageToCoulmnVector(IplImage* img){
 			}
 		return ans;
 	}
+
+void toolsKit::ColumnVectorToIplImage(vector<float>* vCol, IplImage* image){
+		int i=0, j=0;
+		for (vector<float>::iterator it = vCol->begin(); it != vCol->end(); it++){
+			cvSet2D(image, i,j,cvScalar(*it));
+			i++;
+			if (i==image->height){
+				j = (j==image->width?0:j+1);
+				i=0;	
+				}
+			}	
+	}
+
 IplImage * toolsKit::IplFromFile(string filename){
 	ifstream thefile(filename.c_str(),ifstream::in);
 	if (!thefile.good())
@@ -835,3 +848,11 @@ vector<float>* toolsKit::vectorTools::vectorAdd(float val, vector<float>* b){
 	return toolsKit::vectorTools::vectorAdd(b,val);
 	}
 
+
+vector<float>* toolsKit::vectorTools::elementsFromIpl(IplImage* I, vector<float> * p){
+		vector<float>* ans = new vector<float>();
+		vector<float>* colVect = toolsKit::IplImageToCoulmnVector(I);
+		for(vector<float>::iterator it = p->begin(); it!= p->end(); it++)
+			ans->push_back((*colVect)[*it]);
+		return ans;
+	}
