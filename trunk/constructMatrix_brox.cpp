@@ -443,32 +443,34 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //SparseMat<float> uu(height*width);
 			 //uu.addDiag(0,*uuappCol);
 			 //delete uuappCol;
-			SparseMat<float> * uu= SparseToolKit::creaseSparse(uapp);
-			
-			// cout<<"UU:"<<endl<<uu<<endl;
+			 string filename = "c:\\a\\uu_cpp.txt";
+			SparseMat<float> * uu= SparseToolKit::creaseSparse(uapp,0,filename);
+			 
 				
 			 //vv = spdiags( vapp(:),   0, wt*ht, wt*ht);
 			 //vector<float> * vvappCol = toolsKit::IplImageToCoulmnVector(vapp);
 			 //SparseMat<float> vv(height*width);
 			 //vv.addDiag(0,*vvappCol);
 			 //delete vvappCol;
-			SparseMat<float>* vv = SparseToolKit::creaseSparse(vapp);
-				
+			filename = "c:\\a\\vv_cpp.txt";
+			SparseMat<float>* vv = SparseToolKit::creaseSparse(vapp,0,filename);
+			
 
 			 //uv = spdiags( uvapp(:), 0, wt*ht, wt*ht);
 			 //vector<float> * uvappCol = toolsKit::IplImageToCoulmnVector(uvapp);
 			 //SparseMat<float> uv(height*width);
 			 //uv.addDiag(0,*uvappCol);
 			 //delete uvappCol;
-			SparseMat<float>* uv = SparseToolKit::creaseSparse(vuapp);
+			filename = "c:\\a\\uv_cpp.txt";
+			SparseMat<float>* uv = SparseToolKit::creaseSparse(vuapp,0,filename);
 			
-
 			 //vu = spdiags( vuapp(:), 0, wt*ht, wt*ht);
 			 //vector<float> * vuappCol = toolsKit::IplImageToCoulmnVector(vuapp);
 			 //SparseMat<float> vu(height*width);
 			 //vu.addDiag(0,*vuappCol);
-			 //delete vuappCol;	
-			SparseMat<float>* vu = SparseToolKit::creaseSparse(vuapp);
+			 //delete vuappCol;
+			filename = "c:\\a\\vu_cpp.txt";
+			SparseMat<float>* vu = SparseToolKit::creaseSparse(vuapp,0,filename);
 
 			//arguments to u(j) in the linear Euler Lagrange equations.
 			//arguments to v(j) in the linear Euler Lagrange equations.
@@ -481,14 +483,16 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//vector<float> * tmp2Col  = toolsKit::IplImageToCoulmnVector(negfs2_22122wt);
 			//SparseMat<float> ul1(height*width);
 			//ul1.addDiag(height,*tmp2Col);
-			SparseMat<float>* ul1 = SparseToolKit::creaseSparse(negfs2_22122wt, height);
+			filename = "c:\\a\\ul1_cpp.txt";
+			SparseMat<float>* ul1 = SparseToolKit::creaseSparse(negfs2_22122wt, height,filename);
 		
 			
 			//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
 			//SparseMat<float> vl1(height*width);
 			//vl1.addDiag(height,*tmp2Col);
 			//delete tmp2Col;
-			SparseMat<float>* vl1 = SparseToolKit::creaseSparse(negfs2_22122wt,height);
+			filename = "c:\\a\\vl1_cpp.txt";
+			SparseMat<float>* vl1 = SparseToolKit::creaseSparse(negfs2_22122wt,height,filename);
 
 			
 			cvReleaseImage(&negfs2_22122wt);
@@ -503,7 +507,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//vector<float> * tmp2Col2  = toolsKit::IplImageToCoulmnVector(negfs2_2232);
 			//SparseMat<float> ur1(height*width);
 			//ur1.addDiag(-height,*tmp2Col2);
-			SparseMat<float>* ur1 = SparseToolKit::creaseSparse(negfs2_2232,-height);
+			filename="c:\\a\\ur1_cpp.txt";
+			SparseMat<float>* ur1 = SparseToolKit::creaseSparse(negfs2_2232,-height, filename);
 		
 			
 
@@ -512,7 +517,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//vr1.addDiag(-height, *tmp2Col2);
 			////no need for tmp2Col			
 			//delete tmp2Col2;
-			SparseMat<float>* vr1 = SparseToolKit::creaseSparse(negfs2_2232);
+			filename="c:\\a\\vr1_cpp.txt";
+			SparseMat<float>* vr1 = SparseToolKit::creaseSparse(negfs2_2232,-height,filename);
 			
 			cvReleaseImage(&negfs2_2232);
 			//==========================================
@@ -520,20 +526,22 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//negfs1_122ht22 = pdfs( 1 : 2 : 2 * ht, 2 : 2 : end )
 			IplImage* negfs1_122ht22=cvCreateImage(cvSize(fs1_122ht22->width, fs1_122ht22->height ),fs1_122ht22->depth,fs1_122ht22->nChannels);
 			negfs1_122ht22=cvCloneImage(fs1_122ht22);
-			toolsKit::cvMulScalar(negfs1_122ht22,1);
+			toolsKit::cvMulScalar(negfs1_122ht22,-1);
 			
 			
 			//vector<float> * tmp1Col  = toolsKit::IplImageToCoulmnVector(negfs1_122ht22);
 			////ul2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
 			//SparseMat<float> ul2(height*width);
 			//ul2.addDiag(1,*tmp1Col);
-			SparseMat<float>* ul2 = SparseToolKit::creaseSparse(negfs1_122ht22,1);
+			filename="c:\\a\\ul2_cpp.txt";
+			SparseMat<float>* ul2 = SparseToolKit::creaseSparse(negfs1_122ht22,1,filename);
 
 			
 			//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
 			//SparseMat<float> vl2(height*width);						
 			//vl2.addDiag(1, *tmp1Col);			
-			SparseMat<float>* vl2 = SparseToolKit::creaseSparse(negfs1_122ht22,1);
+			filename="c:\\a\\vl2_cpp.txt";
+			SparseMat<float>* vl2 = SparseToolKit::creaseSparse(negfs1_122ht22,1, filename);
 
 			//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			//delete tmp1Col;					
@@ -548,27 +556,40 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//vector<float> * tmp1Col2  = toolsKit::IplImageToCoulmnVector(negfs1_3222);//-tmp(:)
 			//SparseMat<float> ur2(height*width);
 			//ur2.addDiag(-1, *tmp1Col2);
-
-			SparseMat<float> * ur2 = SparseToolKit::creaseSparse(negfs1_3222,-1);
+			filename="c:\\a\\ur2_cpp.txt";
+			SparseMat<float> * ur2 = SparseToolKit::creaseSparse(negfs1_3222,-1, filename);
 
 			//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			//SparseMat<float> vr2(height*width);
 			//vr2.addDiag(-1, *tmp1Col2);
-			SparseMat<float>* vr2 = SparseToolKit::creaseSparse(negfs1_3222,-1);
+			filename="c:\\a\\vr2_cpp.txt";
+			SparseMat<float>* vr2 = SparseToolKit::creaseSparse(negfs1_3222,-1,filename);
 
 			//no need for negfs1_122ht22, tmp1Col2
 			cvReleaseImage(&negfs1_122ht22);
-			//delete tmp1Col2;
 
 			//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
 
-			SparseMat<float>  uuul1ul2ur1ur2 = (*uu)+(*ul1)+(*ul2)+(*ur2);
+
+			SparseMat<float>  uuul1ul2ur1ur2 = (*uu)+(*ul1)+(*ul2)+(*ur1)+(*ur2);
+			//filename = "c:\\a\\uuul1ul2ur1ur2_cpp.txt";
+			//ofstream thefile(filename.c_str(), ios::out & ios::trunc);
+			//thefile<<uuul1ul2ur1ur2<<endl;
+			//thefile.close();
 			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
 			SparseMat<float>  vvvl1vl2vr1vr2 = (*vv)+(*vl1)+(*vl2)+(*vr1)+(*vr2);
+			//filename = "c:\\a\\vvvl1vl2vr1vr2_cpp.txt";
+			//thefile.open(filename.c_str(),ios::out & ios::trunc);
+			//thefile<<vvvl1vl2vr1vr2<<endl;
+			//thefile.close();
 			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
 			//cout<<"uuul1ul2ur1ur2(Q1):"<<endl<<uuul1ul2ur1ur2<<endl;
 			//cout<<"vvvl1vl2vr1vr2(Q4):"<<endl<<vvvl1vl2vr1vr2<<endl;
 			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,*uv,*vu,vvvl1vl2vr1vr2);
+			//filename = "c:\\a\\A_cpp.txt";
+			//thefile.open(filename.c_str(), ios::out & ios::trunc);
+			//thefile<<*A<<endl;
+			//thefile.close();
 			cout<<"finished building mat A"<<endl;
 			delete vv;
 			delete uu;
