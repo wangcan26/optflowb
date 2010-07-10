@@ -33,8 +33,12 @@ IplImage** coarse2FineCompute::meshgrid(int cols, int rows){
 	}
 
 
-IplImage** coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
+IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 
+
+	I = toolsKit::IplFromFile("c:\\a\\warp_im1.txt");
+	u = toolsKit::IplFromFile("c:\\a\\warp_u.txt");
+	v = toolsKit::IplFromFile("c:\\a\\warp_v.txt");
 	int height = I->height;
 	int width = I->width;
 	int nChannels = I->nChannels;
@@ -75,30 +79,74 @@ IplImage** coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	//alpha_y = YI - fYI;
 	vector<float>* alpha_y = vtools::vectorSub(YI, fYI);
 
-
-	//O=(1 - alpha_x) .* (1 - alpha_y)
-	vector<float> * O = vtools::vectorMul(vtools::vectorSub(1, alpha_x),vtools::vectorSub(1,alpha_y));
+	//A1 = (1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1))
+	//  A11=------E1-----  * -----E2------;
+	//	   	
+	vector<float>* E1 = vtools::vectorSub(1, alpha_x);
+	vector<float>* E2 = vtools::vectorSub(1,alpha_y);
+	vector<float> * A11 = vtools::vectorMul(E1,E2);
+	delete E1; delete E2;
 	//fYI + sy * (fXI - 1)
-	vector<float>* args = vtools::vectorAdd(fYI, vtools::vectorMul(height,vtools::vectorSub(fXI,1))); 
+	//           ---E1----
+	//      -----E2-------
+	E1 = vtools::vectorSub(fXI,1);
+	E2 = vtools::vectorMul(height,E1);
+	vector<float>* args = vtools::vectorAdd(fYI, E2); 
+	delete E2;delete E1;
+	//I(fYI + sy * (fXI - 1))
+	vector<float>* Iargs = vtools::elementsFromIpl(I, args);
+	//(1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1))
+	vector<float>* A1 = vtools::vectorMul(A11, Iargs);
+	delete args;delete Iargs;delete A11;
 
+	//A2 = alpha_x .* (1 - alpha_y) .* I(fYI + sy * (cXI - 1))
+	//                -----E1------                  ---E3---
+	//     ---------E2-------------			  -----E4-------
+	E1 = vtools::vectorSub(1,alpha_y);
+	E2 = vtools::vectorMul(alpha_x,E1);
+	vector<float>* E3 = vtools::vectorSub(cXI, 1);
+	vector<float>* E4 = vtools::vectorMul(height,E2);
+	args = vtools::vectorAdd(fYI, E2);
+	Iargs = vtools::elementsFromIpl(I, args);
+	vector<float>* A2 = vtools::vectorMul(alpha_x,E4);
+	delete E1; delete E2; delete E3; delete E4; delete args; delete Iargs;
+
+	//A3 = (1 - alpha_x) .* alpha_y .* I(cYI + sy * (fXI - 1))
+	//     -----E1------							----E2---
+	//	   -------------E3---------- 		   -----E4-------
+	E1 = vtools::vectorSub(1,alpha_x);
+	E2 = vtools::vectorSub(fXI,1);
+	E3 = vtools::vectorMul(E1, alpha_y);
+	E4 = vtools::vectorMul(height, E2);
+	args = vtools::vectorAdd(cYI, E4);
+	Iargs = vtools::elementsFromIpl(I, args);
+	vector<float>* A3 = vtools::vectorMul(E3, E4);
+	delete E1; delete E2; delete E3; delete E4; delete args; delete Iargs;
+
+
+	//A4 = alpha_x .* alpha_y .* I(cYI + sy * (cXI - 1))
+	//     ---------E1-------                 -----E2---
+	//									 -----E3--------
+	E1 = vtools::vectorMul(alpha_x, alpha_y);
+	E2 = vtools::vectorSub(cXI, 1);
+	E3 = vtools::vectorMul(height, E2);
+	args = vtools::vectorAdd(cYI, E3);
+	Iargs = vtools::elementsFromIpl(I, args);
+	vector<float> * A4 = vtools::vectorMul(E1, Iargs);
+	delete E1; delete E2; delete E3; delete args; delete Iargs;
+
+	//O = A1 + A2 + A3 + A4
+	vector<float> * A1A2 = vtools::vectorAdd(A1,A2);
+	delete A1; delete A2;
+	vector<float> * A3A4 = vtools::vectorAdd(A3, A4);
+	delete A3; delete A4;
+
+	vector<float>* O = vtools::vectorAdd(A1A2, A3A4);
+	delete A1A2; delete A3A4;
 	
-
-	/*note:
-		A([i1 i2 i3]) is a vector of matrix A elements (as a column vecotr) in index i1 i2 i3...
-		example:
-			A = [1 2 3; 4 5 6; 7 8 9]
-			A(:) = 1 4 7 2 5 8 3 6 9
-			A([1 3 5]) = 1 7 5
-			A([3 3 3]) = 7 7 7*/
-
-	//O = (1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1)) + ...
-	//	  alpha_x .* (1 - alpha_y) .* I(fYI + sy * (cXI - 1)) + ...
-	//    (1 - alpha_x) .* alpha_y .* I(cYI + sy * (fXI - 1)) + ...
-	//    alpha_x .* alpha_y .* I(cYI + sy * (cXI - 1));
-
-
-
 	//O = reshape(O, sy, sx); -> from vector to IPLImage
+	IplImage* IplO = cvCreateImage(cvSize(width, height), I->depth, nChannels);
+	toolsKit::ColumnVectorToIplImage(O,IplO);
 
 	delete XI;
 	delete YI;
@@ -111,7 +159,7 @@ IplImage** coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	cvReleaseImage(&X);
 	cvReleaseImage(&Y);
 	delete[] XY;
-	return NULL;
+	return IplO;
 	}
 
 
@@ -414,7 +462,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		/*cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
 		//Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis
 		
-		Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
+		/*Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
 		Iky=toolsKit::IplFromFile("c:\\a\\Iy.txt");
 		Ikt_Org=toolsKit::IplFromFile("c:\\a\\Iz.txt");
 		Ixx=toolsKit::IplFromFile("c:\\a\\Ixx.txt");
