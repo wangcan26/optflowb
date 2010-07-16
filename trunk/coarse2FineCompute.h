@@ -9,6 +9,8 @@
 #include "IplImageIterator.h"
 #include "constructMatrix_brox.h"
 #include <math.h>
+#include "VectorToolsKit.h"
+#include "SparseMat.h"
 
 typedef toolsKit::vectorTools vtools;
 
