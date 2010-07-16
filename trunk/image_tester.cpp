@@ -261,6 +261,8 @@ int main (int argc,char** argv)
 	 cvReleaseImage(&img2_32);
 	 cvReleaseImage(&img1);
 	 cvReleaseImage(&img2);
+	 cvReleaseImage(&vx);
+	 cvReleaseImage(&vy);
 
 
 	cout<<"fin"<<endl;

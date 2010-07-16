@@ -131,7 +131,7 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 
 
 //need to recieve cvSobel with function pointer;
-int getDXsCVSobel(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){		
+int getDXsCV(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){		
 	double x[7] =	{0.016667,
 						-0.15,
 						 0.75,
@@ -152,10 +152,8 @@ int getDXsCVSobel(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){
 	//y derivative
 	weickert = &cvMat( 7, 1, CV_64FC1, y );
 	cvFilter2D(src1,dest_dy,weickert);
-	//z derivative
-	//matScharr_3x3x2 = &cvMat( 3, 3, CV_64FC1, z );
-	//cvFilter2D(src1,dest_dz,matScharr_3x3x2);
 	
+	//old div with sobel
 	//cvSobel(src, dest_dx, 1, 0, 1);
 	//cvSobel( src, dest_dy, 0, 1, 1);
 	//fix to fit matlab
@@ -180,45 +178,37 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 {
 	// first build the pyramid of the two images
 	GaussPyramid Pyramid1;
-	GaussPyramid Pyramid2;		
-	cout<<"Constructing pyramid..."<<endl;
+	GaussPyramid Pyramid2;			
 	Pyramid1.ConstructPyramid(Im1,ratio,minWidth);
-
-
-	Pyramid2.ConstructPyramid(Im2,ratio,minWidth);
-	cout<<"done!"<<endl;
-
-	// now iterate from the top level to the bottom
-	IplImage* WarpImage2=NULL;
-	
+	Pyramid2.ConstructPyramid(Im2,ratio,minWidth);	
+		
 	std::clock_t start;
 	double diff;
 
-	
+	//clone image2 to warpImage2 (in first iter)
+	IplImage* WarpImage2=cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->height ),Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->depth, Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels );
+	WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1));	
+
+	vx=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->height),Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->depth,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels);
+	vy=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->height),Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->depth,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels);
+	cvZero(vx);
+	cvZero(vy);
+
+	// now iterate from the top level to the bottom
 	for(int k=Pyramid1.nlevels()-1;k>=0;k--)
 	{		
 		cout<<"==================================Pyramid level "<<k<<"-";
 
-		int width=Pyramid1.getImageFromPyramid(k)->width;
+		int width =Pyramid1.getImageFromPyramid(k)->width;
 		int height=Pyramid1.getImageFromPyramid(k)->height;
-		int depth=Pyramid1.getImageFromPyramid(k)->depth;
+		int depth =Pyramid1.getImageFromPyramid(k)->depth;
 		int nChannels=Pyramid1.getImageFromPyramid(k)->nChannels;		
 		cout<<"width:"<<width<<"  height:"<<height<<"============================================"<<endl;
 
 		//on top level(first iteration)
-		if(k==Pyramid1.nlevels()-1)
+		if(k!=Pyramid1.nlevels()-1)		
 		{
-			cout<<"first iteration:"<<k<<endl;
-			vx=cvCreateImage(cvSize(width,height),depth,nChannels);
-			vy=cvCreateImage(cvSize(width,height),depth,nChannels);
-			cvZero(vx);
-			cvZero(vy);
-			//clone image2 to warpImage2 (in first iter)
-			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
-			WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(k));			
-		}
-		else
-		{
+			cout<<"not first level:"<<k<<endl;
 			IplImage *tempVx = cvCreateImage(cvSize(width, height), vx->depth, vx->nChannels);
 			cvResize(vx, tempVx); 
 			vx=tempVx;			
@@ -230,8 +220,8 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			//cvZero(WarpImage2);			
 			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),vx,vy);
 			
-		    //cvShowImage("warp:",WarpImage2);
-			//cvWaitKey(0);
+		    cvShowImage("warp:",WarpImage2);
+			cvWaitKey(0);
 			
 			
 					  
@@ -408,11 +398,11 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		cvZero(Du);cvZero(Dv);cvZero(Ikt_Org);cvZero(IXt_axis);cvZero(IYt_ayis);
 		//create the different DX of the pictures
 	
-		getDXsCVSobel(Im1,Ikx,Iky);	
-		getDXsCVSobel(Im2,Ikx2,Iky2);		
+		getDXsCV(Im1,Ikx,Iky);	
+		getDXsCV(Im2,Ikx2,Iky2);		
 		//by brox we need to take the gradient of the gradient:
-		getDXsCVSobel(Ikx,Ixx,Ixy);
-		getDXsCVSobel(Iky,Iyx,Iyy);
+		getDXsCV(Ikx,Ixx,Ixy);
+		getDXsCV(Iky,Iyx,Iyy);
 		
 		//DXT of original images and their x&y gradiants	 			
 		cvSub(Im1,Im2,Ikt_Org);
