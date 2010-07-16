@@ -444,7 +444,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //uu.addDiag(0,*uuappCol);
 			 //delete uuappCol;
 			 string filename = "c:\\a\\uu_cpp.txt";
-			SparseMat<float> * uu= SparseToolKit::creaseSparse(uapp,0,filename);
+			SparseMat<float> * uu= SparseToolKit::creaseSparse(uapp,0);//,filename);
 			 
 				
 			 //vv = spdiags( vapp(:),   0, wt*ht, wt*ht);
@@ -453,7 +453,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vv.addDiag(0,*vvappCol);
 			 //delete vvappCol;
 			filename = "c:\\a\\vv_cpp.txt";
-			SparseMat<float>* vv = SparseToolKit::creaseSparse(vapp,0,filename);
+			SparseMat<float>* vv = SparseToolKit::creaseSparse(vapp,0);//,filename);
 			
 
 			 //uv = spdiags( uvapp(:), 0, wt*ht, wt*ht);
@@ -462,7 +462,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //uv.addDiag(0,*uvappCol);
 			 //delete uvappCol;
 			filename = "c:\\a\\uv_cpp.txt";
-			SparseMat<float>* uv = SparseToolKit::creaseSparse(vuapp,0,filename);
+			SparseMat<float>* uv = SparseToolKit::creaseSparse(vuapp,0);//,filename);
 			
 			 //vu = spdiags( vuapp(:), 0, wt*ht, wt*ht);
 			 //vector<float> * vuappCol = toolsKit::IplImageToCoulmnVector(vuapp);
@@ -470,7 +470,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //vu.addDiag(0,*vuappCol);
 			 //delete vuappCol;
 			filename = "c:\\a\\vu_cpp.txt";
-			SparseMat<float>* vu = SparseToolKit::creaseSparse(vuapp,0,filename);
+			SparseMat<float>* vu = SparseToolKit::creaseSparse(vuapp,0);//,filename);
 
 			//arguments to u(j) in the linear Euler Lagrange equations.
 			//arguments to v(j) in the linear Euler Lagrange equations.
@@ -484,7 +484,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//SparseMat<float> ul1(height*width);
 			//ul1.addDiag(height,*tmp2Col);
 			filename = "c:\\a\\ul1_cpp.txt";
-			SparseMat<float>* ul1 = SparseToolKit::creaseSparse(negfs2_22122wt, height,filename);
+			SparseMat<float>* ul1 = SparseToolKit::creaseSparse(negfs2_22122wt, height);//,filename);
 		
 			
 			//vl1 = spdiags(-tmp(:), ht, wt*ht, wt*ht);
@@ -492,7 +492,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//vl1.addDiag(height,*tmp2Col);
 			//delete tmp2Col;
 			filename = "c:\\a\\vl1_cpp.txt";
-			SparseMat<float>* vl1 = SparseToolKit::creaseSparse(negfs2_22122wt,height,filename);
+			SparseMat<float>* vl1 = SparseToolKit::creaseSparse(negfs2_22122wt,height);//,filename);
 
 			
 			cvReleaseImage(&negfs2_22122wt);
@@ -508,7 +508,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//SparseMat<float> ur1(height*width);
 			//ur1.addDiag(-height,*tmp2Col2);
 			filename="c:\\a\\ur1_cpp.txt";
-			SparseMat<float>* ur1 = SparseToolKit::creaseSparse(negfs2_2232,-height, filename);
+			SparseMat<float>* ur1 = SparseToolKit::creaseSparse(negfs2_2232,-height);//, filename);
 		
 			
 
@@ -518,7 +518,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			////no need for tmp2Col			
 			//delete tmp2Col2;
 			filename="c:\\a\\vr1_cpp.txt";
-			SparseMat<float>* vr1 = SparseToolKit::creaseSparse(negfs2_2232,-height,filename);
+			SparseMat<float>* vr1 = SparseToolKit::creaseSparse(negfs2_2232,-height);//,filename);
 			
 			cvReleaseImage(&negfs2_2232);
 			//==========================================
@@ -534,14 +534,14 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//SparseMat<float> ul2(height*width);
 			//ul2.addDiag(1,*tmp1Col);
 			filename="c:\\a\\ul2_cpp.txt";
-			SparseMat<float>* ul2 = SparseToolKit::creaseSparse(negfs1_122ht22,1,filename);
+			SparseMat<float>* ul2 = SparseToolKit::creaseSparse(negfs1_122ht22,1);//,filename);
 
 			
 			//vl2 = spdiags(-tmp(:), 1, wt*ht, wt*ht);
 			//SparseMat<float> vl2(height*width);						
 			//vl2.addDiag(1, *tmp1Col);			
 			filename="c:\\a\\vl2_cpp.txt";
-			SparseMat<float>* vl2 = SparseToolKit::creaseSparse(negfs1_122ht22,1, filename);
+			SparseMat<float>* vl2 = SparseToolKit::creaseSparse(negfs1_122ht22,1);//, filename);
 
 			//ur2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			//delete tmp1Col;					
@@ -557,13 +557,13 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//SparseMat<float> ur2(height*width);
 			//ur2.addDiag(-1, *tmp1Col2);
 			filename="c:\\a\\ur2_cpp.txt";
-			SparseMat<float> * ur2 = SparseToolKit::creaseSparse(negfs1_3222,-1, filename);
+			SparseMat<float> * ur2 = SparseToolKit::creaseSparse(negfs1_3222,-1);//, filename);
 
 			//vr2 = spdiags(-tmp(:), -1, wt*ht, wt*ht);
 			//SparseMat<float> vr2(height*width);
 			//vr2.addDiag(-1, *tmp1Col2);
 			filename="c:\\a\\vr2_cpp.txt";
-			SparseMat<float>* vr2 = SparseToolKit::creaseSparse(negfs1_3222,-1,filename);
+			SparseMat<float>* vr2 = SparseToolKit::creaseSparse(negfs1_3222,-1);//,filename);
 
 			//no need for negfs1_122ht22, tmp1Col2
 			cvReleaseImage(&negfs1_122ht22);
@@ -618,20 +618,20 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			cout<<"[u] ht:"<<u->height<<" wt:"<<u->width<<" depth:"<<u->depth<<endl;
 
 			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,u);
-
+			toolsKit::IplToFile(pdfaltSumU,"c:\\a\\pdfaultSumU_cpp.txt");
 			cout<<"recover"<<endl;	
 			
 			// Computing the constant terms for the second of the Euler Lagrange equations
 			computeVectBComponents(pdfaltSumV,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,v);
-							
+			toolsKit::IplToFile(pdfaltSumV,"c:\\a\\pdfaultSumV_cpp.txt");		
 			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 		
 			computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);					
 			cvAdd(constu,pdfaltSumU,constu);
-						
+			toolsKit::IplToFile(constu,"c:\\a\\constu_cpp.txt");		
 			//constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) - 1*pdfaltsumv ;
 			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);					
 			cvAdd(constv,pdfaltSumV,constv);
-
+			toolsKit::IplToFile(constv,"c:\\a\\constv_cpp.txt");
 			///////////////release all temp iplImages////////////
 			cvReleaseImage(&theta0);
 			cvReleaseImage(&theta1);
@@ -665,13 +665,18 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			cout<<"starting building B"<<endl;
 			//insert data to B vector:b = [-constu(:) ; -constv(:) ];
 			IplImage * Mconstu  =  cvCreateImage(cvSize(constu->width,constu->height),constu->depth,constu->nChannels);
+			cvCopy(constu,Mconstu);
 			toolsKit::cvMulScalar(Mconstu,-1);
 			vector<float> * MconstuCol = toolsKit::IplImageToCoulmnVector(Mconstu);
 			cvReleaseImage(&Mconstu);
 			IplImage * Mconstv = cvCreateImage(cvSize(constv->width,constv->height),constv->depth, constv->nChannels);
+			cvCopy(constv,Mconstv);
 			toolsKit::cvMulScalar(Mconstv,-1);
+
 			vector<float> * MconstvCol = toolsKit::IplImageToCoulmnVector(Mconstv);
 			cvReleaseImage(&Mconstv);
+			//toolsKit::vectorTools::vectorToFile(MconstuCol,"c:\\a\\MconstuCol_cpp.txt");
+			//toolsKit::vectorTools::vectorToFile(MconstvCol,"c:\\a\\MconstvCol_cpp.txt");
 			vector<float> * B = new vector<float>(MconstuCol->size());
 			*B= *MconstuCol;
 			for (vector<float>::iterator it = MconstvCol->begin(); it != MconstvCol->end(); it++)
@@ -680,13 +685,14 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			delete MconstvCol;
 			cvReleaseImage(&constu);
 			cvReleaseImage(&constv);
-			
+			//toolsKit::vectorTools::vectorToFile(B,"c:\\a\\B_cpp.txt");
 			vector<float> * x = new vector<float>(B->size());
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
-			A->clean();			
+			//A->clean();			
 			cout<<"starting SOR"<<endl;
 			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
+			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
 			cout<<"SOR ended!"<<endl;
 			delete B;
 			delete A;
