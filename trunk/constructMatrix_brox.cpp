@@ -1,4 +1,5 @@
 #include "constructMatrix_brox.h"
+#include <ctime>
 
 
 
@@ -678,13 +679,42 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
 			//A->clean();			
+		
+			cout<<"converting A:"<<endl;
+			IplImage* IPLA = A->toIpl();
+			
+			IplImage* IPLB = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
+			for (int it = 0; it != B->size(); it++)
+				cvSet2D(IPLB,it,0,cvScalarAll((*B)[it]));
+			IplImage* IPLX = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
+			cvZero(IPLX);
+			cv::Mat tempA(IPLA);
+			cv::Mat tempB(IPLB);
+			cv::Mat tempX(IPLX);
+			cv::solve(tempA,tempB,tempX);
+			IplImage aaa = tempX;
+			toolsKit::IplToFile(&aaa,"c:\\a\\ocv_x.txt");
+			
 			cout<<"starting SOR"<<endl;
+			float start = std::clock();
 			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
 			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
+			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
+			std::cout<<"SOR took: "<< diff <<'\n';
 			cout<<"SOR ended!"<<endl;
+			ofstream thefile("c:\\a\\our_x.txt",ios::out & ios::trunc);
+			thefile<<*dUdV<<endl;
+			thefile.close();
+			
+			vector<float> * dUdV2 = new vector<float>();
+			for (int i =0; i<aaa.height; i++)
+				for (int j=0; j<aaa.width; j++)
+					dUdV2->push_back(cvGet2D(&aaa,i,j).val[0]);
+
+
 			delete B;
 			delete A;
-			return dUdV;
+			return dUdV2;
 
 
 			
