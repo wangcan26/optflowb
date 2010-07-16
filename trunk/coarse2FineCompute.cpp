@@ -33,12 +33,14 @@ IplImage** coarse2FineCompute::meshgrid(int cols, int rows){
 	}
 
 
+
+
 IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 
 
-	I = toolsKit::IplFromFile("c:\\a\\warp_im1.txt");
-	u = toolsKit::IplFromFile("c:\\a\\warp_u.txt");
-	v = toolsKit::IplFromFile("c:\\a\\warp_v.txt");
+	//I = toolsKit::IplFromFile("c:\\a\\warp_im1.txt");
+	//u = toolsKit::IplFromFile("c:\\a\\warp_u.txt");
+	//v = toolsKit::IplFromFile("c:\\a\\warp_v.txt");
 	int height = I->height;
 	int width = I->width;
 	int nChannels = I->nChannels;
@@ -49,13 +51,14 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	IplImage * Xu = cvCreateImage(cvSize(X->width,X->height),X->depth,X->nChannels);
 	cvAdd(X,u,Xu);
 	cvReleaseImage(&X);
-
+	
 	IplImage * Yv = cvCreateImage(cvSize(Y->width,Y->height),Y->depth,Y->nChannels);
 	cvAdd(Y,v,Yv);
 	cvReleaseImage(&Y);
 
 	vector<float>* XI = toolsKit::IplImageToCoulmnVector(Xu);
 	vector<float>* YI = toolsKit::IplImageToCoulmnVector(Yv);
+
 	float eM6 = 0.00247875218; //1E-6
 	//XI = max(1, min(sx - 1E-6, XI));
 	vtools::vectorMin(XI, height-eM6);
@@ -64,89 +67,52 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	//XI = max(1, min(sx - 1E-6, XI));
 	vtools::vectorMin(YI, width-eM6);
 	vtools::vectorMax(YI, 1);
- 
+ 	//toolsKit::vectorTools::vectorToFile(XI, "c:\\a\\XI_cpp.txt");
+	//toolsKit::vectorTools::vectorToFile(YI, "c:\\a\\YI_cpp.txt");
 	//fXI = floor(XI);
 	vector<float>* fXI = vtools::vectorFloor(XI);
+	//toolsKit::vectorTools::vectorToFile(fXI, "c:\\a\\fXI_cpp.txt");
 	//cXI = ceil(XI);
 	vector<float>* cXI = vtools::vectorCeil(XI);
+	//toolsKit::vectorTools::vectorToFile(cXI, "c:\\a\\cXI_cpp.txt");
 	//fYI = floor(YI);
 	vector<float>* fYI = vtools::vectorFloor(YI);
+	//toolsKit::vectorTools::vectorToFile(fYI, "c:\\a\\fYI_cpp.txt");
 	//cYI = ceil(YI);
 	vector<float>* cYI = vtools::vectorCeil(YI);
+	//toolsKit::vectorTools::vectorToFile(cYI, "c:\\a\\cYI_cpp.txt");
 
 	//alpha_x = XI - fXI;
 	vector<float>* alpha_x = vtools::vectorSub(XI, fXI);
+	//toolsKit::vectorTools::vectorToFile(alpha_x, "c:\\a\\alpha_x_cpp.txt");
 	//alpha_y = YI - fYI;
 	vector<float>* alpha_y = vtools::vectorSub(YI, fYI);
+//	toolsKit::vectorTools::vectorToFile(alpha_y, "c:\\a\\alpha_y_cpp.txt");
 
 	//A1 = (1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1))
-	//  A11=------E1-----  * -----E2------;
-	//	   	
-	vector<float>* E1 = vtools::vectorSub(1, alpha_x);
-	vector<float>* E2 = vtools::vectorSub(1,alpha_y);
-	vector<float> * A11 = vtools::vectorMul(E1,E2);
-	delete E1; delete E2;
-	//fYI + sy * (fXI - 1)
-	//           ---E1----
-	//      -----E2-------
-	E1 = vtools::vectorSub(fXI,1);
-	E2 = vtools::vectorMul(height,E1);
-	vector<float>* args = vtools::vectorAdd(fYI, E2); 
-	delete E2;delete E1;
-	//I(fYI + sy * (fXI - 1))
-	vector<float>* Iargs = vtools::elementsFromIpl(I, args);
-	//(1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1))
-	vector<float>* A1 = vtools::vectorMul(A11, Iargs);
-	delete args;delete Iargs;delete A11;
-
+	vector<float> A1 = (1 - *alpha_x) *(1 - *alpha_y)*(I<<=*fYI+height*(*fXI-1));
+	
 	//A2 = alpha_x .* (1 - alpha_y) .* I(fYI + sy * (cXI - 1))
-	//                -----E1------                  ---E3---
-	//     ---------E2-------------			  -----E4-------
-	E1 = vtools::vectorSub(1,alpha_y);
-	E2 = vtools::vectorMul(alpha_x,E1);
-	vector<float>* E3 = vtools::vectorSub(cXI, 1);
-	vector<float>* E4 = vtools::vectorMul(height,E2);
-	args = vtools::vectorAdd(fYI, E2);
-	Iargs = vtools::elementsFromIpl(I, args);
-	vector<float>* A2 = vtools::vectorMul(alpha_x,E4);
-	delete E1; delete E2; delete E3; delete E4; delete args; delete Iargs;
+
+	
+	vector<float> A2 = *alpha_x*(1-*alpha_y)*(I<<=*fYI+height*(*cXI-1));
+	
 
 	//A3 = (1 - alpha_x) .* alpha_y .* I(cYI + sy * (fXI - 1))
-	//     -----E1------							----E2---
-	//	   -------------E3---------- 		   -----E4-------
-	E1 = vtools::vectorSub(1,alpha_x);
-	E2 = vtools::vectorSub(fXI,1);
-	E3 = vtools::vectorMul(E1, alpha_y);
-	E4 = vtools::vectorMul(height, E2);
-	args = vtools::vectorAdd(cYI, E4);
-	Iargs = vtools::elementsFromIpl(I, args);
-	vector<float>* A3 = vtools::vectorMul(E3, E4);
-	delete E1; delete E2; delete E3; delete E4; delete args; delete Iargs;
-
+	
+	vector<float> A3 = (1 - *alpha_x) * *alpha_y * (I<<=(*cYI + height * (*fXI - 1)));
+	
 
 	//A4 = alpha_x .* alpha_y .* I(cYI + sy * (cXI - 1))
-	//     ---------E1-------                 -----E2---
-	//									 -----E3--------
-	E1 = vtools::vectorMul(alpha_x, alpha_y);
-	E2 = vtools::vectorSub(cXI, 1);
-	E3 = vtools::vectorMul(height, E2);
-	args = vtools::vectorAdd(cYI, E3);
-	Iargs = vtools::elementsFromIpl(I, args);
-	vector<float> * A4 = vtools::vectorMul(E1, Iargs);
-	delete E1; delete E2; delete E3; delete args; delete Iargs;
+	
+	vector<float>  A4 = *alpha_x * *alpha_y * (I<<=(*cYI + height * (*cXI - 1)));
 
-	//O = A1 + A2 + A3 + A4
-	vector<float> * A1A2 = vtools::vectorAdd(A1,A2);
-	delete A1; delete A2;
-	vector<float> * A3A4 = vtools::vectorAdd(A3, A4);
-	delete A3; delete A4;
-
-	vector<float>* O = vtools::vectorAdd(A1A2, A3A4);
-	delete A1A2; delete A3A4;
+	vector<float> O = A1 + A2 + A3 + A4;
 	
 	//O = reshape(O, sy, sx); -> from vector to IPLImage
 	IplImage* IplO = cvCreateImage(cvSize(width, height), I->depth, nChannels);
-	toolsKit::ColumnVectorToIplImage(O,IplO);
+	toolsKit::ColumnVectorToIplImage(&O,IplO);
+
 
 	delete XI;
 	delete YI;
@@ -263,6 +229,9 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
 			cvZero(WarpImage2);			
 			RGBwarp(WarpImage2,vx,vy);
+			cvShowImage("warp:",WarpImage2);
+			cvWaitKey(0);
+			
 			
 					  
 		}
@@ -459,17 +428,17 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		cvSub(Ikx2,Ikx,IXt_axis);
 		cvSub(Iky2,Iky,IYt_ayis);
 		//////////////////////////
-		/*cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
-		//Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis
-		
-		/*Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
-		Iky=toolsKit::IplFromFile("c:\\a\\Iy.txt");
-		Ikt_Org=toolsKit::IplFromFile("c:\\a\\Iz.txt");
-		Ixx=toolsKit::IplFromFile("c:\\a\\Ixx.txt");
-		Ixy=toolsKit::IplFromFile("c:\\a\\Ixy.txt");
-		Iyy=toolsKit::IplFromFile("c:\\a\\Iyy.txt");
-		IXt_axis=toolsKit::IplFromFile("c:\\a\\Ixz.txt");
-		IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");*/
+		//cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
+		////Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis
+		//
+		//Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
+		//Iky=toolsKit::IplFromFile("c:\\a\\Iy.txt");
+		//Ikt_Org=toolsKit::IplFromFile("c:\\a\\Iz.txt");
+		//Ixx=toolsKit::IplFromFile("c:\\a\\Ixx.txt");
+		//Ixy=toolsKit::IplFromFile("c:\\a\\Ixy.txt");
+		//Iyy=toolsKit::IplFromFile("c:\\a\\Iyy.txt");
+		//IXt_axis=toolsKit::IplFromFile("c:\\a\\Ixz.txt");
+		//IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");
 		//////////////////////////
 	/*	cout<<"Ikx"<<endl;
 		toolsKit::IPL_print(Ikx);
