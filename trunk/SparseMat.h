@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <cv.h>
 
 using namespace std;
 
@@ -58,6 +59,14 @@ class SparseMat
 			};
 		
 
+		IplImage* toIpl(){
+			IplImage* ans = cvCreateImage(cvSize(n,m),IPL_DEPTH_32F,1);
+			for (row_iter ii = mat.begin(); ii!=mat.end(); ii++)
+				for (col_iter jj = ii->second.begin(); jj!= ii->second.end(); jj++)
+					cvSet2D(ans,ii->first,jj->first,cvScalarAll(jj->second));
+			return ans;
+			}
+
 		//Operators:
 		inline T& operator()(int i, int j)
 			{
@@ -71,16 +80,20 @@ class SparseMat
 			}
 
 
+
+	
 		friend ostream& operator <<(ostream& lhs, const SparseMat& rhs)
 			{
 			const_row_iter ii = rhs.mat.begin();
 			const_col_iter jj;
+			lhs<<"m="<<rhs.m<<" n="<<rhs.n<<endl;
 			for (ii; ii != rhs.mat.end(); ii++){
 				for (jj=ii->second.begin(); jj != ii->second.end(); jj++){
-					lhs<<"("<<(ii->first)<<","<<(jj->first)<<")"<<"\t"<<jj->second<<endl;
+					lhs<<"("<<(ii->first)<<","<<(jj->first)<<")"<<"="<<jj->second<<"\t";
 					}
-				//cout<<endl;
-				}			
+				lhs<<endl;
+				}
+
 			return lhs;
 			}
 
@@ -96,31 +109,31 @@ class SparseMat
 
 			
 
-		SparseMat operator*(const T& val)const {
+		//SparseMat operator*(const T& val)const {
 
-			SparseMat<T> ans (this->m,this->n);
-				
-			for (const_row_iter ii = mat.begin(); ii != mat.end(); ii++){
-				for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
-						
-						ans(ii->first,jj->first) = jj->second * val;
-					}
-				}
+		//	SparseMat<T> ans (this->m,this->n);
+		//		
+		//	for (const_row_iter ii = mat.begin(); ii != mat.end(); ii++){
+		//		for (const_col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
+		//				
+		//				ans(ii->first,jj->first) = jj->second * val;
+		//			}
+		//		}
 
-			return ans;
-			}
+		//	return ans;
+		//	}
 
 
-		SparseMat& operator*=(const T& val){
-			for (row_iter ii = mat.begin(); ii != mat.end(); ii++){
-				for (col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
+		//SparseMat& operator*=(const T& val){
+		//	for (row_iter ii = mat.begin(); ii != mat.end(); ii++){
+		//		for (col_iter jj = ii->second.begin(); jj != ii->second.end(); jj++){
 
-					jj->second *= val;
-					}
-				}
+		//			jj->second *= val;
+		//			}
+		//		}
 
-			return *this;
-			}
+		//	return *this;
+		//	}
 
 
 		//SparseMat operator+(const T& val)const {
@@ -190,6 +203,10 @@ class SparseMat
 
 
 
+		IplImage* toIPL(){
+			
+			}
+
 		/*clean the matrix form 0 valued elements*/
 		void clean(){
 			for (row_iter ii=mat.begin(); ii != mat.end(); ii++){
@@ -225,7 +242,7 @@ class SparseMat
 			else if (pos <0){
 				i+=pos*-1;
 				}
-			int in=0,out=0;
+			
 			vector<T>::iterator it = elements.begin();
 			if (pos>0){
 				for (int k=0; k<j; k++)
@@ -241,11 +258,11 @@ class SparseMat
 			for (it; it != elements.end() && i<n && j<m; it++, ans++){
 				if (*it!=0){
 					mat[i++][j++] = *it;
-					in++;
+					
 					}
 				else{
 					i++;j++;
-					out++;
+					
 					}
 				}
 			//cout<<"in:"<<in<<" out:"<<out<<endl;
