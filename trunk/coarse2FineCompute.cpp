@@ -226,9 +226,10 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			cvResize(vy, tempVy); 
 			vy=tempVy;			
 			//create the warp image
-			WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
-			cvZero(WarpImage2);			
-			RGBwarp(WarpImage2,vx,vy);
+			//WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
+			//cvZero(WarpImage2);			
+			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),vx,vy);
+			
 			cvShowImage("warp:",WarpImage2);
 			cvWaitKey(0);
 			
@@ -245,7 +246,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		
 		start = std::clock();
 		
-		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),Pyramid2.getImageFromPyramid(k),WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
+		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),WarpImage2,WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 		std::cout<<"printf: "<< diff <<'\n';
 
