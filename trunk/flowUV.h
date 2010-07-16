@@ -32,6 +32,15 @@ public:
 		return innerV;
 	}
 
+	inline void setU(IplImage* u){
+		innerU=u;
+		return;
+	}
+	inline void setV(IplImage* v){
+		innerV=v;
+		return;
+	}
+
 	inline IplImage* getPsidashFSAns1(){
 		return PsidashFSAns1;
 	}

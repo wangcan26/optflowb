@@ -164,16 +164,14 @@ int getDXsCV(const IplImage* src1,IplImage* dest_dx,IplImage* dest_dy){
 	return 0;
 }
 
-void coarse2FineCompute::Coarse2FineFlow(IplImage* vx, 
-										 IplImage* vy, 
-										 const IplImage &Im1, 
-										 const IplImage &Im2, 
-										 double alpha, 
-										 double gamma,
-										 double ratio, 
-										 int minWidth,
-										 int nOuterFPIterations, 
-										 int nInnerFPIterations)
+flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage &Im1, 
+											 const IplImage &Im2, 
+											 double alpha, 
+											 double gamma,
+											 double ratio, 
+											 int minWidth,
+											 int nOuterFPIterations, 
+											 int nInnerFPIterations)
 										
 {
 	// first build the pyramid of the two images
@@ -181,7 +179,10 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	GaussPyramid Pyramid2;			
 	Pyramid1.ConstructPyramid(Im1,ratio,minWidth);
 	Pyramid2.ConstructPyramid(Im2,ratio,minWidth);	
-		
+	//will hold the ans
+	
+	
+	//for timing
 	std::clock_t start;
 	double diff;
 
@@ -189,10 +190,11 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	IplImage* WarpImage2=cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->height ),Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->depth, Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels );
 	WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(Pyramid1.nlevels()-1));	
 
-	vx=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->height),Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->depth,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels);
-	vy=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->height),Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->depth,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels);
-	cvZero(vx);
-	cvZero(vy);
+	IplImage* vx1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->height),Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->depth,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels);
+	IplImage* vy1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->width,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->height),Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->depth,Pyramid1.getImageFromPyramid(Pyramid1.nlevels()-1)->nChannels);
+	cvZero(vx1);
+	cvZero(vy1);
+	flowUV* UV=new flowUV(vx1,vy1);
 
 	// now iterate from the top level to the bottom
 	for(int k=Pyramid1.nlevels()-1;k>=0;k--)
@@ -209,30 +211,46 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		if(k!=Pyramid1.nlevels()-1)		
 		{
 			cout<<"not first level:"<<k<<endl;
-			IplImage *tempVx = cvCreateImage(cvSize(width, height), vx->depth, vx->nChannels);
-			cvResize(vx, tempVx); 
-			vx=tempVx;			
-			IplImage *tempVy = cvCreateImage(cvSize(width, height), vy->depth, vy->nChannels);
-			cvResize(vy, tempVy); 
-			vy=tempVy;			
-			//create the warp image
-			//WarpImage2 = cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(k)->width,Pyramid2.getImageFromPyramid(k)->height ),Pyramid2.getImageFromPyramid(k)->depth, Pyramid2.getImageFromPyramid(k)->nChannels );
-			//cvZero(WarpImage2);			
-			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),vx,vy);
+			IplImage *tempVx = cvCreateImage(cvSize(width, height), UV->getU()->depth, UV->getU()->nChannels);
+			//cvResize(vx, tempVx); 
+
+			//cout<<"bef:u"<<endl;
+			//toolsKit::IPL_print(UV->getU());
+			cvResize(UV->getU(), tempVx); 
 			
-		    cvShowImage("warp:",WarpImage2);
-			cvWaitKey(0);
+
+			//vx=tempVx;			
+			UV->setU(tempVx);
+
+			//cout<<"aft:u"<<endl;
+			//toolsKit::IPL_print(UV->getU());
+			
+			IplImage *tempVy = cvCreateImage(cvSize(width, height), UV->getU()->depth, UV->getU()->nChannels);
+			cvResize(UV->getV(), tempVy); 
+			UV->setV(tempVy);
+			//cvResize(vy, tempVy); 
+			//vy=tempVy;		
+			
+			UV->setPsidashFSAns1(cvCreateImage(cvSize( tempVx->width, tempVx->height+1 ),tempVx->depth,tempVx->nChannels));
+			UV->setPsidashFSAns2(cvCreateImage(cvSize( tempVx->width+1, tempVx->height ),tempVx->depth,tempVx->nChannels)); 
+			
+					
+			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),UV->getU(),UV->getV());
+			
+		    //cvShowImage("warp:",WarpImage2);
+			//cvWaitKey(0);
 			
 			
 					  
 		}								
 		start = std::clock();
 		
-		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),WarpImage2,WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
+		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),WarpImage2,WarpImage2,alpha,gamma,nOuterFPIterations,nInnerFPIterations,UV);
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 		std::cout<<"SmoothFlowPDE took: "<< diff <<" secs"<<endl;
 
 	}
+	return UV;
 	
 }
 
@@ -366,19 +384,20 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1, 
 											IplImage* Im2, 
 											IplImage* warpIm2, 
-											IplImage* uinit, 
-											IplImage* vinit, 
+											//IplImage* uinit, 
+											//IplImage* vinit, 
 											double alpha,
 											double gamma,
 											int nOuterFPIterations, 
-											int nInnerFPIterations){
+											int nInnerFPIterations,
+											flowUV* UV){
 		
 		//dimentions
 		int height=Im1->height;
 		int width=Im1->width;
 		int channels=Im1->nChannels;
 		//this will hold the optical flow
-		flowUV* UV=new flowUV(uinit,vinit);
+		//flowUV* UV=new flowUV(uinit,vinit);
 		//init for the different DX,DY & DT		
 		IplImage* Ikx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Iky=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
@@ -477,10 +496,8 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 				else{
 						*DVit = *it;
 						DVit++;
-					}
-			//cout<<"end;"<<endl;			
-			delete dUdV;
-			//cout<<"freed"<<endl;
+					}			
+			delete dUdV;			
 			//erase edges
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
@@ -504,21 +521,14 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			CvMat mathdr2;
 			CvMat* tempU = cvGetMat(UV->getU(),&mathdr );
 			CvMat* tempV = cvGetMat(UV->getV(),&mathdr2);
-			
-			//cout<<"u as mat"<<endl;
-			//toolsKit::PrintMat(tempU);
-			//cout<<"v as mat"<<endl;
-			//toolsKit::PrintMat(tempV);
-			MotionToColor( tempU,  tempV,  color_img,  0.1f);
-			
+
+			MotionToColor( tempU,  tempV,  color_img,  0.1f);			
 			
 			//toolsKit::IPL_print(color_img);
-
-			//cvShowImage("plot flow",color_img);			
-			toolsKit::cvShowManyImages("flow",1,color_img);
-			//cvWaitKey(0);
-		//	cvReleaseImage(&color_img);
-
+			cvShowImage("plot flow",color_img);			
+			//toolsKit::cvShowManyImages("flow",1,color_img);
+			cvWaitKey(1);			
+			cvReleaseImage(&color_img);
 		}
 
 

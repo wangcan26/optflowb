@@ -4,8 +4,8 @@
 #include "GaussPyramid.h"
 #include "coarse2FineCompute.h"
 #include "SparseToolKit.h"
-
-
+#include "optical_flow_demo.h"
+#include <ctime>
 
 using namespace std;
 
@@ -150,6 +150,9 @@ int main (int argc,char** argv)
 	double alpha = 2 ; // Global smoothness variable.
 	double gamma = 0 ; // Global weight for derivatives.
 
+
+	std::clock_t start;
+	double diff;
 	//IplImage* img= cvLoadImage(NULL); 
 	// cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 
 	// cvShowImage("TEST",img); 
@@ -197,15 +200,13 @@ int main (int argc,char** argv)
 	cvCvtColor( img1_32, img1_32g, CV_BGR2GRAY );
 	cvCvtColor( img2_32, img2_32g, CV_BGR2GRAY );
 
-	/*cout<<"Im1:before smooth"<<endl;
-	toolsKit::IPL_print(img1);
 	
 	cvSmooth(img1,img1,CV_GAUSSIAN);
-	cvSmooth(img1,img2,CV_GAUSSIAN);*/
+	cvSmooth(img1,img2,CV_GAUSSIAN);
 
 
-//	cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
-//	cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
+	//cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
+	//cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
 
 
 	/*cout<<"Im1:after up scale"<<endl;
@@ -213,45 +214,39 @@ int main (int argc,char** argv)
 	cout<<"Im2:after up scale"<<endl;
 	toolsKit::IPL_print(img2_32g);*/
 	
-
-	IplImage* vx= NULL;
-	IplImage* vy= NULL;
-	
 	IplImage *img1_33_file=NULL;
-	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
 	IplImage *img2_33_file=NULL;
-	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
+//	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
+	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
+//	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
+	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
 	
-	
-	//IplImage *img1_33_32=cvCreateImage(cvSize(12,12), IPL_DEPTH_32F,1);
-	
-	//cvConvertScale(img1_33_file, img1_33_32, 1.0/255);
-	//cvNormalize(img1_33_32,img1_33_32,256,0,CV_MINMAX);
+	//cvNormalize(img1_33_file,img1_33_file,1,0,CV_MINMAX);
+	//cvNormalize(img2_33_file,img2_33_file,1,0,CV_MINMAX);
 
-	//cout<<"Im1:fromfile"<<endl;
-	//toolsKit::IPL_print(img1_33_file);
-	//cout<<"Im2:fromfile"<<endl;
-	//toolsKit::IPL_print(img2_33_file);
+
+	
+	//toolsKit::cvShowManyImages("img1,img2 ",2,img2_33_file,img1_33_file);	
+	//cvWaitKey(0);
+	
+	start = std::clock();
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(*img2_33_file, *img1_33_file, 
+											alpha,gamma,
+											ratio,minWidth, 
+											outerIter,innerIter);
+	diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
+	std::cout<<"BROX pyramid alg. took "<< diff <<" secs"<<endl;
+
+
+	
+	//toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
+	//cvWaitKey(0);
 
 	//coarse2fComp.Coarse2FineFlow(vx,vy, 
-	//							  *img1_33_file, *img2_33_file, 
-	//							  alpha,gamma,
-	//							  1,3, 
-	//							  outerIter,innerIter);
-
-		/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
-	cvWaitKey(0);
-
-
-	*/
-	toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
-	cvWaitKey(0);
-
-	coarse2fComp.Coarse2FineFlow(vx,vy, 
-								 *img2_32g, *img1_32g, 
-								 alpha,gamma,
-								 ratio,minWidth, 
-								 outerIter,innerIter);
+	//							 *img1_32g, *img2_32g, 
+	//							 alpha,gamma,
+	//							 ratio,minWidth, 
+	//							 outerIter,innerIter);
 
 
 
@@ -261,8 +256,20 @@ int main (int argc,char** argv)
 	 cvReleaseImage(&img2_32);
 	 cvReleaseImage(&img1);
 	 cvReleaseImage(&img2);
-	 cvReleaseImage(&vx);
-	 cvReleaseImage(&vy);
+
+	IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
+	CvMat mathdr;
+	CvMat mathdr2;
+	CvMat* tempU = cvGetMat(UV->getU(),&mathdr );
+	CvMat* tempV = cvGetMat(UV->getV(),&mathdr2);
+
+	MotionToColor( tempU,  tempV,  color_img,  0.1f);			
+	
+	//toolsKit::IPL_print(color_img);
+	//cvShowImage("plot flow:final result",color_img);			
+	toolsKit::cvShowManyImages("final flow",1,color_img);
+	cvWaitKey(1);			
+	cvReleaseImage(&color_img);
 
 
 	cout<<"fin"<<endl;

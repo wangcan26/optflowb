@@ -693,18 +693,19 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			cv::Mat tempX(IPLX);
 			cv::solve(tempA,tempB,tempX);
 			IplImage aaa = tempX;
-			toolsKit::IplToFile(&aaa,"c:\\a\\ocv_x.txt");
+			//toolsKit::IplToFile(&aaa,"c:\\a\\ocv_x.txt");
 			
-			cout<<"starting SOR"<<endl;
-			float start = std::clock();
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
-			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
-			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
-			std::cout<<"SOR took: "<< diff <<'\n';
-			cout<<"SOR ended!"<<endl;
-			ofstream thefile("c:\\a\\our_x.txt",ios::out & ios::trunc);
-			thefile<<*dUdV<<endl;
-			thefile.close();
+			//cout<<"starting SOR"<<endl;
+			//float start = std::clock();
+			//vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
+			////toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
+			//float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
+			//std::cout<<"SOR took: "<< diff <<'\n';
+			//cout<<"SOR ended!"<<endl;
+			//ofstream thefile("c:\\a\\our_x.txt",ios::out & ios::trunc);
+			//thefile<<*dUdV<<endl;
+			//thefile.close();
+			//
 			
 			vector<float> * dUdV2 = new vector<float>();
 			for (int i =0; i<aaa.height; i++)

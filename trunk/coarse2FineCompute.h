@@ -21,16 +21,14 @@ public:
 	double _ERROR_CONST;
 	int _imageDepth;
 	coarse2FineCompute(int imageDepth,double error);
-	void Coarse2FineFlow(IplImage* vx, 
-						 IplImage* vy, 
-						 const IplImage &Im1, 
-						 const IplImage &Im2, 
-						 double alpha,
-						 double gamma,
-						 double ratio, 
-						 int minWidth,
-						 int nOuterFPIterations, 
-						 int nInnerFPIterations);
+	flowUV* Coarse2FineFlow( const IplImage &Im1, 
+							 const IplImage &Im2, 
+							 double alpha,
+							 double gamma,
+							 double ratio, 
+							 int minWidth,
+							 int nOuterFPIterations, 
+							 int nInnerFPIterations);
 						
 	virtual ~coarse2FineCompute(void);
 	static IplImage** meshgrid(int cols, int rows);
@@ -46,12 +44,13 @@ private:
 	flowUV* SmoothFlowPDE( IplImage* Im1, 
 						   IplImage* Im2, 
 						   IplImage* warpIm2, 
-						   IplImage* du, 
-						   IplImage* dv, 
+						//   IplImage* du, 
+						   //IplImage* dv, 
 						   double alpha,
 						   double gamma,
 						   int nOuterFPIterations, 
-						   int nInnerFPIterations);
+						   int nInnerFPIterations,
+						   flowUV* UV);
 	void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV);
 
 };
