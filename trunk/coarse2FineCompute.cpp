@@ -230,25 +230,17 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 			//cvZero(WarpImage2);			
 			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),vx,vy);
 			
-			cvShowImage("warp:",WarpImage2);
-			cvWaitKey(0);
+		    //cvShowImage("warp:",WarpImage2);
+			//cvWaitKey(0);
 			
 			
 					  
-		}
-		//cvNormalize(img1_32,img1_32,0,255,CV_MINMAX); 
-		IplImage *temp1 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
-		IplImage *temp2 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
-		IplImage *temp3 = cvCreateImage(cvSize(width, height), WarpImage2->depth, WarpImage2->nChannels);
-				
-
-		//toolsKit::cvShowManyImages("warpImage2,image1,image2",3, temp1,temp2,temp3);
-		
+		}								
 		start = std::clock();
 		
 		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),WarpImage2,WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
-		std::cout<<"SmoothFlowPDE took: "<< diff <<'\n';
+		std::cout<<"SmoothFlowPDE took: "<< diff <<" secs"<<endl;
 
 	}
 	
@@ -356,16 +348,10 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	//toolsKit::IPL_print(vypd);
 	
 	toolsKit::IPL_add_different_sizes2(uypd,vypd,UV->getPsidashFSAns1());
-	toolsKit::IPL_add_different_sizes3(uxpd,vxpd,UV->getPsidashFSAns2());
-
-	//toolsKit::cvShowManyImages("after:uypd,vypd,ans1",3,uypd,vypd,UV->getPsidashFSAns1());			
-	//toolsKit::cvShowManyImages("after:vxpd,vxpd,ans2",3,vxpd,vypd,UV->getPsidashFSAns2());
+	toolsKit::IPL_add_different_sizes3(uxpd,vxpd,UV->getPsidashFSAns2());	
 
 	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
-	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);
-	
-	//toolsKit::cvZeroRight(UV->getPsidashFSAns1());
-	//toolsKit::cvZeroBottomLeft(UV->getPsidashFSAns2());
+	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);	
 
 	cvReleaseImage( &ux ); 
 	cvReleaseImage( &uy ); 
@@ -505,12 +491,6 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			//cout<<"end;"<<endl;			
 			delete dUdV;
 			//cout<<"freed"<<endl;
-			
-			
-
-
-			
-
 			//erase edges
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
@@ -530,16 +510,24 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			
 
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
-			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);
-				
+			CvMat mathdr;
+			CvMat mathdr2;
+			CvMat* tempU = cvGetMat(UV->getU(),&mathdr );
+			CvMat* tempV = cvGetMat(UV->getV(),&mathdr2);
+			
+			//cout<<"u as mat"<<endl;
+			//toolsKit::PrintMat(tempU);
+			//cout<<"v as mat"<<endl;
+			//toolsKit::PrintMat(tempV);
 			MotionToColor( tempU,  tempV,  color_img,  0.1f);
 			
 			
+			//toolsKit::IPL_print(color_img);
 
-			toolsKit::cvShowManyImages("plot flow",1,color_img);
-			
-			cvWaitKey(0);
-			cvReleaseImage(&color_img);
+			//cvShowImage("plot flow",color_img);			
+			toolsKit::cvShowManyImages("flow",1,color_img);
+			//cvWaitKey(0);
+		//	cvReleaseImage(&color_img);
 
 		}
 

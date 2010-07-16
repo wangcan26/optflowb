@@ -241,14 +241,27 @@ int main (int argc,char** argv)
 
 		/*toolsKit::cvShowManyImages("img1,img2 color",2,img1_32,img2_32);
 	cvWaitKey(0);
+
+
+	*/
 	toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
 	cvWaitKey(0);
-*/
-	 coarse2fComp.Coarse2FineFlow(vx,vy, 
-								  *img1_32g, *img2_32g, 
-								  alpha,gamma,
-								  ratio,minWidth, 
-								  outerIter,innerIter);
+
+	coarse2fComp.Coarse2FineFlow(vx,vy, 
+								 *img2_32g, *img1_32g, 
+								 alpha,gamma,
+								 ratio,minWidth, 
+								 outerIter,innerIter);
+
+
+
+	 cvReleaseImage(&img1_32g);
+	 cvReleaseImage(&img2_32g);
+	 cvReleaseImage(&img1_32);
+	 cvReleaseImage(&img2_32);
+	 cvReleaseImage(&img1);
+	 cvReleaseImage(&img2);
+
 
 	cout<<"fin"<<endl;
 } 
