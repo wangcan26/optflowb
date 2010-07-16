@@ -606,21 +606,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"A: "<<endl<<*A<<endl;
 			//////////////////////build vector B//////////////////////
 				
-			// Computing the constant terms for the first of the Euler Lagrange equations
-	
-			cout<<"breaking point"<<endl;							
-			cout<<"[pdfaltSumU] ht:"<<pdfaltSumU->height<<" wt:"<<pdfaltSumV->width<<" depth:"<<pdfaltSumU->depth<<endl;
-			cout<<"[pdfaltSumU] ht:"<<pdfaltSumU->height<<" wt:"<<pdfaltSumV->width<<" depth:"<<pdfaltSumU->depth<<endl;
-			cout<<"[fs1_3222] ht:"<<fs1_3222->height<<" wt:"<<fs1_3222->width<<" depth:"<<fs1_3222->depth<<endl;
-			cout<<"[fs1_122ht22] ht:"<<fs1_122ht22->height<<" wt:"<<fs1_122ht22->width<<" depth:"<<fs1_122ht22->depth<<endl;
-			cout<<"[fs2_2232] ht:"<<fs2_2232->height<<" wt:"<<fs2_2232->width<<" depth:"<<fs2_2232->depth<<endl;
-			cout<<"[fs2_22122wt] ht:"<<fs2_22122wt->height<<" wt:"<<fs2_22122wt->width<<" depth:"<<fs2_22122wt->depth<<endl;
-			cout<<"[u] ht:"<<u->height<<" wt:"<<u->width<<" depth:"<<u->depth<<endl;
-
-			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,u);
+			// Computing the constant terms for the first of the Euler Lagrange equations				
+			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,u);			
 			toolsKit::IplToFile(pdfaltSumU,"c:\\a\\pdfaultSumU_cpp.txt");
-			cout<<"recover"<<endl;	
-			
 			// Computing the constant terms for the second of the Euler Lagrange equations
 			computeVectBComponents(pdfaltSumV,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,v);
 			toolsKit::IplToFile(pdfaltSumV,"c:\\a\\pdfaultSumV_cpp.txt");		

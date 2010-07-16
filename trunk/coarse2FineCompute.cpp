@@ -197,13 +197,13 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 	
 	for(int k=Pyramid1.nlevels()-1;k>=0;k--)
 	{		
-		cout<<"Pyramid level "<<k<<"-";
+		cout<<"==================================Pyramid level "<<k<<"-";
 
 		int width=Pyramid1.getImageFromPyramid(k)->width;
 		int height=Pyramid1.getImageFromPyramid(k)->height;
 		int depth=Pyramid1.getImageFromPyramid(k)->depth;
-		int nChannels=Pyramid1.getImageFromPyramid(k)->nChannels;
-		cout<<"width:"<<width<<"  height:"<<height<<endl;
+		int nChannels=Pyramid1.getImageFromPyramid(k)->nChannels;		
+		cout<<"width:"<<width<<"  height:"<<height<<"============================================"<<endl;
 
 		//on top level(first iteration)
 		if(k==Pyramid1.nlevels()-1)
@@ -248,7 +248,7 @@ void coarse2FineCompute::Coarse2FineFlow(IplImage* vx,
 		
 		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),WarpImage2,WarpImage2,vx,vy,alpha,gamma,nOuterFPIterations,nInnerFPIterations);//,nCGIterations);	
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
-		std::cout<<"printf: "<< diff <<'\n';
+		std::cout<<"SmoothFlowPDE took: "<< diff <<'\n';
 
 	}
 	
@@ -289,6 +289,10 @@ void coarse2FineCompute::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,i
 	IplImage* temp=cvCreateImage(cvSize( width, height+1 ),_imageDepth,channels);
 	IplImage* temp2=cvCreateImage(cvSize( width+1, height ),_imageDepth,channels);;
 
+	cvZero( ux ); 	cvZero( uy ); 	cvZero( vx ); 	cvZero( vy ); 	cvZero( uxd ); 
+	cvZero( vxd ); 	cvZero( uyd ); 	cvZero( vyd ); 	cvZero( t ); 	cvZero( t2 ); 
+	cvZero( uxpd ); 	cvZero( uypd ); 	cvZero( vxpd ); 	cvZero( vypd ); 
+	cvZero( temp ); 	cvZero( temp2 ); 
 
 	//compute psidashFS
 
@@ -479,12 +483,6 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
 			toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
 
-
-			/*cout<<"fs1*alpha"<<endl;
-			toolsKit::IPL_print(UV->getPsidashFSAns1());
-			cout<<"fs2*alpha"<<endl;
-			toolsKit::IPL_print(UV->getPsidashFSAns2());*/
-
 			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(), UV->getU(), UV->getV(),Du,Dv, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);
 			
 			
@@ -496,7 +494,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
 			cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
 			for (vector<float>::iterator it = dUdV->begin(); it!= dUdV->end(); it++, i++)
-				if (i<dUdV->size()/2){
+				if (i<dUdV->size()/2){						
 						*DUit = *it;
 						DUit++;
 					}
@@ -504,29 +502,32 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 						*DVit = *it;
 						DVit++;
 					}
-			cout<<"end;"<<endl;
+			//cout<<"end;"<<endl;			
 			delete dUdV;
-			cout<<"freed"<<endl;
+			//cout<<"freed"<<endl;
 			
-		
+			
 
 
-			cvAdd(UV->getU(),Du,UV->getU());
-			cvAdd(UV->getV(),Dv,UV->getV());
+			
 
 			//erase edges
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
+			//adding the current computed flow
+			cvAdd(UV->getU(),Du,UV->getU());
+			cvAdd(UV->getV(),Dv,UV->getV());
 				
 			//cout<<"Du"<<endl;
 			//toolsKit::IPL_print(Du);
 			//cout<<"Dv"<<endl;
-			//toolsKit::IPL_print(Dv);
+			//toolsKit::IPL_print(Dv);			
 
 			//cout<<"u"<<endl;
 			//toolsKit::IPL_print(UV->getU());
 			//cout<<"v"<<endl;
 			//toolsKit::IPL_print(UV->getV());
+			
 
 			IplImage* color_img = cvCreateImage( cvSize(UV->getU()->height,UV->getU()->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr, *tempU = cvGetMat( UV->getU(), &mathdr ), *tempV = cvGetMat(UV->getV(),&mathdr);

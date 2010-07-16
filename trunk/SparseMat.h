@@ -248,7 +248,7 @@ class SparseMat
 					out++;
 					}
 				}
-			cout<<"in:"<<in<<" out:"<<out<<endl;
+			//cout<<"in:"<<in<<" out:"<<out<<endl;
 			return ans;
 			}
 
