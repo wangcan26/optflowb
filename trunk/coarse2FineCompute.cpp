@@ -181,8 +181,6 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 	Pyramid2.SetNlevels(minWidth);
 	Pyramid1.ConstructPyramid(Im1,ratio,minWidth);
 	Pyramid2.ConstructPyramid(Im2,ratio,minWidth);	
-	//will hold the ans
-	
 	
 	//for timing
 	std::clock_t start;
@@ -197,6 +195,7 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 	IplImage* vy1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(firstIter)->width,Pyramid1.getImageFromPyramid(firstIter)->height),Pyramid1.getImageFromPyramid(firstIter)->depth,Pyramid1.getImageFromPyramid(firstIter)->nChannels);
 	cvZero(vx1);
 	cvZero(vy1);
+	//flow result
 	flowUV* UV=new flowUV(vx1,vy1);
 
 	// now iterate from the top level to the bottom
@@ -212,10 +211,10 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 		//on all levels but the first one
 		if (k!=0){
 			IplImage *tempVx = cvCreateImage(cvSize(width, height), UV->getU()->depth, UV->getU()->nChannels);
-			cvResize(UV->getU(), tempVx); 	
+			cvResize(UV->getU(), tempVx,CV_INTER_LINEAR); 	
 			UV->setU(tempVx);
 			IplImage *tempVy = cvCreateImage(cvSize(width, height), UV->getU()->depth, UV->getU()->nChannels);
-			cvResize(UV->getV(), tempVy); 
+			cvResize(UV->getV(), tempVy,CV_INTER_LINEAR); 
 			UV->setV(tempVy);
 			UV->setPsidashFSAns1(cvCreateImage(cvSize( tempVx->width, tempVx->height+1 ),tempVx->depth,tempVx->nChannels));
 			UV->setPsidashFSAns2(cvCreateImage(cvSize( tempVx->width+1, tempVx->height ),tempVx->depth,tempVx->nChannels)); 						
@@ -240,7 +239,7 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 
 
 
-flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1, 
+void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1, 
 											IplImage* Im2, 											
 											double alpha,
 											double gamma,
@@ -268,10 +267,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-
-		IplImage* DuSum=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* DvSum=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-		
+	
 		//clear all derivatives
 		cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); 
 		cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);cvZero(Du);cvZero(Dv);
@@ -327,23 +323,17 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			//erase edges as in matlab
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
-			//adding the current computed flow
-			cvAdd(DuSum,Du,DuSum);
-			cvAdd(DvSum,Dv,DvSum);							
-			
+
 			//toolsKit::IplToFile(UV->getU(),"c:\\a\\u_cpp.txt");
 			//toolsKit::IplToFile(UV->getU(),"c:\\a\\v_cpp.txt");
-			//toolsKit::IplToFile(DuSum,"c:\\a\\DuSum.txt");
-			//toolsKit::IplToFile(DvSum,"c:\\a\\DvSum.txt");
 
 			//print flow
-			toolsKit::drawFlow(DuSum,DvSum,1);
+			toolsKit::drawFlow2(UV->getU(),Du,UV->getV(),Dv,1);
 		}
 
-		//now add all sums of du/dv on flow:
-		
-		cvAdd(UV->getU(),DuSum,UV->getU());
-		cvAdd(UV->getV(),DvSum,UV->getV());		
+		//now add the most accurate du/dv to the flow		
+		cvAdd(UV->getU(),Du,UV->getU());
+		cvAdd(UV->getV(),Dv,UV->getV());		
 
 
 
@@ -361,9 +351,7 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 	cvReleaseImage( &Iyy ); 
 	cvReleaseImage( &Du ); 
 	cvReleaseImage( &Dv ); 
-	UV->releaseAns1and2();
-		
-	return UV;
+	UV->releaseAns1and2();			
 
 }
 

@@ -39,7 +39,7 @@ private:
 	IplImage* createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
 	IplImage* RGBwarp(IplImage* img, IplImage* u, IplImage* v);
 	
-	flowUV* SmoothFlowPDE( IplImage* Im1, 
+	void SmoothFlowPDE( IplImage* Im1, 
 						   IplImage* Im2, 					
 						   double alpha,
 						   double gamma,

@@ -33,10 +33,12 @@ public:
 	}
 
 	inline void setU(IplImage* u){
+		cvReleaseImage(&innerU);
 		innerU=u;
 		return;
 	}
 	inline void setV(IplImage* v){
+		cvReleaseImage(&innerV);
 		innerV=v;
 		return;
 	}

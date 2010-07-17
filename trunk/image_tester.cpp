@@ -142,7 +142,7 @@ int main (int argc,char** argv)
 	//IPL_DEPTH_32F IPL_DEPTH_8U
 	coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
 	double ratio=0.75;
-	int minWidth=30;
+	int minWidth=4;
 	int outerIter=3;
 	int innerIter=100;
 	double alpha = 2 ; // Global smoothness variable.
@@ -151,33 +151,10 @@ int main (int argc,char** argv)
 
 	std::clock_t start;
 	double diff;
-	//IplImage* img= cvLoadImage(NULL); 
-	// cvNamedWindow("TEST",  CV_WINDOW_AUTOSIZE); 
-	// cvShowImage("TEST",img); 
-	// cvWaitKey(0); 
-	// cvReleaseImage(&img); 
-	// cvDestroyWindow("TEST"); 
 
-	 IplImage* img1= cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);//zero is for grayscale  CV_LOAD_IMAGE_GRAYSCALE
-	 IplImage* img2= cvLoadImage(argv[2],CV_LOAD_IMAGE_COLOR); //1 is for color CV_LOAD_IMAGE_COLOR
+	IplImage* img1= cvLoadImage(argv[1],CV_LOAD_IMAGE_COLOR);//zero is for grayscale  CV_LOAD_IMAGE_GRAYSCALE
+	IplImage* img2= cvLoadImage(argv[2],CV_LOAD_IMAGE_COLOR); //1 is for color CV_LOAD_IMAGE_COLOR
 
-
-	//IplImage* img1g= cvCreateImage(cvSize(img1->width, img1->height),img1->depth, 1);
-	//IplImage* img2g= cvCreateImage(cvSize(img1->width, img1->height), img1->depth, 1);
-	//IplImage* img1RGB= cvCreateImage(cvSize(img1->width, img1->height),img1->depth, img1->nChannels);
-	// IplImage* img2RGB= cvCreateImage(cvSize(img1->width, img1->height), img1->depth, img1->nChannels);
-
-	//cvZero(img1g);
-	//cvZero(img2g);
-
-	//cvConvertImage(img1,img1RGB, CV_CVTIMG_SWAP_RB);
-	//cvConvertImage(img2,img2RGB, CV_CVTIMG_SWAP_RB);
-
-
-	//cvCvtColor( img1RGB, img1g, CV_RGB2GRAY );
-	//cvCvtColor( img2RGB, img2g, CV_RGB2GRAY );
-	
-	
 
 	IplImage *img1_32 = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, img1->nChannels);
 	IplImage *img2_32 = cvCreateImage(cvSize(img1->width, img1->height), coarse2fComp._imageDepth, img1->nChannels);
@@ -198,10 +175,6 @@ int main (int argc,char** argv)
 	cvCvtColor( img1_32, img1_32g, CV_BGR2GRAY );
 	cvCvtColor( img2_32, img2_32g, CV_BGR2GRAY );
 
-	
-	//cvSmooth(img1,img1,CV_GAUSSIAN);
-	//cvSmooth(img1,img2,CV_GAUSSIAN);
-
 
 	//cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
 	//cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
@@ -209,39 +182,23 @@ int main (int argc,char** argv)
 	
 	const IplImage *img1_33_file=NULL;
 	const IplImage *img2_33_file=NULL;
-//	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
-	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
-//	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
-	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
-	
-	//cvNormalize(img1_33_file,img1_33_file,1,0,CV_MINMAX);
-	//cvNormalize(img2_33_file,img2_33_file,1,0,CV_MINMAX);
-
-
-	
-	//toolsKit::cvShowManyImages("img1,img2 ",2,img2_33_file,img1_33_file);	
-	//cvWaitKey(0);
+//	img1_33_file=toolsKit::IplFromFile("c:\\a\\yos1.txt");
+	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
+//	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
+	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
+//	img2_33_file=toolsKit::IplFromFile("c:\\a\\yos2.txt");
+//	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
+		
+	toolsKit::cvShowManyImages("img1,img2 ",2,img2_32,img1_32);	
+	cvWaitKey(0);
 	
 	start = std::clock();
-	flowUV* UV=coarse2fComp.Coarse2FineFlow(img2_32g, img1_32g, 
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(img2_33_file, img1_33_file, 
 											alpha,gamma,
-											ratio,5, 
+											ratio,minWidth, 
 											outerIter,innerIter);
 	diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 	std::cout<<"BROX pyramid alg. took "<< diff <<" secs"<<endl;
-
-
-	
-	//toolsKit::cvShowManyImages("img1,img2",2,img1_32g,img2_32g);
-	//cvWaitKey(0);
-
-	//coarse2fComp.Coarse2FineFlow(vx,vy, 
-	//							 *img1_32g, *img2_32g, 
-	//							 alpha,gamma,
-	//							 ratio,minWidth, 
-	//							 outerIter,innerIter);
-
-
 
 	 cvReleaseImage(&img1_32g);
 	 cvReleaseImage(&img2_32g);

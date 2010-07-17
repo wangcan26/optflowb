@@ -333,6 +333,7 @@ IplImage* transposeImage(IplImage* image) {
 }
 
 
+
 void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 			IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr;
@@ -354,17 +355,24 @@ void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 			else{
 				cvFlip(color_imgRotated, NULL, 0);
                 //cvShowImage("image", color_imgRotated);
-				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
+				toolsKit::cvShowManyImages("final flow",1,color_imgRotated);
 				cvWaitKey(0);			
 				cvDestroyWindow("final flow"); 
 			}
-			
-			
+						
 			cvReleaseImage(&color_img);
 			cvReleaseMat(&tempU);
-			cvReleaseMat(&tempV);
-			
-		
+			cvReleaseMat(&tempV);					
+}
+void toolsKit::drawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v,int select){
+	
+	IplImage* tempsumU =cvCreateImage( cvSize(u->width,u->height), u->depth, u->nChannels );
+	IplImage* tempsumV =cvCreateImage( cvSize(u->width,u->height), u->depth, u->nChannels );
+	
+	cvAdd(u,du,tempsumU);
+	cvAdd(v,dv,tempsumV);
+	drawFlow(tempsumU,tempsumV,select);
+
 
 }
 void toolsKit::cvMulScalar(IplImage* img,float scalar){
