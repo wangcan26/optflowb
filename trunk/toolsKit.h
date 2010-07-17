@@ -69,6 +69,7 @@ class toolsKit
 		static void IPL_add(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_sub(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_print(const IplImage *image);
+		static void drawFlow(IplImage* u,IplImage* v,int select);
 		static void PrintMat(CvMat *A);
 		static void cvMulScalar(IplImage* img,float scalar);
 		static void cvZeroBottom(IplImage* img);

@@ -19,16 +19,18 @@ public:
 								  IplImage* Iyy,
 								  IplImage* Ixz,
 								  IplImage* Iyz,							
-								  IplImage* psidashFS1,
-								  IplImage* psidashFS2,
-								  IplImage* u,
-								  IplImage* v,
+								  flowUV* UV,
 								  IplImage* du,
 								  IplImage* dv,
 								  double gamma,
 								  double alpha,
 								  double _ERROR_CONST,
 								  int nInnerFPIterations);
+
+	static void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV,double _ERROR_CONST);
+
+
+
 	virtual ~constructMatrix_brox(void);
 private:
 	

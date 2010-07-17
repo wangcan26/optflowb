@@ -21,8 +21,8 @@ public:
 	double _ERROR_CONST;
 	int _imageDepth;
 	coarse2FineCompute(int imageDepth,double error);
-	flowUV* Coarse2FineFlow( const IplImage &Im1, 
-							 const IplImage &Im2, 
+	flowUV* Coarse2FineFlow( const IplImage* Im1, 
+							 const IplImage* Im2, 
 							 double alpha,
 							 double gamma,
 							 double ratio, 
@@ -39,13 +39,8 @@ private:
 	IplImage* createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
 	IplImage* RGBwarp(IplImage* img, IplImage* u, IplImage* v);
 	
-	void coarse2FineCompute::constructMatrix_brox(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,
-												  IplImage* Iyz,IplImage* psidash,IplImage* psidashFS1,IplImage* psidashFS2,IplImage*  u,IplImage*  v,double gamma,int nInnerFPIterations );
 	flowUV* SmoothFlowPDE( IplImage* Im1, 
-						   IplImage* Im2, 
-						   IplImage* warpIm2, 
-						//   IplImage* du, 
-						   //IplImage* dv, 
+						   IplImage* Im2, 					
 						   double alpha,
 						   double gamma,
 						   int nOuterFPIterations, 

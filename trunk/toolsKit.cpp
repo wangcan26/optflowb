@@ -1,5 +1,5 @@
 #include "toolsKit.h"
-
+#include "optical_flow_demo.h"
 toolsKit::toolsKit()
 	{
 	}
@@ -313,6 +313,60 @@ void toolsKit::IPL_print(const IplImage *image) {
 	cout<<"======================================================================================================================================="<<endl;
 	}
 
+IplImage* transposeImage(IplImage* image) {
+
+  IplImage *rotated = cvCreateImage(cvSize(image->height,image->width), IPL_DEPTH_8U,image->nChannels);
+
+  CvPoint2D32f center;
+
+  float center_val = (float)((image->width)-1) / 2;
+  center.x = center_val;
+  center.y = center_val;
+  CvMat *mapMatrix = cvCreateMat( 2, 3, CV_32FC1 );
+
+  cv2DRotationMatrix(center, 90, 1.0, mapMatrix);
+  cvWarpAffine(image, rotated, mapMatrix, CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll(0));
+
+  cvReleaseMat(&mapMatrix);
+
+  return rotated;
+}
+
+
+void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
+			IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
+			CvMat mathdr;
+			CvMat mathdr2;
+			CvMat* tempU = cvGetMat(u,&mathdr );
+			CvMat* tempV = cvGetMat(v,&mathdr2);
+			
+			MotionToColor( tempU,  tempV,  color_img,  0.1f);			
+			
+			IplImage* color_imgRotated=transposeImage(color_img);
+			//toolsKit::IPL_print(color_img);
+			if (select){
+				cvFlip(color_imgRotated, NULL, 0);
+				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
+				//cvShowImage("plot flow",color_imgRotated);			
+				cvWaitKey(1);			
+				
+			}
+			else{
+				cvFlip(color_imgRotated, NULL, 0);
+                //cvShowImage("image", color_imgRotated);
+				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
+				cvWaitKey(0);			
+				cvDestroyWindow("plot flow"); 
+			}
+			
+			
+			cvReleaseImage(&color_img);
+			cvReleaseMat(&tempU);
+			cvReleaseMat(&tempV);
+			
+		
+
+}
 void toolsKit::cvMulScalar(IplImage* img,float scalar){
 	IplImageIterator<float> it(img);
 	while (!it) {   
@@ -679,8 +733,8 @@ void toolsKit::cvShowManyImages(char* title, int nArgs, ...) {
 	// Create a new window, and show the Single Big Image
 	cvNamedWindow( title, 1 );
 	cvShowImage( title, DispImage);
-	cvWaitKey();
-	cvDestroyWindow(title);
+	cvWaitKey(1);
+	//cvDestroyWindow(title);
 	// End the number of arguments
 	va_end(args);
 	// Release the Image Memory

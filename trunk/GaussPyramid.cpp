@@ -12,37 +12,39 @@ GaussPyramid::~GaussPyramid(void)
 		delete []ImPyramid;
 }
 
-void GaussPyramid::ConstructPyramid(const IplImage &image, double ratio, int minWidth)
+void GaussPyramid::ConstructPyramid(const IplImage* image, double ratio, int minWidth)
 {
 	
 	// the ratio cannot be arbitrary numbers
-	if(ratio>0.99 || ratio<0.4)
+	//if(ratio>0.99 || ratio<0.4)
 		ratio=0.75;
 	// first decide how many levels
-	nLevels=log((double)minWidth/image.width)/log(ratio);
+	//nLevels=log((double)minWidth/image.width)/log(ratio);
 	if(ImPyramid!=NULL)
 		delete []ImPyramid;
 
 
 	//nLevels=1;
 
-	ImPyramid=new IplImage*[nLevels];
+	ImPyramid=new IplImage*[minWidth];
 	
-	ImPyramid[0] = cvCreateImage( cvSize( image.width,image.height ),image.depth, image.nChannels );
-	ImPyramid[0]=cvCloneImage(&image);
-	
-
-
+	ImPyramid[minWidth-1]=cvCreateImage( cvSize( image->width,image->height ),image->depth, image->nChannels );
+	ImPyramid[minWidth-1]=cvCloneImage(image);
 	
 
-	cout<<"nlevels:"<<nLevels<<endl;
-	for(int i=1;i<nLevels;i++)
+
+	
+
+	cout<<"nlevels:"<<minWidth<<endl;
+	for(int i=0;i<minWidth-1;i++)
 	{
-		IplImage* foo=cvCreateImage( cvSize( ImPyramid[i-1]->width,ImPyramid[i-1]->height ),ImPyramid[i-1]->depth, ImPyramid[i-1]->nChannels );
-		 double altRatio=pow( ratio, i );		
-		cvSmooth(ImPyramid[i-1],foo,2);
-		ImPyramid[i] = cvCreateImage( cvSize( foo->width*ratio,foo->height*ratio ),foo->depth, foo->nChannels );
-		cvResize(foo,ImPyramid[i]);
+		IplImage* smoothImage=cvCreateImage( cvSize( image->width,image->height ),image->depth, image->nChannels );
+		double altRatio=pow( ratio, minWidth-i);		
+		cvSmooth(image,smoothImage,2);
+		int reduceWidth=smoothImage->width*altRatio;
+		int reduceHeight=smoothImage->height*altRatio ;
+		ImPyramid[i] = cvCreateImage( cvSize(reduceWidth ,reduceHeight),smoothImage->depth, smoothImage->nChannels );
+		cvResize(smoothImage,ImPyramid[i]);
 	}
 
 }

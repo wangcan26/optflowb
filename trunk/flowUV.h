@@ -47,6 +47,13 @@ public:
 	inline IplImage* getPsidashFSAns2(){
 		return PsidashFSAns2;
 	}
+
+	inline void clearPsidash(){
+		cvZero(PsidashFSAns1);
+		cvZero(PsidashFSAns2);
+	}
+
+
 	inline void setPsidashFSAns1(IplImage* ans1){
 		PsidashFSAns1=ans1;
 	}

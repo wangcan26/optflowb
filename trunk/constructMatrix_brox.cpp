@@ -332,12 +332,140 @@ void computeVectBComponents(IplImage* pdfaltSumXX,IplImage* fs1_3222,IplImage* f
 }
 
 
+void constructMatrix_brox::computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,int channels,flowUV* UV,double _ERROR_CONST){	
+	//init masks
+	double a[] = {1,1};
+	CvMat* matOnes = &cvMat( 1, 2, CV_64FC1, a ); // 64FC1 for double
+	CvMat* matOnesT= &cvMat( 2, 1, CV_64FC1, a );
+	cvTranspose(matOnes,matOnesT);
+	
+	double c[] = {0.5,0.5};
+	CvMat* matHalf = &cvMat( 1, 2, CV_64FC1, c ); // 64FC1 for double
+	CvMat* matHalfT= &cvMat( 2, 1, CV_64FC1, c );
+	cvTranspose(matHalf,matHalfT);
+	
+	double b[] = {1,-1};
+	CvMat* matOneNegOne = &cvMat( 1, 2, CV_64FC1, b ); // 64FC1 for double
+	CvMat* matOneNegOneT= &cvMat( 2, 1, CV_64FC1, b );;
+	cvTranspose(matOneNegOne,matOneNegOneT);
+	//init temp params
+	IplImage* ux=cvCreateImage(cvSize( width, height ),iterU->depth,channels);
+	IplImage* uy=cvCreateImage(cvSize( width, height ),iterU->depth,channels);
+	IplImage* vx=cvCreateImage(cvSize( width, height ),iterU->depth,channels);
+	IplImage* vy=cvCreateImage(cvSize( width, height ),iterU->depth,channels);
+	IplImage* uxd=cvCreateImage(cvSize( width+1, height ),iterU->depth,channels);
+	IplImage* vxd=cvCreateImage(cvSize( width+1, height ),iterU->depth,channels);
+	IplImage* uyd=cvCreateImage(cvSize( width, height+1 ),iterU->depth,channels);
+	IplImage* vyd=cvCreateImage(cvSize( width, height+1 ),iterU->depth,channels);
+	IplImage* t  =cvCreateImage(cvSize( width, height+1 ),iterU->depth,channels);
+	IplImage* t2  =cvCreateImage(cvSize( width+1, height ),iterU->depth,channels);
+	IplImage* uxpd=cvCreateImage(cvSize( width, height+1 ),iterU->depth,channels);
+	IplImage* uypd=cvCreateImage(cvSize( width+1, height ),iterU->depth,channels);
+	IplImage* vxpd=cvCreateImage(cvSize( width, height+1 ),iterU->depth,channels);
+	IplImage* vypd=cvCreateImage(cvSize( width+1, height ),iterU->depth,channels);
+
+	IplImage* temp=cvCreateImage(cvSize( width, height+1 ),iterU->depth,channels);
+	IplImage* temp2=cvCreateImage(cvSize( width+1, height ),iterU->depth,channels);;
+
+	cvZero( ux ); 	cvZero( uy ); 	cvZero( vx ); 	cvZero( vy ); 	cvZero( uxd ); 
+	cvZero( vxd ); 	cvZero( uyd ); 	cvZero( vyd ); 	cvZero( t ); 	cvZero( t2 ); 
+	cvZero( uxpd ); 	cvZero( uypd ); 	cvZero( vxpd ); 	cvZero( vypd ); 
+	cvZero( temp ); 	cvZero( temp2 ); 
+
+	//compute psidashFS
+
+	cvFilter2D(iterU,ux,matOneNegOne);// x and y derivatives of u by 2d convolution
+	toolsKit::cvMulScalar(ux,-1);	
+	cvFilter2D(iterU,uy,matOneNegOneT);// x and y derivatives of u by 2d convolution
+	toolsKit::cvMulScalar(uy,-1);
+	cvFilter2D(iterV,vx,matOneNegOne);// x and y derivatives of v by 2d convolution
+	toolsKit::cvMulScalar(vx,-1);
+	cvFilter2D(iterV,vy,matOneNegOneT);	// x and y derivatives of v by 2d convolution
+	toolsKit::cvMulScalar(vy,-1);
+	/////////////////////////////////////////////////////	
+	toolsKit::increaseImageSize(ux,temp2,0);
+	cvFilter2D(temp2,uxd,matHalf);
+	
+	toolsKit::increaseImageSize(vx,temp2,0);
+	cvFilter2D(temp2,vxd,matHalf);	
+	
+	toolsKit::increaseImageSize(uy,temp,1);
+	cvFilter2D(temp,uyd,matHalfT);
+	
+	toolsKit::increaseImageSize(vy,temp,1);
+	cvFilter2D(temp,vyd,matHalfT);	
+	
+	//uxpd============================================================================================
+	cvFilter2D(uyd,t,matHalf);// Computes the delta u(i+1/2, j) and delta u(i-1/2, j).
+	cvPow(ux,ux,2);//ux^2
+	cvPow(t,t,2);//t^2
+	toolsKit::increaseImageSize(ux,temp,1);
+	toolsKit::IPL_add_bottom(temp,t,uxpd);//uxpd = ux^2 + t^2  last line on uxpd shoud be deleted
+	
+	//uypd============================================================================================
+	cvFilter2D(uxd,t2,matHalfT);//Computes the delta u(i, j+1/2) and delta u(i, j-1/2).
+	cvPow(uy,uy,2);//uy^2
+	cvPow(t2,t2,2);//t2^2
+	toolsKit::increaseImageSize(uy,temp2,0);
+	//cvAdd(uy,t2,uypd);//uypd = uy^2 + t2^2	
+	toolsKit::IPL_add_right(temp2,t2,uypd);//uypd = uy^2 + t2^2 last line on uxpd shoud be deleted
+
+	//vxpd============================================================================================
+	cvFilter2D(vyd,t,matHalf);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
+	cvPow(vx,vx,2);//vx^2
+	cvPow(t,t,2);//t^2
+	toolsKit::increaseImageSize(vx,temp,1);
+	toolsKit::IPL_add_bottom(temp,t,vxpd);//vxpd = vx^2 + t^2 last line on uxpd shoud be deleted
+	
+	//vypd============================================================================================
+	cvFilter2D(vxd,t2,matHalfT);// Computes the delta v(i+1/2, j) and delta v(i-1/2, j).
+	cvPow(vy,vy,2);//vy^2
+	cvPow(t2,t2,2);//t2^2
+	toolsKit::increaseImageSize(vy,temp2,0);
+	toolsKit::IPL_add_right(temp2,t2,vypd);//vypd=vy^2 + t2^2 last line on uxpd shoud be deleted
+
+	//cout<<"uxpd(add bottom)"<<endl;
+	//toolsKit::IPL_print(uxpd);
+	//cout<<"uypd(add right)"<<endl;
+	//toolsKit::IPL_print(uypd);
+	//cout<<"vxpd(add bottom)"<<endl;
+	//toolsKit::IPL_print(vxpd);
+	//cout<<"vypd(add right)"<<endl;
+	//toolsKit::IPL_print(vypd);
+	
+	//clean psidash:
+	UV->clearPsidash();
+
+	toolsKit::IPL_add_different_sizes2(uypd,vypd,UV->getPsidashFSAns1());
+	toolsKit::IPL_add_different_sizes3(uxpd,vxpd,UV->getPsidashFSAns2());	
+
+	toolsKit::psiDerivative(UV->getPsidashFSAns1(),_ERROR_CONST);
+	toolsKit::psiDerivative(UV->getPsidashFSAns2(),_ERROR_CONST);	
+
+	cvReleaseImage( &ux ); 
+	cvReleaseImage( &uy ); 
+	cvReleaseImage( &vx ); 
+	cvReleaseImage( &vy ); 
+	cvReleaseImage( &uxd ); 
+	cvReleaseImage( &vxd ); 
+	cvReleaseImage( &uyd ); 
+	cvReleaseImage( &vyd ); 
+	cvReleaseImage( &t ); 
+	cvReleaseImage( &t2 ); 
+	cvReleaseImage( &uxpd ); 
+	cvReleaseImage( &uypd ); 
+	cvReleaseImage( &vxpd ); 
+	cvReleaseImage( &vypd ); 
+	cvReleaseImage( &temp ); 
+	cvReleaseImage( &temp2 ); 
+
+//	return ans;
+}
 
 
 vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* Iky,IplImage* Ikz,IplImage* Ixx,
 														IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,											
-														IplImage* psidashFS1,IplImage* psidashFS2,
-														IplImage* u,IplImage* v,
+														flowUV* UV,
 														IplImage* du,IplImage* dv,
 														double gamma,double alpha, 
 														double _ERROR_CONST,int nInnerFPIterations){
@@ -357,21 +485,39 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 IplImage* constv=	 cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			 IplImage* pdfaltSumU=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			 IplImage* pdfaltSumV=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+
+			 IplImage* tempU=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
+			 IplImage* tempV=cvCreateImage(cvSize(Ikx->width, Ikz->height ),Ikz->depth,Ikz->nChannels);
 			
+
+			
+			 cvAdd(UV->getU(),du,tempU);
+			 cvAdd(UV->getV(),dv,tempV);
+			 computePsidashFS_brox(tempU,tempV,UV->getU()->width,UV->getU()->height,UV->getU()->nChannels,UV,_ERROR_CONST);
+	
+			 toolsKit::cvMulScalar(UV->getPsidashFSAns1(),alpha);
+			 toolsKit::cvMulScalar(UV->getPsidashFSAns2(),alpha);
+
+			 cvReleaseImage(&tempU);
+			 cvReleaseImage(&tempV);
+
+		
+
+
 			//fs1 & fs2 break down
 			 IplImage* fs1_3222 =  cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels);
-		  	 IplImage* fs1_122ht22=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-			 fs1_122ht22=cvCloneImage(psidashFS1);				
+		  	 IplImage* fs1_122ht22=cvCreateImage(cvSize( UV->getPsidashFSAns1()->width, UV->getPsidashFSAns1()->height ),UV->getPsidashFSAns1()->depth,UV->getPsidashFSAns1()->nChannels);
+			 fs1_122ht22=cvCloneImage(UV->getPsidashFSAns1());				
 			 IplImage* fs2_2232=   cvCreateImage(cvSize( Ikx->width, Ikx->height ),Ikx->depth,Ikx->nChannels);	
-			 IplImage* fs2_22122wt=cvCreateImage(cvSize( psidashFS2->width, psidashFS2->height ),psidashFS2->depth,psidashFS2->nChannels);
-			 fs2_22122wt=cvCloneImage(psidashFS2);			
+			 IplImage* fs2_22122wt=cvCreateImage(cvSize( UV->getPsidashFSAns2()->width, UV->getPsidashFSAns2()->height ),UV->getPsidashFSAns2()->depth,UV->getPsidashFSAns2()->nChannels);
+			 fs2_22122wt=cvCloneImage(UV->getPsidashFSAns2());			
 
 			 //epsilon = 1e-3*ones(size(Ikx))==>zeroing and adding instead
 			 cvZero(epsilon);
 			 cvAddS(epsilon,cvScalarAll(_ERROR_CONST),epsilon);
 
-			 int width=u->width;
-			 int height=u->height;
+			 int width=UV->getU()->width;
+			 int height=UV->getU()->height;
 
 			 //theta0 = 1/(Ikx^2+Iky^2+epsilon);
 			 computeTheta(theta0,Ikx,Iky,epsilon);
@@ -399,7 +545,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //pdfsum =pdfs( 1 : 2 : 2 * ht, 2 : 2 : end ) + pdfs( 3 : 2 : end, 2 : 2 : end ) +...
 			 //		   pdfs( 2 : 2 : end, 1 : 2 : 2 * wt ) + pdfs( 2 : 2 : end, 3 : 2 : end ) ;
 			 
-			 computePdfSum(pdfSum, psidashFS1,psidashFS2,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt);					
+			 computePdfSum(pdfSum, UV->getPsidashFSAns1(),UV->getPsidashFSAns2(),fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt);					
 	//		 fs1_122ht22->height=height;						 
 			 
 			 
@@ -436,6 +582,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			 //toolsKit::IPL_print(uapp);
 			 //cout<<"vapp"<<endl;
 			 //toolsKit::IPL_print(vapp);
+				
+
+			 //toolsKit::IplToFile(uapp,"c:\\a\\uapp_cpp.txt");
+
 
 			 //insert to diagonals to matrix A
 			 
@@ -608,19 +758,19 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//////////////////////build vector B//////////////////////
 				
 			// Computing the constant terms for the first of the Euler Lagrange equations				
-			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,u);			
-			toolsKit::IplToFile(pdfaltSumU,"c:\\a\\pdfaultSumU_cpp.txt");
+			computeVectBComponents(pdfaltSumU,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,UV->getU());			
+			//toolsKit::IplToFile(pdfaltSumU,"c:\\a\\pdfaultSumU_cpp.txt");
 			// Computing the constant terms for the second of the Euler Lagrange equations
-			computeVectBComponents(pdfaltSumV,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,v);
-			toolsKit::IplToFile(pdfaltSumV,"c:\\a\\pdfaultSumV_cpp.txt");		
+			computeVectBComponents(pdfaltSumV,fs1_3222,fs1_122ht22,fs2_2232,fs2_22122wt,UV->getV());
+			//toolsKit::IplToFile(pdfaltSumV,"c:\\a\\pdfaultSumV_cpp.txt");		
 			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 		
 			computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);					
 			cvAdd(constu,pdfaltSumU,constu);
-			toolsKit::IplToFile(constu,"c:\\a\\constu_cpp.txt");		
+			//toolsKit::IplToFile(constu,"c:\\a\\constu_cpp.txt");		
 			//constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) - 1*pdfaltsumv ;
 			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);					
 			cvAdd(constv,pdfaltSumV,constv);
-			toolsKit::IplToFile(constv,"c:\\a\\constv_cpp.txt");
+			//toolsKit::IplToFile(constv,"c:\\a\\constv_cpp.txt");
 			///////////////release all temp iplImages////////////
 			cvReleaseImage(&theta0);
 			cvReleaseImage(&theta1);
@@ -640,17 +790,10 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			cvReleaseImage(&fs2_2232);
 			cvReleaseImage(&fs2_22122wt);
 			/////////////////////////////////////////////////////
-					
-			 /*cout<<"pdfaltSumU"<<endl;
-			 toolsKit::IPL_print(pdfaltSumU);
-			 cout<<"pdfaltSumV"<<endl;
-			 toolsKit::IPL_print(pdfaltSumV);
+							
 
-			 cout<<"constu"<<endl;
-			 toolsKit::IPL_print(constu);
-			 cout<<"constv"<<endl;
-			 toolsKit::IPL_print(constv);*/
-			
+
+
 			cout<<"starting building B"<<endl;
 			//insert data to B vector:b = [-constu(:) ; -constv(:) ];
 			IplImage * Mconstu  =  cvCreateImage(cvSize(constu->width,constu->height),constu->depth,constu->nChannels);
@@ -680,7 +823,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"B size: "<<B->size()<<endl;
 			//A->clean();			
 		
-			cout<<"converting A:"<<endl;
+			/*cout<<"converting A:"<<endl;
 			IplImage* IPLA = A->toIpl();
 			
 			IplImage* IPLB = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
@@ -692,30 +835,31 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			cv::Mat tempB(IPLB);
 			cv::Mat tempX(IPLX);
 			cv::solve(tempA,tempB,tempX);
-			IplImage aaa = tempX;
+			IplImage aaa = tempX;*/
 			//toolsKit::IplToFile(&aaa,"c:\\a\\ocv_x.txt");
 			
-			//cout<<"starting SOR"<<endl;
-			//float start = std::clock();
-			//vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
-			////toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
-			//float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
-			//std::cout<<"SOR took: "<< diff <<'\n';
-			//cout<<"SOR ended!"<<endl;
+			cout<<"starting SOR"<<endl;
+			float start = std::clock();
+			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
+			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
+			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
+			std::cout<<"SOR took: "<< diff <<'\n';
+			cout<<"SOR ended!"<<endl;
 			//ofstream thefile("c:\\a\\our_x.txt",ios::out & ios::trunc);
 			//thefile<<*dUdV<<endl;
 			//thefile.close();
-			//
 			
-			vector<float> * dUdV2 = new vector<float>();
-			for (int i =0; i<aaa.height; i++)
-				for (int j=0; j<aaa.width; j++)
-					dUdV2->push_back(cvGet2D(&aaa,i,j).val[0]);
+			//vector<float> * dUdV2 = new vector<float>();
+			//for (int i =0; i<aaa.height; i++)
+			//	for (int j=0; j<aaa.width; j++)
+			//		dUdV2->push_back(cvGet2D(&aaa,i,j).val[0]);
 
+			cvReleaseImage(&constu);
+			cvReleaseImage(&constv);
 
 			delete B;
 			delete A;
-			return dUdV2;
+			return dUdV;
 
 
 			
