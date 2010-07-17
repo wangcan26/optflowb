@@ -585,6 +585,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 				
 
 			 //toolsKit::IplToFile(uapp,"c:\\a\\uapp_cpp.txt");
+			 //toolsKit::IplToFile(vapp,"c:\\a\\vapp_cpp.txt");
 
 
 			 //insert to diagonals to matrix A
@@ -736,11 +737,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
 			//cout<<"uuul1ul2ur1ur2(Q1):"<<endl<<uuul1ul2ur1ur2<<endl;
 			//cout<<"vvvl1vl2vr1vr2(Q4):"<<endl<<vvvl1vl2vr1vr2<<endl;
-			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,*uv,*vu,vvvl1vl2vr1vr2);
-			//filename = "c:\\a\\A_cpp.txt";
-			//thefile.open(filename.c_str(), ios::out & ios::trunc);
-			//thefile<<*A<<endl;
-			//thefile.close();
+			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,*uv,*vu,vvvl1vl2vr1vr2);				
 			cout<<"finished building mat A"<<endl;
 			delete vv;
 			delete uu;
@@ -753,8 +750,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			delete ur1;
 			delete ur2;
 			delete vr1;			
-			delete vr2;
-			//cout<<"A: "<<endl<<*A<<endl;
+			delete vr2;			
 			//////////////////////build vector B//////////////////////
 				
 			// Computing the constant terms for the first of the Euler Lagrange equations				
@@ -766,11 +762,11 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//constu = psidashBCA * theta0 * ( Ikx * Ikz ) + gamma * psidashGCA * (theta1 * Ixx * Ixz + theta2 * Ixy * Iyz ) - 1*pdfaltsumu 		
 			computeDiagonalReg   (constu,psidashBCA,theta0,Ikx,Ikz,gamma,psidashGCA,theta1,Ixx,Ixz,theta2,Ixy,Iyz);					
 			cvAdd(constu,pdfaltSumU,constu);
-			//toolsKit::IplToFile(constu,"c:\\a\\constu_cpp.txt");		
+			//toolsKit::IplToFile(constu,"c:\\a\\constu_cpp9.txt");		
 			//constv = psidashBCA * theta0 * ( Iky * Ikz ) + gamma * psidashGCA * (theta1 * Ixy * Ixz + theta2 * Iyy * Iyz ) - 1*pdfaltsumv ;
 			computeDiagonalReg   (constv,psidashBCA,theta0,Iky,Ikz,gamma,psidashGCA,theta1,Ixy,Ixz,theta2,Iyy,Iyz);					
 			cvAdd(constv,pdfaltSumV,constv);
-			//toolsKit::IplToFile(constv,"c:\\a\\constv_cpp.txt");
+			//toolsKit::IplToFile(constv,"c:\\a\\constv_cpp9.txt");
 			///////////////release all temp iplImages////////////
 			cvReleaseImage(&theta0);
 			cvReleaseImage(&theta1);
@@ -817,25 +813,28 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			delete MconstvCol;
 			cvReleaseImage(&constu);
 			cvReleaseImage(&constv);
-			//toolsKit::vectorTools::vectorToFile(B,"c:\\a\\B_cpp.txt");
+			
+			//ofstream thefile("c:\\a\\B_cpp9.txt",ios::out & ios::trunc);thefile<<*B<<endl;thefile.close();
+			//ofstream thefile2("c:\\a\\A_cpp9.txt",ios::out & ios::trunc);thefile2<<*A<<endl;thefile2.close();			
+
 			vector<float> * x = new vector<float>(B->size());
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
 			//A->clean();			
 		
-			/*cout<<"converting A:"<<endl;
-			IplImage* IPLA = A->toIpl();
-			
-			IplImage* IPLB = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
-			for (int it = 0; it != B->size(); it++)
-				cvSet2D(IPLB,it,0,cvScalarAll((*B)[it]));
-			IplImage* IPLX = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
-			cvZero(IPLX);
-			cv::Mat tempA(IPLA);
-			cv::Mat tempB(IPLB);
-			cv::Mat tempX(IPLX);
-			cv::solve(tempA,tempB,tempX);
-			IplImage aaa = tempX;*/
+			//cout<<"converting A:"<<endl;
+			//IplImage* IPLA = A->toIpl();
+			//
+			//IplImage* IPLB = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
+			//for (int it = 0; it != B->size(); it++)
+			//	cvSet2D(IPLB,it,0,cvScalarAll((*B)[it]));
+			//IplImage* IPLX = cvCreateImage(cvSize(1,B->size()),IPL_DEPTH_32F,1);
+			//cvZero(IPLX);
+			//cv::Mat tempA(IPLA);
+			//cv::Mat tempB(IPLB);
+			//cv::Mat tempX(IPLX);
+			//cv::solve(tempA,tempB,tempX);
+			//IplImage aaa = tempX;
 			//toolsKit::IplToFile(&aaa,"c:\\a\\ocv_x.txt");
 			
 			cout<<"starting SOR"<<endl;
@@ -845,9 +844,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 			std::cout<<"SOR took: "<< diff <<'\n';
 			cout<<"SOR ended!"<<endl;
-			//ofstream thefile("c:\\a\\our_x.txt",ios::out & ios::trunc);
-			//thefile<<*dUdV<<endl;
-			//thefile.close();
+			
+			//ofstream thefile3("c:\\a\\dudv9_cpp_our_sor.txt",ios::out & ios::trunc);thefile3<<*dUdV<<endl;thefile3.close();
 			
 			//vector<float> * dUdV2 = new vector<float>();
 			//for (int i =0; i<aaa.height; i++)

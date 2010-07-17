@@ -268,6 +268,9 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
+
+		IplImage* DuSum=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* DvSum=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 		
 		//clear all derivatives
 		cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); 
@@ -325,13 +328,23 @@ flowUV* coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
 			//adding the current computed flow
-			cvAdd(UV->getU(),Du,UV->getU());
-			cvAdd(UV->getV(),Dv,UV->getV());							
-
+			cvAdd(DuSum,Du,DuSum);
+			cvAdd(DvSum,Dv,DvSum);							
+			
+			//toolsKit::IplToFile(UV->getU(),"c:\\a\\u_cpp.txt");
+			//toolsKit::IplToFile(UV->getU(),"c:\\a\\v_cpp.txt");
+			//toolsKit::IplToFile(DuSum,"c:\\a\\DuSum.txt");
+			//toolsKit::IplToFile(DvSum,"c:\\a\\DvSum.txt");
 
 			//print flow
-			toolsKit::drawFlow(UV->getU(),UV->getV(),1);
+			toolsKit::drawFlow(DuSum,DvSum,1);
 		}
+
+		//now add all sums of du/dv on flow:
+		
+		cvAdd(UV->getU(),DuSum,UV->getU());
+		cvAdd(UV->getV(),DvSum,UV->getV());		
+
 
 
 	//clean temp vars

@@ -209,10 +209,10 @@ int main (int argc,char** argv)
 	
 	const IplImage *img1_33_file=NULL;
 	const IplImage *img2_33_file=NULL;
-	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
-//	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
-	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
-//	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
+//	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
+	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
+//	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
+	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
 	
 	//cvNormalize(img1_33_file,img1_33_file,1,0,CV_MINMAX);
 	//cvNormalize(img2_33_file,img2_33_file,1,0,CV_MINMAX);
@@ -223,9 +223,9 @@ int main (int argc,char** argv)
 	//cvWaitKey(0);
 	
 	start = std::clock();
-	flowUV* UV=coarse2fComp.Coarse2FineFlow(img2_33_file, img1_33_file, 
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(img2_32g, img1_32g, 
 											alpha,gamma,
-											ratio,2, 
+											ratio,5, 
 											outerIter,innerIter);
 	diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 	std::cout<<"BROX pyramid alg. took "<< diff <<" secs"<<endl;

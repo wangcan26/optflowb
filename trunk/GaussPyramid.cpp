@@ -41,8 +41,8 @@ void GaussPyramid::ConstructPyramid(const IplImage* image, double ratio, int min
 		IplImage* smoothImage=cvCreateImage( cvSize( image->width,image->height ),image->depth, image->nChannels );
 		double altRatio=pow( ratio, minWidth-i);		
 		cvSmooth(image,smoothImage,2);
-		int reduceWidth=smoothImage->width*altRatio;
-		int reduceHeight=smoothImage->height*altRatio ;
+		int reduceWidth=smoothImage->width*altRatio+1;
+		int reduceHeight=smoothImage->height*altRatio+1 ;
 		ImPyramid[i] = cvCreateImage( cvSize(reduceWidth ,reduceHeight),smoothImage->depth, smoothImage->nChannels );
 		cvResize(smoothImage,ImPyramid[i]);
 	}

@@ -356,7 +356,7 @@ void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
                 //cvShowImage("image", color_imgRotated);
 				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
 				cvWaitKey(0);			
-				cvDestroyWindow("plot flow"); 
+				cvDestroyWindow("final flow"); 
 			}
 			
 			
