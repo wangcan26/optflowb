@@ -723,21 +723,17 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//A =  [uu+ul1+ul2+ur1+ur2, uv; vu, vv+vl1+vl2+vr1+vr2];
 
 
-			SparseMat<float>  uuul1ul2ur1ur2 = (*uu)+(*ul1)+(*ul2)+(*ur1)+(*ur2);
-			//filename = "c:\\a\\uuul1ul2ur1ur2_cpp.txt";
-			//ofstream thefile(filename.c_str(), ios::out & ios::trunc);
-			//thefile<<uuul1ul2ur1ur2<<endl;
-			//thefile.close();
+			//SparseMat<float>  uuul1ul2ur1ur2 = (*uu)+(*ul1)+(*ul2)+(*ur1)+(*ur2);
+			SparseMat<float> * uuul1ul2ur1ur2 = new SparseMat<float>(uu,ul1,ul2,ur1,ur2);
+			
+		
 			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
-			SparseMat<float>  vvvl1vl2vr1vr2 = (*vv)+(*vl1)+(*vl2)+(*vr1)+(*vr2);
-			//filename = "c:\\a\\vvvl1vl2vr1vr2_cpp.txt";
-			//thefile.open(filename.c_str(),ios::out & ios::trunc);
-			//thefile<<vvvl1vl2vr1vr2<<endl;
-			//thefile.close();
-			//cout<<"vvvl1vl2vr1vr2:"<<endl<<vvvl1vl2vr1vr2;
-			//cout<<"uuul1ul2ur1ur2(Q1):"<<endl<<uuul1ul2ur1ur2<<endl;
-			//cout<<"vvvl1vl2vr1vr2(Q4):"<<endl<<vvvl1vl2vr1vr2<<endl;
-			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,*uv,*vu,vvvl1vl2vr1vr2);				
+			//SparseMat<float>   vvvl1vl2vr1vr2 = (*vv)+(*vl1)+(*vl2)+(*vr1)+(*vr2);
+			SparseMat<float> * vvvl1vl2vr1vr2 = new SparseMat<float>(vv,vl1,vl2,vr1,vr2);
+
+			filename = "c:\\a\\vvvl1vl2vr1vr2_cpp.txt";
+
+			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);				
 			cout<<"finished building mat A"<<endl;
 			delete vv;
 			delete uu;
@@ -750,7 +746,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			delete ur1;
 			delete ur2;
 			delete vr1;			
-			delete vr2;			
+			delete vr2;		
+			delete uuul1ul2ur1ur2;
+			delete vvvl1vl2vr1vr2;
 			//////////////////////build vector B//////////////////////
 				
 			// Computing the constant terms for the first of the Euler Lagrange equations				
