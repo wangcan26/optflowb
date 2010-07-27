@@ -21,7 +21,7 @@ public:
 	static CvSparseMat * upperTriangle(CvSparseMat * mat);
 	static SparseMat<float> * creaseSparse(IplImage* im, int diag=0, string filename="");
 
-	static vector<float>* SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations); 
+	static vector<float>* SOR(SparseMat<float>* A, vector<float>* x,vector<float>* B, float w, int numOfIterations); 
 
 
 	};

@@ -72,29 +72,29 @@ static CvSparseMat * upperTriangle(CvSparseMat * mat){
 		return ans;
 		}
 
-vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<float> B, float w, int numOfIterations){
+vector<float> * SparseToolKit::SOR(SparseMat<float>* A, vector<float>* x,vector<float>* B, float w, int numOfIterations){
 		int k,i,j;
 		float e1,e2,e3,Aii,Aij;
 		
 		//float value = std::numeric_limits<float>::max();
 		
 		vector<float> * temp;
-		vector<float> * oldX = new vector<float>(x);
-		vector<float> * newX = new vector<float>(x.size());
+		vector<float> * oldX = new vector<float>(*x);
+		vector<float> * newX = new vector<float>(x->size());
 		for (k=0; k<numOfIterations; k++){
-			for (i=0; i<x.size(); i++){
-					Aii=A(i,i);
-					float Bi =B[i];
-					e1 = B[i]/(Aii);
+			for (i=0; i<x->size(); i++){
+					Aii=(*A)(i,i);
+					float Bi =(*B)[i];
+					e1 = (*B)[i]/(Aii);
 					//e1 = B[i];
 					e2=0;
-					std::map<int, float> row = A.getRow(i);
+					std::map<int, float> row = A->getRow(i);
 					//std::map<int,float>::iterator it = row.begin();
 					SparseMat<float>::col_iter it = row.begin();
 					//for (j=0; j< i-1; j++){
 					for(it; it->first <= i-1 ; it++){
 						j=it->first;
-						Aij = A(i,j);
+						Aij = (*A)(i,j);
 						float newXj = ((*newX)[j]);
 						e2+=Aij*newXj;
 						}
@@ -102,9 +102,9 @@ vector<float> * SparseToolKit::SOR(SparseMat<float> A, vector<float> x,vector<fl
 					e3=0;
 					if (it->first == i) it++;//skip the Ith element
 					//for (j=i+1; j<x.size(); j++){
-					for(it; it != row.end() && it->first < x.size(); it++){
+					for(it; it != row.end() && it->first < x->size(); it++){
 						j = it->first;
-						Aij = A(i,j);
+						Aij = (*A)(i,j);
 						float oldXj = ((*oldX)[j]);
 						e3 += Aij * oldXj;
 						//if (it == A.getRow(i).end()) break;

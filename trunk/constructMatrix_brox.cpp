@@ -837,7 +837,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			
 			cout<<"starting SOR"<<endl;
 			float start = std::clock();
-			vector<float> * dUdV= SparseToolKit::SOR(*A,*x,*B,1.0,nInnerFPIterations);
+			vector<float> * dUdV= SparseToolKit::SOR(A,x,B,1.0,nInnerFPIterations);
 			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
 			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 			std::cout<<"SOR took: "<< diff <<'\n';
