@@ -313,9 +313,9 @@ void toolsKit::IPL_print(const IplImage *image) {
 	cout<<"======================================================================================================================================="<<endl;
 	}
 
-IplImage* transposeImage(IplImage* image) {
+IplImage*  toolsKit::transposeImage(IplImage* image) {
 
-  IplImage *rotated = cvCreateImage(cvSize(image->height,image->width), IPL_DEPTH_8U,image->nChannels);
+	IplImage *rotated = cvCreateImage(cvSize(image->height,image->width), image->depth,image->nChannels);
 
   CvPoint2D32f center;
 
@@ -335,7 +335,7 @@ IplImage* transposeImage(IplImage* image) {
 
 
 void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
-			IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
+	IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
 			CvMat mathdr;
 			CvMat mathdr2;
 			CvMat* tempU = cvGetMat(u,&mathdr );
@@ -372,11 +372,13 @@ void toolsKit::drawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v,int s
 	cvAdd(u,du,tempsumU);
 	cvAdd(v,dv,tempsumV);
 
-	toolsKit::IplToFile(tempsumU,"c:\\a\\tempsumU.txt");
-	toolsKit::IplToFile(tempsumV,"c:\\a\\tempsumV.txt");
+	//toolsKit::IplToFile(tempsumU,"c:\\a\\tempsumU.txt");
+	//toolsKit::IplToFile(tempsumV,"c:\\a\\tempsumV.txt");
 
 	drawFlow(tempsumU,tempsumV,select);
-	
+
+	cvReleaseImage(&tempsumU);
+	cvReleaseImage(&tempsumV);
 
 }
 void toolsKit::cvMulScalar(IplImage* img,float scalar){

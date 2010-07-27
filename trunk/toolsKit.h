@@ -85,7 +85,8 @@ class toolsKit
 		static void increaseImageSize(IplImage* src,IplImage* dst,int select);
 		static bool AlmostEqualRelativeOrAbsolute(float A, float B,float maxRelativeError, float maxAbsoluteError);
 		static bool IsNan(float A);
-
+		
+		static IplImage*  toolsKit::transposeImage(IplImage* image) ;
 		static void shiftImage(IplImage* src,IplImage* temp,int select);
 
 		static IplImage * IplFromFile(string filename);
