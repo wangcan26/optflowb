@@ -467,6 +467,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 														IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,											
 														flowUV* UV,
 														IplImage* du,IplImage* dv,
+														vector<float>* dUdV,
 														double gamma,double alpha, 
 														double _ERROR_CONST,int nInnerFPIterations){
 			 //init IPLs											
@@ -815,7 +816,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			//ofstream thefile("c:\\a\\B_cpp9.txt",ios::out & ios::trunc);thefile<<*B<<endl;thefile.close();
 			//ofstream thefile2("c:\\a\\A_cpp9.txt",ios::out & ios::trunc);thefile2<<*A<<endl;thefile2.close();			
 
-			vector<float> * x = new vector<float>(B->size());
+			//vector<float> * x = new vector<float>(B->size());
 			//cout<<"A size: "<<A->getN()<<","<<A->getM()<<endl;
 			//cout<<"B size: "<<B->size()<<endl;
 			//A->clean();			
@@ -837,7 +838,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			
 			cout<<"starting SOR"<<endl;
 			float start = std::clock();
-			vector<float> * dUdV= SparseToolKit::SOR(A,x,B,1.0,nInnerFPIterations);
+			dUdV= SparseToolKit::SOR(A,dUdV,B,1.0,nInnerFPIterations);
 			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
 			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 			std::cout<<"SOR took: "<< diff <<'\n';

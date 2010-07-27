@@ -299,10 +299,11 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 	
 		
 		//outer fixed point iteration
+		vector<float> * dUdV = new vector<float>(Ikx->height*Ikx->width*2);
 		for(int iter=0;iter<nOuterFPIterations;iter++){						
 			///construct Matrix and solve it
-			vector<float> * dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
-																		   UV,Du,Dv, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);			
+			dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
+																		   UV,Du,Dv,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);			
 			///arrange results
 			IplImageIterator<float> DUit(Du);
 			IplImageIterator<float> DVit(Dv);
@@ -319,13 +320,13 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 						*DVit = *it;
 						DVit++;
 					}			
-			delete dUdV;			
+			//delete dUdV;			
 			//erase edges as in matlab
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
 
-			//toolsKit::IplToFile(UV->getU(),"c:\\a\\u_cpp.txt");
-			//toolsKit::IplToFile(UV->getU(),"c:\\a\\v_cpp.txt");
+			toolsKit::IplToFile(UV->getU(),"c:\\a\\du_cpp.txt");
+			toolsKit::IplToFile(UV->getV(),"c:\\a\\dv_cpp.txt");
 
 			//print flow
 			toolsKit::drawFlow2(UV->getU(),Du,UV->getV(),Dv,1);

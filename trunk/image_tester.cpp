@@ -182,18 +182,18 @@ int main (int argc,char** argv)
 	
 	const IplImage *img1_33_file=NULL;
 	const IplImage *img2_33_file=NULL;
-//	img1_33_file=toolsKit::IplFromFile("c:\\a\\yos1.txt");
-	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
+	img1_33_file=toolsKit::IplFromFile("c:\\a\\urban1r.txt");
+//	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
 //	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
-	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
-//	img2_33_file=toolsKit::IplFromFile("c:\\a\\yos2.txt");
+//	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
+	img2_33_file=toolsKit::IplFromFile("c:\\a\\urban2r.txt");
 //	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
 		
-	toolsKit::cvShowManyImages("img1,img2 ",2,img2_32,img1_32);	
+	//toolsKit::cvShowManyImages("img1,img2 ",2,img2_32,img1_32);	
 	cvWaitKey(0);
 	
 	start = std::clock();
-	flowUV* UV=coarse2fComp.Coarse2FineFlow(img2_33_file, img1_33_file, 
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_32g, img2_32g, 
 											alpha,gamma,
 											ratio,minWidth, 
 											outerIter,innerIter);

@@ -22,6 +22,7 @@ public:
 								  flowUV* UV,
 								  IplImage* du,
 								  IplImage* dv,
+								  vector<float>* dUdV,
 								  double gamma,
 								  double alpha,
 								  double _ERROR_CONST,

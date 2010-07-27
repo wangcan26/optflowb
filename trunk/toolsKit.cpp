@@ -341,21 +341,21 @@ void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 			CvMat* tempU = cvGetMat(u,&mathdr );
 			CvMat* tempV = cvGetMat(v,&mathdr2);
 			
-			MotionToColor( tempU,  tempV,  color_img,  0.1f);			
+			MotionToColor( tempU,  tempV,  color_img,  0.001f);			
 			
-			IplImage* color_imgRotated=transposeImage(color_img);
+			//IplImage* color_imgRotated=transposeImage(color_img);
 			//toolsKit::IPL_print(color_img);
 			if (select){
-				cvFlip(color_imgRotated, NULL, 0);
-				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
-				//cvShowImage("plot flow",color_imgRotated);			
+				//cvFlip(color_img, NULL, 1);
+				toolsKit::cvShowManyImages("flow",1,color_img);
+				//cvShowImage("plot flow",color_img);			
 				cvWaitKey(1);			
 				
 			}
 			else{
-				cvFlip(color_imgRotated, NULL, 0);
-                //cvShowImage("image", color_imgRotated);
-				toolsKit::cvShowManyImages("final flow",1,color_imgRotated);
+				//cvFlip(color_img, NULL, 1);
+               // cvShowImage("image", color_img);
+				toolsKit::cvShowManyImages("final flow",1,color_img);
 				cvWaitKey(0);			
 				cvDestroyWindow("final flow"); 
 			}
@@ -371,8 +371,12 @@ void toolsKit::drawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v,int s
 	
 	cvAdd(u,du,tempsumU);
 	cvAdd(v,dv,tempsumV);
-	drawFlow(tempsumU,tempsumV,select);
 
+	toolsKit::IplToFile(tempsumU,"c:\\a\\tempsumU.txt");
+	toolsKit::IplToFile(tempsumV,"c:\\a\\tempsumV.txt");
+
+	drawFlow(tempsumU,tempsumV,select);
+	
 
 }
 void toolsKit::cvMulScalar(IplImage* img,float scalar){
