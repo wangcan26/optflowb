@@ -193,7 +193,7 @@ int main (int argc,char** argv)
 	cvWaitKey(1);
 	
 	start = std::clock();
-	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_33_file, img2_33_file, 
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_32g, img2_32g, 
 											alpha,gamma,
 											ratio,minWidth, 
 											outerIter,innerIter);

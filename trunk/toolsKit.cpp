@@ -336,19 +336,22 @@ IplImage*  toolsKit::transposeImage(IplImage* image) {
 
 void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 	IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
+	IplImage* color_imgRotated = cvCreateImage( cvSize(u->width,u->height), IPL_DEPTH_8U, 3 );
 			CvMat mathdr;
 			CvMat mathdr2;
 			CvMat* tempU = cvGetMat(u,&mathdr );
 			CvMat* tempV = cvGetMat(v,&mathdr2);
 			
 			MotionToColor( tempU,  tempV,  color_img,  0.001f);			
-			
-			//IplImage* color_imgRotated=transposeImage(color_img);
+			cvFlip(color_img, NULL, -1);
+			color_imgRotated=transposeImage(color_img);
 			//toolsKit::IPL_print(color_img);
 			if (select){
-				//cvFlip(color_img, NULL, 1);
-				toolsKit::cvShowManyImages("flow",1,color_img);
-				//cvShowImage("plot flow",color_img);			
+			
+			
+		
+				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
+							
 				cvWaitKey(1);			
 				
 			}
