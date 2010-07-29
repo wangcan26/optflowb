@@ -24,7 +24,7 @@ void GaussPyramid::ConstructPyramid(const IplImage* image, double ratio, int min
 		delete []ImPyramid;
 
 
-	//nLevels=1;
+	//minWidth=1;
 
 	ImPyramid=new IplImage*[minWidth];
 	

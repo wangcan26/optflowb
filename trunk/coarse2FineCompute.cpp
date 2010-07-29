@@ -267,7 +267,7 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-	
+			
 		//clear all derivatives
 		cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); 
 		cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);cvZero(Du);cvZero(Dv);
@@ -305,28 +305,31 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
 																		   UV,Du,Dv,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);			
 			///arrange results
-			IplImageIterator<float> DUit(Du);
-			IplImageIterator<float> DVit(Dv);
-			int i=0;
+			//IplImageIterator<float> DUit(Du);
+			//IplImageIterator<float> DVit(Dv);
+			//int i=0;
 			cout<<"dUdV size = "<<dUdV->size()<<endl;
 			cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
 			cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
-			for (vector<float>::iterator it = dUdV->begin(); it!= dUdV->end(); it++, i++)
-				if (i<dUdV->size()/2){						
-						*DUit = *it;
-						DUit++;
-					}
-				else{
-						*DVit = *it;
-						DVit++;
-					}			
+
+
+
+			//ofstream thefile3("c:\\a\\dudv9_cpp_our_sor.txt",ios::out & ios::trunc);thefile3<<*dUdV<<endl;thefile3.close();
+			toolsKit::seperateDuDv(Du,Dv,dUdV);				
+
+			//toolsKit::IplToFile(Du,"c:\\a\\du_cpp.txt");
+			//toolsKit::IplToFile(Dv,"c:\\a\\dv_cpp.txt");
+			
+
+
 			//delete dUdV;			
-			//erase edges as in matlab
+			//erase edges as in matlab				
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
+		
 
-			toolsKit::IplToFile(UV->getU(),"c:\\a\\du_cpp.txt");
-			toolsKit::IplToFile(UV->getV(),"c:\\a\\dv_cpp.txt");
+			//toolsKit::IplToFile(UV->getU(),"c:\\a\\du_cpp.txt");
+			//toolsKit::IplToFile(UV->getV(),"c:\\a\\dv_cpp.txt");
 
 			//print flow
 			toolsKit::drawFlow2(UV->getU(),Du,UV->getV(),Dv,1);

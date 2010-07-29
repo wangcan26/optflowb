@@ -802,8 +802,6 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 			vector<float> * MconstvCol = toolsKit::IplImageToCoulmnVector(Mconstv);
 			cvReleaseImage(&Mconstv);
-			//toolsKit::vectorTools::vectorToFile(MconstuCol,"c:\\a\\MconstuCol_cpp.txt");
-			//toolsKit::vectorTools::vectorToFile(MconstvCol,"c:\\a\\MconstvCol_cpp.txt");
 			vector<float> * B = new vector<float>(MconstuCol->size());
 			*B= *MconstuCol;
 			for (vector<float>::iterator it = MconstvCol->begin(); it != MconstvCol->end(); it++)
@@ -838,8 +836,7 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			
 			cout<<"starting SOR"<<endl;
 			float start = std::clock();
-			dUdV= SparseToolKit::SOR(A,dUdV,B,1.0,nInnerFPIterations);
-			//toolsKit::vectorTools::vectorToFile(dUdV,"c:\\a\\dUdV_cpp.txt");
+			dUdV= SparseToolKit::SOR(A,dUdV,B,1.0,nInnerFPIterations);	
 			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 			std::cout<<"SOR took: "<< diff <<'\n';
 			cout<<"SOR ended!"<<endl;

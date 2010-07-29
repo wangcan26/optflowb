@@ -372,9 +372,6 @@ void toolsKit::drawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v,int s
 	cvAdd(u,du,tempsumU);
 	cvAdd(v,dv,tempsumV);
 
-	//toolsKit::IplToFile(tempsumU,"c:\\a\\tempsumU.txt");
-	//toolsKit::IplToFile(tempsumV,"c:\\a\\tempsumV.txt");
-
 	drawFlow(tempsumU,tempsumV,select);
 
 	cvReleaseImage(&tempsumU);
@@ -525,6 +522,42 @@ void toolsKit::cvNormalizeEdges(IplImage* img){
 		k==0?k=width-1:k--;
 		}
 	}
+
+
+void toolsKit::seperateDuDv(IplImage* du,IplImage* dv,vector<float> * dUdV){
+	int i=0;
+	int k=0;
+	int mult=0;
+	int element=0;
+	int imageSize=du->width*du->height;
+	for (vector<float>::iterator it = dUdV->begin(); it!= dUdV->end(); it++, i++){
+				if (i<dUdV->size()/2)						
+					((float*)du->imageData)[element+k] = *it;											
+				else{
+					if (imageSize==i){
+						k=0;
+						mult=0;
+						element=0;										
+						
+					}
+					((float*)dv->imageData)[element+k] = *it;
+						
+					}	
+	
+
+			//toolsKit::IplToFile(du,"c:\\a\\du_cpp.txt");
+			//toolsKit::IplToFile(dv,"c:\\a\\dv_cpp.txt");
+				if(mult==du->height-1){
+					mult=0;
+					element++;
+					k=0;
+				}
+				else{
+					mult++;
+					k=k+du->width;
+				}
+	}			
+}
 
 //averaging as per the numerics section of the second chapter.for x and y
 //{UP=1,DOWN=2,LEFT=3,RIGHT=4};

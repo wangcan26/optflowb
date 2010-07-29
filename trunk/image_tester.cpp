@@ -142,7 +142,7 @@ int main (int argc,char** argv)
 	//IPL_DEPTH_32F IPL_DEPTH_8U
 	coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
 	double ratio=0.75;
-	int minWidth=4;
+	int minWidth=10;
 	int outerIter=3;
 	int innerIter=100;
 	double alpha = 2 ; // Global smoothness variable.
@@ -185,15 +185,15 @@ int main (int argc,char** argv)
 	img1_33_file=toolsKit::IplFromFile("c:\\a\\urban1r.txt");
 //	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
 //	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
-//	img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
+	//img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
 	img2_33_file=toolsKit::IplFromFile("c:\\a\\urban2r.txt");
 //	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
 		
-	//toolsKit::cvShowManyImages("img1,img2 ",2,img2_32,img1_32);	
-	cvWaitKey(0);
+	toolsKit::cvShowManyImages("img1,img2 ",2,img1_32g,img2_32g);	
+	cvWaitKey(1);
 	
 	start = std::clock();
-	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_32g, img2_32g, 
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_33_file, img2_33_file, 
 											alpha,gamma,
 											ratio,minWidth, 
 											outerIter,innerIter);
