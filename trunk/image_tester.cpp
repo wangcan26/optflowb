@@ -9,133 +9,6 @@
 
 using namespace std;
 
-void test(){
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/*double an[] ={0,0,0,0,0,0,0,0,0};
-	double a[] = {1,2,3,4,5,6,7,8,9};
-	double b[]={2,2,2,3,3,3,4,5,6};
-	CvMat* matans = &cvMat( 3, 3, CV_64FC1, an ); // 64FC1 for double
-	CvMat* matans2 = &cvMat( 3, 3, CV_64FC1, an ); // 64FC1 for double
-	CvMat* mata = &cvMat( 3, 3, CV_64FC1, a );
-	CvMat* matb = &cvMat( 3, 3, CV_64FC1, b );
-	cvMul(mata,matb,matans);
-	cvMul(matb,mata,matans2);
-	PrintMat(mata);
-	PrintMat(matb);
-	PrintMat(matans);
-	PrintMat(matans2);
-	cout<<"a"<<endl;*/
-	//GPyramid1.ConstructPyramid(*img,ratio,minWidth);
-
-	
-	//IplImage *imga1=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-	IplImage *psidashFS1=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-	IplImage *psidashFS2=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-	IplImage *u=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-	IplImage *pdfaltSumXX=cvCreateImage(cvSize(3,3), IPL_DEPTH_32F,1);
-	/*((float*)imga1->imageData)[0]=1;
-	((float*)imga1->imageData)[1]=2;
-	((float*)imga1->imageData)[2]=3;
-	((float*)imga1->imageData)[3]=4;
-	((float*)imga1->imageData)[4]=5;
-	((float*)imga1->imageData)[5]=6;
-	((float*)imga1->imageData)[6]=7;
-	((float*)imga1->imageData)[7]=8;
-	((float*)imga1->imageData)[8]=9;
-
-	((float*)u->imageData)[0]=1;
-	((float*)u->imageData)[1]=1;
-	((float*)u->imageData)[2]=1;
-	((float*)u->imageData)[3]=2;
-	((float*)u->imageData)[4]=2;
-	((float*)u->imageData)[5]=2;
-	((float*)u->imageData)[6]=3;
-	((float*)u->imageData)[7]=3;
-	((float*)u->imageData)[8]=3;
-
-	((float*)psidashFS2->imageData)[0]=4;
-	((float*)psidashFS2->imageData)[1]=5;
-	((float*)psidashFS2->imageData)[2]=6;
-	((float*)psidashFS2->imageData)[3]=4;
-	((float*)psidashFS2->imageData)[4]=5;
-	((float*)psidashFS2->imageData)[5]=6;
-	((float*)psidashFS2->imageData)[6]=4;
-	((float*)psidashFS2->imageData)[7]=5;
-	((float*)psidashFS2->imageData)[8]=6;
-	
-	((float*)psidashFS1->imageData)[0]=1;
-	((float*)psidashFS1->imageData)[1]=2;
-	((float*)psidashFS1->imageData)[2]=3;
-	((float*)psidashFS1->imageData)[3]=1;
-	((float*)psidashFS1->imageData)[4]=2;
-	((float*)psidashFS1->imageData)[5]=3;
-	((float*)psidashFS1->imageData)[6]=1;
-	((float*)psidashFS1->imageData)[7]=2;
-	((float*)psidashFS1->imageData)[8]=3;*/
-	//cout<<"FS1"<<endl;
-	//toolsKit::IPL_print(psidashFS1);
-	//cout<<"FS2"<<endl;
-	//toolsKit::IPL_print(psidashFS2);
-	// cvZero(pdfaltSumXX);
-
-
-	double b[] = {1,-1};
-	CvMat* matOneNegOne = &cvMat( 1, 2, CV_64FC1, b );
-	cvFilter2D(psidashFS1,pdfaltSumXX,matOneNegOne);
-	
-	
-	//cout<<"matOneNegOne"<<endl;
-	//toolsKit::IPL_print(	matOneNegOne);
-	cout<<"ux"<<endl;
-	toolsKit::IPL_print(pdfaltSumXX);
-	
-
-
- cvZero(pdfaltSumXX);
-
-
-/*
-	//init
-	IplImage* tempLeft1=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* tempLeft2=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* tempLeft3=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-	IplImage* tempLeft4=cvCreateImage(cvSize( psidashFS1->width, psidashFS1->height ),psidashFS1->depth,psidashFS1->nChannels);
-
-	//psidashFS2(2:2:end ,  1:2:2*wt)* ( u(2:ht+1, 1:wt)  - u(2:ht+1, 2:wt+1) ) + //left ,ans2
-	toolsKit::IPL_sub_left(u,u,tempLeft1);
-	toolsKit::IPL_mul_left(tempLeft1,psidashFS2,tempLeft1);
-	//psidashFS2(2:2:end ,  3:2:end) * ( u(2:ht+1, 3:end) - u(2:ht+1, 2:wt+1) ) + //right ,ans2
-	toolsKit::IPL_sub_right(u,u,tempLeft2);
-	toolsKit::IPL_mul_right(tempLeft2,psidashFS2,tempLeft2);
-	//psidashFS1(1:2:2*ht,  2:2:end) * ( u(1:ht, 2:wt+1)  - u(2:ht+1, 2:wt+1) ) + //top ,ans1
-	toolsKit::IPL_sub_top(u,u,tempLeft3);
-	toolsKit::IPL_mul_top(tempLeft3,psidashFS1,tempLeft3);
-	//psidashFS1(3:2:end ,  2:2:end) * ( u(3:end, 2:wt+1) - u(2:ht+1, 2:wt+1) )   //bottom ,ans1
-	toolsKit::IPL_sub_bottom(u,u,tempLeft4);
-	toolsKit::IPL_mul_bottom(tempLeft4,psidashFS1,tempLeft4);
-
-	//temp1+temp2+temp3+temp4
-	cvAdd(tempLeft1,tempLeft2,pdfaltSumXX);
-	cvAdd(pdfaltSumXX,tempLeft3,pdfaltSumXX);
-	cvAdd(pdfaltSumXX,tempLeft4,pdfaltSumXX);
-	//- 1*pdfaltsumXX - needed for use in the next computation
-	toolsKit::cvMulScalar(pdfaltSumXX,-1);
-	cvReleaseImage(&tempLeft1);
-	cvReleaseImage(&tempLeft2);
-	cvReleaseImage(&tempLeft3);
-	cvReleaseImage(&tempLeft4);	
-
-	cout<<"pdfaltSumXX"<<endl;
-	toolsKit::IPL_print(pdfaltSumXX);
-	//toolsKit::IPL_print(imga1);
-
-	*/
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}
-
-
-
-
 int main (int argc,char** argv) 
 { 
 	double error_const=0.001;
@@ -189,11 +62,11 @@ int main (int argc,char** argv)
 	img2_33_file=toolsKit::IplFromFile("c:\\a\\urban2r.txt");
 //	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
 		
-	toolsKit::cvShowManyImages("img1,img2 ",2,img1_32g,img2_32g);	
+	toolsKit::cvShowManyImages("img1,img2 ",2,img1_32,img2_32);	
 	cvWaitKey(1);
 	
 	start = std::clock();
-	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_32g, img2_32g, 
+	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_32, img2_32, 
 											alpha,gamma,
 											ratio,minWidth, 
 											outerIter,innerIter);

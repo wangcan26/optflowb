@@ -191,8 +191,8 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 	IplImage* WarpImage2=cvCreateImage(cvSize(Pyramid2.getImageFromPyramid(firstIter)->width,Pyramid2.getImageFromPyramid(firstIter)->height ),Pyramid2.getImageFromPyramid(firstIter)->depth, Pyramid2.getImageFromPyramid(firstIter)->nChannels );
 	WarpImage2=  cvCloneImage(Pyramid2.getImageFromPyramid(firstIter));	
 
-	IplImage* vx1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(firstIter)->width,Pyramid1.getImageFromPyramid(firstIter)->height),Pyramid1.getImageFromPyramid(firstIter)->depth,Pyramid1.getImageFromPyramid(firstIter)->nChannels);
-	IplImage* vy1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(firstIter)->width,Pyramid1.getImageFromPyramid(firstIter)->height),Pyramid1.getImageFromPyramid(firstIter)->depth,Pyramid1.getImageFromPyramid(firstIter)->nChannels);
+	IplImage* vx1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(firstIter)->width,Pyramid1.getImageFromPyramid(firstIter)->height),Pyramid1.getImageFromPyramid(firstIter)->depth,1);
+	IplImage* vy1=cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(firstIter)->width,Pyramid1.getImageFromPyramid(firstIter)->height),Pyramid1.getImageFromPyramid(firstIter)->depth,1);
 	cvZero(vx1);
 	cvZero(vy1);
 	//flow result
@@ -208,6 +208,12 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 		int nChannels=Pyramid1.getImageFromPyramid(k)->nChannels;		
 		cout<<"width:"<<width<<"  height:"<<height<<"============================================"<<endl;
 
+		
+		IplImage *pyramid1_gray = cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(k)->width, Pyramid1.getImageFromPyramid(k)->height),Pyramid1.getImageFromPyramid(firstIter)->depth, 1);
+		IplImage *pyramid2_gray = cvCreateImage(cvSize(Pyramid1.getImageFromPyramid(k)->width, Pyramid1.getImageFromPyramid(k)->height), Pyramid1.getImageFromPyramid(firstIter)->depth, 1);
+
+		cvCvtColor( Pyramid1.getImageFromPyramid(k), pyramid1_gray, CV_BGR2GRAY );
+		cvCvtColor( Pyramid2.getImageFromPyramid(k), pyramid2_gray, CV_BGR2GRAY );
 		//on all levels but the first one
 		if (k!=0){
 			IplImage *tempVx = cvCreateImage(cvSize(width, height), UV->getU()->depth, UV->getU()->nChannels);
@@ -222,13 +228,16 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),UV->getU(),UV->getV());		
 			//cvShowImage("warp:",WarpImage2);
 			//cvWaitKey(0);
+
+			cvCvtColor( WarpImage2, pyramid2_gray, CV_BGR2GRAY );
 		}	
 			
 					  
 							
 		start = std::clock();
+
 		
-		SmoothFlowPDE( Pyramid1.getImageFromPyramid(k),WarpImage2,alpha,gamma,nOuterFPIterations,nInnerFPIterations,UV);
+		SmoothFlowPDE( pyramid1_gray,pyramid2_gray,alpha,gamma,nOuterFPIterations,nInnerFPIterations,UV);
 		diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 		std::cout<<"SmoothFlowPDE took: "<< diff <<" secs"<<endl;
 
@@ -303,34 +312,18 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		for(int iter=0;iter<nOuterFPIterations;iter++){						
 			///construct Matrix and solve it
 			dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
-																		   UV,Du,Dv,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);			
-			///arrange results
-			//IplImageIterator<float> DUit(Du);
-			//IplImageIterator<float> DVit(Dv);
-			//int i=0;
-			cout<<"dUdV size = "<<dUdV->size()<<endl;
-			cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
-			cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
-
-
-
-			//ofstream thefile3("c:\\a\\dudv9_cpp_our_sor.txt",ios::out & ios::trunc);thefile3<<*dUdV<<endl;thefile3.close();
-			toolsKit::seperateDuDv(Du,Dv,dUdV);				
-
-			//toolsKit::IplToFile(Du,"c:\\a\\du_cpp.txt");
-			//toolsKit::IplToFile(Dv,"c:\\a\\dv_cpp.txt");
+																		   UV,Du,Dv,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);						
+			//cout<<"dUdV size = "<<dUdV->size()<<endl;
+			//cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
+			//cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
 			
-
+			toolsKit::seperateDuDv(Du,Dv,dUdV);				
 
 			//delete dUdV;			
 			//erase edges as in matlab				
 			toolsKit::cvNormalizeEdges(Du);
 			toolsKit::cvNormalizeEdges(Dv);
 		
-
-			//toolsKit::IplToFile(UV->getU(),"c:\\a\\du_cpp.txt");
-			//toolsKit::IplToFile(UV->getV(),"c:\\a\\dv_cpp.txt");
-
 			//print flow
 			toolsKit::drawFlow2(UV->getU(),Du,UV->getV(),Dv,1);
 		}
