@@ -348,7 +348,7 @@ void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 			//toolsKit::IPL_print(color_img);
 			if (select){
 			
-			
+				
 		
 				toolsKit::cvShowManyImages("flow",1,color_imgRotated);
 							
@@ -358,7 +358,7 @@ void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 			else{
 				//cvFlip(color_img, NULL, 1);
                // cvShowImage("image", color_img);
-				toolsKit::cvShowManyImages("final flow",1,color_img);
+				toolsKit::cvShowManyImages("final flow",1,color_imgRotated);
 				cvWaitKey(0);			
 				cvDestroyWindow("final flow"); 
 			}
