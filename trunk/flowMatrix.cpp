@@ -438,11 +438,6 @@ void computePsidashFS_brox(IplImage* iterU,IplImage* iterV,int width,int height,
 	cvAdd(bv,pdfaltSumV,bv);
 	toolsKit::cvMulScalar(bv,-1);
 
-	vector<float> * x = toolsKit::IplImageToCoulmnVector(Ix);
-	vector<float> * xx = toolsKit::IplImageToCoulmnVector(Iz);
-		vector<float> * dx = toolsKit::IplImageToCoulmnVector(dataTermNorm);
-	vector<float> * xdx = toolsKit::IplImageToCoulmnVector(psiDataTerm);
-
 	//insert data to B vector:b = [-constu(:) ; -constv(:) ];
 	//vector<float> * MconstuCol = toolsKit::IplImageToCoulmnVector(bu);
 	vector<float> * MconstvCol = toolsKit::IplImageToCoulmnVector(bv);

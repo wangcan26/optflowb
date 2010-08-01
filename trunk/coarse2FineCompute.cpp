@@ -205,11 +205,11 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 											 CvMat* velx, CvMat* vely)
 										
 {
-	IplImage* WarpImage2=cvCreateImage(cvSize(Im1->width,Im2->height ),Im2->depth, Im1->nChannels );
+	IplImage* WarpImage_temp=cvCreateImage(cvSize(Im1->width,Im2->height ),Im2->depth, Im1->nChannels );
 	IplImage* im2_temp=cvCreateImage(cvSize(Im1->width,Im2->height ),Im2->depth, Im1->nChannels );
 	im2_temp=  cvCloneImage(Im2);	
 
-	WarpImage2 = RGBwarp(im2_temp,velx,vely);		
+//	WarpImage2 = RGBwarp(im2_temp,velx,vely);		
 
 	// first build the pyramid of the two images
 	GaussPyramid Pyramid1;	
