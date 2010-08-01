@@ -332,7 +332,24 @@ IplImage*  toolsKit::transposeImage(IplImage* image) {
   return rotated;
 }
 
+IplImage*  toolsKit::transposeImage2(IplImage* image) {
 
+	IplImage *rotated = cvCreateImage(cvSize(image->height,image->width), image->depth,image->nChannels);
+
+  CvPoint2D32f center;
+
+  float center_val = (float)((image->width)-1) / 2;
+  center.x = center_val;
+  center.y = center_val;
+  CvMat *mapMatrix = cvCreateMat( 2, 3, CV_32FC1 );
+  
+  cv2DRotationMatrix(center, 90, 1.0, mapMatrix);
+  cvWarpAffine(image, rotated, mapMatrix, CV_INTER_LINEAR + CV_WARP_FILL_OUTLIERS, cvScalarAll(0));
+
+  cvReleaseMat(&mapMatrix);
+  cvFlip(rotated, NULL, 0);
+  return rotated;
+}
 
 void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 	IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
@@ -344,18 +361,18 @@ void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
 			
 			MotionToColor( tempU,  tempV,  color_img,  0.001f);			
 		//	cvFlip(color_img, NULL, -1);
-		//	color_imgRotated=transposeImage(color_img);
+			color_img=transposeImage2(color_img);
 			//toolsKit::IPL_print(color_img);
 			if (select){
 				toolsKit::cvShowManyImages("flow",1,color_img);	
-				cvWaitKey(0);			
+				cvWaitKey(1);			
 			}
 			else{
 				//cvFlip(color_img, NULL, 1);
                // cvShowImage("image", color_img);
 				toolsKit::cvShowManyImages("final flow",1,color_img);
 				cvWaitKey(0);			
-				cvDestroyWindow("final flow"); 
+				//cvDestroyWindow("final flow"); 
 			}
 						
 			cvReleaseImage(&color_img);

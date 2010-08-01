@@ -90,7 +90,7 @@ int main (int argc,char** argv)
     }
 
 	
-	toolsKit::drawFlow(vely,velx,0);
+	toolsKit::drawFlow(vely,velx,1);
 	
 
 

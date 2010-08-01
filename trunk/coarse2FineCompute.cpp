@@ -38,7 +38,7 @@ IplImage * coarse2FineCompute::warpLayer(IplImage* I, IplImage* u, IplImage * v)
 	int height = I->height;
 	int width = I->width;
 	int nChannels = I->nChannels;
-	IplImage ** XY = meshgrid(width, height);
+	IplImage ** XY = meshgrid(height,width); //YAIR!!!!
 	IplImage * X = XY[0];
 	IplImage * Y = XY[1];
 
@@ -153,7 +153,7 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	cvReleaseImage( &g );
 	cvReleaseImage( &b );
 	toolsKit::cvShowManyImages("I ans",2,I,ans);
-	//cvWaitKey(0);
+	cvWaitKey(0);
 	return ans;
 	
 	}
@@ -262,7 +262,9 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 			UV->setPsidashFSAns1(cvCreateImage(cvSize( tempVx->width, tempVx->height+1 ),tempVx->depth,tempVx->nChannels));
 			UV->setPsidashFSAns2(cvCreateImage(cvSize( tempVx->width+1, tempVx->height ),tempVx->depth,tempVx->nChannels)); 						
 			
-			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),UV->getU(),UV->getV());		
+			
+
+			WarpImage2 = RGBwarp(Pyramid2.getImageFromPyramid(k),toolsKit::transposeImage2(UV->getU()),toolsKit::transposeImage2(UV->getV()));		
 			//cvShowImage("warp:",WarpImage2);
 			//cvWaitKey(0);
 
@@ -304,38 +306,15 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-
-
-		//TO BE DELETED
-		/*IplImage* Ikx2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Iky2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* IXt_axis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* IYt_ayis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Ixx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Ixy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-		IplImage* Iyx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Iyy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);	*/
-		
 		
 	
 			
 		//clear all derivatives
 		cvZero(Ix); cvZero(Iy); cvZero(Ix); 
-		//cvZero(Ixx); cvZero(Ixy); 
-		//cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
 		cvZero(Du);cvZero(Dv);
-		//create the different DX of the pictures
 	
-		getDXsCV(Im1,Ix,Iy);	
-	//	getDXsCV(Im2,Ikx2,Iky2);		
-		//by brox we need to take the gradient of the gradient:
-	//	getDXsCV(Ikx,Ixx,Ixy);
-	//	getDXsCV(Iky,Iyx,Iyy);
-		
-		//DXT of original images and their x&y gradiants	 			
+		getDXsCV(Im1,Ix,Iy);		
 		cvSub(Im1,Im2,Iz);
-	//	cvSub(Ikx2,Ikx,IXt_axis);
-		//cvSub(Iky2,Iky,IYt_ayis);
 		//////////////////////////
 	
 		
@@ -359,19 +338,13 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			dUdV= SparseToolKit::SOR(A,dUdV,B,1.0,25);		
 			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 			std::cout<<" --- "<< diff <<'\n';
-
-
-			
-			//cout<<"dUdV size = "<<dUdV->size()<<endl;
-			//cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
-			//cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
 			
 			toolsKit::seperateDuDv(Dv,Du,dUdV);				
 
-			//delete dUdV;			
+			
 			//erase edges as in matlab				
-			toolsKit::cvNormalizeEdges(Du);
-			toolsKit::cvNormalizeEdges(Dv);
+			//toolsKit::cvNormalizeEdges(Du);
+			//toolsKit::cvNormalizeEdges(Dv);
 		
 			//print flow
 			toolsKit::drawFlow2(UV->getU(),Du,UV->getV(),Dv,1);
@@ -389,14 +362,6 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 	cvReleaseImage( &Ix ); 
 	cvReleaseImage( &Iy ); 
 	cvReleaseImage( &Iz ); 
-	//cvReleaseImage( &Iky2 ); 
-	//cvReleaseImage( &Ikt_Org ); 
-//	cvReleaseImage( &IXt_axis ); 
-	//cvReleaseImage( &IYt_ayis ); 
-	//cvReleaseImage( &Ixx ); 
-	//cvReleaseImage( &Ixy ); 
-	//cvReleaseImage( &Iyx ); 
-	//cvReleaseImage( &Iyy ); 
 	cvReleaseImage( &Du ); 
 	cvReleaseImage( &Dv ); 
 	UV->releaseAns1and2();			

@@ -90,6 +90,7 @@ class toolsKit
 		static bool IsNan(float A);
 		
 		static IplImage*  toolsKit::transposeImage(IplImage* image) ;
+		static IplImage*  toolsKit::transposeImage2(IplImage* image) ;
 		static void shiftImage(IplImage* src,IplImage* temp,int select);
 
 		static IplImage * IplFromFile(string filename);
