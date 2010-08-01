@@ -1,5 +1,5 @@
 #include "coarse2FineCompute.h"
-
+#include "flowMatrix.h"
 #include <ctime>
 
 coarse2FineCompute::coarse2FineCompute(int imageDepth,double error)
@@ -201,9 +201,16 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 											 double ratio, 
 											 int minWidth,
 											 int nOuterFPIterations, 
-											 int nInnerFPIterations)
+											 int nInnerFPIterations,
+											 CvMat* velx, CvMat* vely)
 										
 {
+	IplImage* WarpImage2=cvCreateImage(cvSize(Im1->width,Im2->height ),Im2->depth, Im1->nChannels );
+	IplImage* im2_temp=cvCreateImage(cvSize(Im1->width,Im2->height ),Im2->depth, Im1->nChannels );
+	im2_temp=  cvCloneImage(Im2);	
+
+	WarpImage2 = RGBwarp(im2_temp,velx,vely);		
+
 	// first build the pyramid of the two images
 	GaussPyramid Pyramid1;	
 	GaussPyramid Pyramid2;			
@@ -291,65 +298,75 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		int width=Im1->width;
 		int channels=Im1->nChannels;		
 		//init for the different DX,DY & DT		
-		IplImage* Ikx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Iky=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-		IplImage* Ikx2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Iky2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Ikt_Org=cvCreateImage(cvSize( width, height ),_imageDepth,channels); //IKZ
-		IplImage* IXt_axis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* IYt_ayis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		//the gradient of the gradient
-		IplImage* Ixx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Ixy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
-		IplImage* Iyx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
-		IplImage* Iyy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);	
+		IplImage* Ix=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* Iy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
+		IplImage* Iz=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
 		//the addition in each iter to u&v
 		IplImage* Du=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
 		IplImage* Dv=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
+
+
+		//TO BE DELETED
+		/*IplImage* Ikx2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* Iky2=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* IXt_axis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* IYt_ayis=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* Ixx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* Ixy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);
+		IplImage* Iyx=cvCreateImage(cvSize( width, height ),_imageDepth,channels); 
+		IplImage* Iyy=cvCreateImage(cvSize( width, height ),_imageDepth,channels);	*/
+		
+		
+	
 			
 		//clear all derivatives
-		cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); 
-		cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);cvZero(Du);cvZero(Dv);
+		cvZero(Ix); cvZero(Iy); cvZero(Ix); 
+		//cvZero(Ixx); cvZero(Ixy); 
+		//cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
+		cvZero(Du);cvZero(Dv);
 		//create the different DX of the pictures
 	
-		getDXsCV(Im1,Ikx,Iky);	
-		getDXsCV(Im2,Ikx2,Iky2);		
+		getDXsCV(Im1,Ix,Iy);	
+	//	getDXsCV(Im2,Ikx2,Iky2);		
 		//by brox we need to take the gradient of the gradient:
-		getDXsCV(Ikx,Ixx,Ixy);
-		getDXsCV(Iky,Iyx,Iyy);
+	//	getDXsCV(Ikx,Ixx,Ixy);
+	//	getDXsCV(Iky,Iyx,Iyy);
 		
 		//DXT of original images and their x&y gradiants	 			
-		cvSub(Im1,Im2,Ikt_Org);
-		cvSub(Ikx2,Ikx,IXt_axis);
-		cvSub(Iky2,Iky,IYt_ayis);
-		//////////////////////////
-		//cvZero(Ikx); cvZero(Iky); cvZero(Ikt_Org); cvZero(Ixx); cvZero(Ixy); cvZero(Iyy); cvZero(IXt_axis); cvZero(IYt_ayis);
-		////Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis
-		//
-		//Ikx=toolsKit::IplFromFile("c:\\a\\Ix.txt");
-		//Iky=toolsKit::IplFromFile("c:\\a\\Iy.txt");
-		//Ikt_Org=toolsKit::IplFromFile("c:\\a\\Iz.txt");
-		//Ixx=toolsKit::IplFromFile("c:\\a\\Ixx.txt");
-		//Ixy=toolsKit::IplFromFile("c:\\a\\Ixy.txt");
-		//Iyy=toolsKit::IplFromFile("c:\\a\\Iyy.txt");
-		//IXt_axis=toolsKit::IplFromFile("c:\\a\\Ixz.txt");
-		//IYt_ayis=toolsKit::IplFromFile("c:\\a\\Iyz.txt");
+		cvSub(Im1,Im2,Iz);
+	//	cvSub(Ikx2,Ikx,IXt_axis);
+		//cvSub(Iky2,Iky,IYt_ayis);
 		//////////////////////////
 	
 		
 		//outer fixed point iteration
-		vector<float> * dUdV = new vector<float>(Ikx->height*Ikx->width*2);
-		SparseMat<float> * A = new SparseMat<float>(2*Ikx->height*Ikx->width);
+		vector<float> * dUdV = new vector<float>(Ix->height*Ix->width*2);
+		SparseMat<float> * A = new SparseMat<float>(2*Ix->height*Ix->width);
 		vector<float> * B = new vector<float>(A->getM());
 		for(int iter=0;iter<nOuterFPIterations;iter++){						
+			
 			///construct Matrix and solve it
-			dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
-																		   UV,Du,Dv,A,B,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);						
+			//dUdV = constructMatrix_brox::constructMatrix_b(Ix, Iy, Iz, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
+				//														   UV,Du,Dv,A,B,dUdV, 0 ,alpha, _ERROR_CONST,nInnerFPIterations);						
+			
+			
+			dUdV = flowMatrix::constructMatrix( Ix,  Iy, Iz, UV,  Du,  Dv, dUdV, A, B,  alpha, _ERROR_CONST);
+
+			/********************** SOR should be remove to other place *********************/
+	
+			cout<<"solving Ax=b with SOR ";
+			float start = std::clock();
+			dUdV= SparseToolKit::SOR(A,dUdV,B,1.0,25);		
+			float diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
+			std::cout<<" --- "<< diff <<'\n';
+
+
+			
 			//cout<<"dUdV size = "<<dUdV->size()<<endl;
 			//cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
 			//cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
 			
-			toolsKit::seperateDuDv(Du,Dv,dUdV);				
+			toolsKit::seperateDuDv(Dv,Du,dUdV);				
 
 			//delete dUdV;			
 			//erase edges as in matlab				
@@ -369,17 +386,17 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 	//clean temp vars
 		delete A;
 		delete dUdV;
-	cvReleaseImage( &Ikx ); 
-	cvReleaseImage( &Iky ); 
-	cvReleaseImage( &Ikx2 ); 
-	cvReleaseImage( &Iky2 ); 
-	cvReleaseImage( &Ikt_Org ); 
-	cvReleaseImage( &IXt_axis ); 
-	cvReleaseImage( &IYt_ayis ); 
-	cvReleaseImage( &Ixx ); 
-	cvReleaseImage( &Ixy ); 
-	cvReleaseImage( &Iyx ); 
-	cvReleaseImage( &Iyy ); 
+	cvReleaseImage( &Ix ); 
+	cvReleaseImage( &Iy ); 
+	cvReleaseImage( &Iz ); 
+	//cvReleaseImage( &Iky2 ); 
+	//cvReleaseImage( &Ikt_Org ); 
+//	cvReleaseImage( &IXt_axis ); 
+	//cvReleaseImage( &IYt_ayis ); 
+	//cvReleaseImage( &Ixx ); 
+	//cvReleaseImage( &Ixy ); 
+	//cvReleaseImage( &Iyx ); 
+	//cvReleaseImage( &Iyy ); 
 	cvReleaseImage( &Du ); 
 	cvReleaseImage( &Dv ); 
 	UV->releaseAns1and2();			

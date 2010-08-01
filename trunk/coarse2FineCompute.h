@@ -28,7 +28,8 @@ public:
 							 double ratio, 
 							 int minWidth,
 							 int nOuterFPIterations, 
-							 int nInnerFPIterations);
+							 int nInnerFPIterations,
+							  CvMat* velx, CvMat* vely);
 						
 	virtual ~coarse2FineCompute(void);
 	static IplImage** meshgrid(int cols, int rows);

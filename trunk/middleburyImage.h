@@ -124,6 +124,8 @@ struct CImageAttributes
 
 // Generic (weakly typed) image
 
+
+
 class CImage : public CImageAttributes
 {
 public:
@@ -266,5 +268,9 @@ struct RGBA
 };
 
 
+// read a flow file into 2-band image
+void ReadFlowFile(CFloatImage& img, const char* filename);
 
+// write a 2-band image into flow file 
+void WriteFlowFile(CFloatImage img, const char* filename);
 };

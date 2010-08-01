@@ -6,7 +6,8 @@
 #include "SparseToolKit.h"
 #include "optical_flow_demo.h"
 #include <ctime>
-
+#include "flowIO.h"
+#include "middleburyImage.h"
 using namespace std;
 
 int main (int argc,char** argv) 
@@ -15,10 +16,10 @@ int main (int argc,char** argv)
 	//IPL_DEPTH_32F IPL_DEPTH_8U
 	coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
 	double ratio=0.75;
-	int minWidth=10;
+	int minWidth=3;
 	int outerIter=3;
-	int innerIter=100;
-	double alpha = 2 ; // Global smoothness variable.
+	int innerIter=50;
+	double alpha = 3 ; // Global smoothness variable.
 	double gamma = 0 ; // Global weight for derivatives.
 
 
@@ -52,24 +53,56 @@ int main (int argc,char** argv)
 	//cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
 	//cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
 
-	
-	const IplImage *img1_33_file=NULL;
-	const IplImage *img2_33_file=NULL;
-	img1_33_file=toolsKit::IplFromFile("c:\\a\\urban1r.txt");
-//	img1_33_file=toolsKit::IplFromFile("c:\\a\\1_15_15.txt");
-//	img1_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_1s.txt");	
-	//img2_33_file=toolsKit::IplFromFile("c:\\a\\2_15_15.txt");
-	img2_33_file=toolsKit::IplFromFile("c:\\a\\urban2r.txt");
-//	img2_33_file=toolsKit::IplFromFile("c:\\a\\Urban3_2s.txt");
-		
+			
 	toolsKit::cvShowManyImages("img1,img2 ",2,img1_32,img2_32);	
 	cvWaitKey(1);
 	
+	
+	//read GT
+	CvMat* velx = cvCreateMat(img1_32->width, img1_32->height, CV_32FC1 );
+	CvMat* vely = cvCreateMat(img1_32->width, img1_32->height, CV_32FC1 );
+	try {
+		middlebury::CShape sh(img1_32->width, img1_32->height, 2);
+		middlebury::CFloatImage img(sh);
+		img.ClearPixels();
+	
+		char *filename = "flow10.flo";
+		middlebury::ReadFlowFile(img, filename);
+		
+		for (int y = 0; y < velx->height; y++) {
+			 float* ptr = ( float*)(velx->data.ptr + y * velx->step);
+			for (int x = 0; x < velx->width; x++) {
+				  *ptr++ = -img.Pixel(y, x, 0) ;
+			}
+		}
+
+		for (int y = 0; y < vely->height; y++) {
+			 float* ptr = (float*)(vely->data.ptr + y * vely->step);
+			for (int x = 0; x < vely->width; x++) {
+				  *ptr++ = -img.Pixel(y, x, 1);
+			}
+		}
+	}
+  catch (middlebury::CError &err) {
+	fprintf(stderr, err.message);
+	fprintf(stderr, "\n");
+	exit(1);
+    }
+
+	
+	toolsKit::drawFlow(vely,velx,0);
+	
+
+
+	//test wrap
+
+
 	start = std::clock();
 	flowUV* UV=coarse2fComp.Coarse2FineFlow(img1_32, img2_32, 
 											alpha,gamma,
 											ratio,minWidth, 
-											outerIter,innerIter);
+											outerIter,innerIter,
+											velx,vely);
 	diff = ( std::clock() - start ) / (double)CLOCKS_PER_SEC;
 	std::cout<<"BROX pyramid alg. took "<< diff <<" secs"<<endl;
 

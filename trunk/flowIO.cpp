@@ -31,7 +31,7 @@
 #include "middleburyImage.h"
 #include "flowIO.h"
 
-//using namespace middlebury;
+using namespace middlebury;
 // return whether flow vector is unknown
 
 // read a flow file into 2-band image
