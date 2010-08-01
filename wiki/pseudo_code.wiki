@@ -5,8 +5,8 @@ based on [http://www.mia.uni-saarland.de/Publications/brox-eccv04-of.pdf High Ac
 
 = pseudo flow =
 
- * Load image1 and image2 (argv[1],argv[2])
- * [U,V] = coarse2fComp.Coarse2FineFlow(..)
+ * Load image1 and image2 (argv[1] ,argv[2])
+ * U,V = coarse2fComp.Coarse2FineFlow(..)
     * Create pyramid for image1: Pyramid1.ConstructPyramid(Im1,ratio,minWidth);
     * Create pyramid for image2:Pyramid2.ConstructPyramid(Im2,ratio,minWidth);
     * For every level in the pyramid:
