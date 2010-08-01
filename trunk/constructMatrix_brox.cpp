@@ -467,6 +467,8 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 														IplImage* Ixy,IplImage* Iyy,IplImage* Ixz,IplImage* Iyz,											
 														flowUV* UV,
 														IplImage* du,IplImage* dv,
+														SparseMat<float> *  A,
+														vector<float> * B,
 														vector<float>* dUdV,
 														double gamma,double alpha, 
 														double _ERROR_CONST,int nInnerFPIterations){
@@ -678,8 +680,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			
 			//cout<<"uuul1ul2ur1ur2:"<<endl<<uuul1ul2ur1ur2<<endl;;
 			SparseMat<float> * vvvl1vl2vr1vr2 = new SparseMat<float>(vv,vl1,vl2,vr1,vr2);
-		
-			SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);				
+			
+			//SparseMat<float> * A= new SparseMat<float>(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);				
+			A->cube(uuul1ul2ur1ur2,uv,vu,vvvl1vl2vr1vr2);				
 			cout<<"finished building mat A"<<endl;
 			delete vv;delete uu;
 			delete uv;delete vu;
@@ -733,8 +736,11 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 
 			vector<float> * MconstvCol = toolsKit::IplImageToCoulmnVector(Mconstv);
 			cvReleaseImage(&Mconstv);
-			vector<float> * B = new vector<float>(MconstuCol->size());
+			//vector<float> * B = new vector<float>(MconstuCol->size());
+
 			*B= *MconstuCol;
+			//for (vector<float>::iterator it = MconstuCol->begin(); it != MconstuCol->end(); it++)
+				//B->push_back(*it);
 			for (vector<float>::iterator it = MconstvCol->begin(); it != MconstvCol->end(); it++)
 				B->push_back(*it);
 			delete MconstuCol;
@@ -757,8 +763,9 @@ vector<float>*  constructMatrix_brox::constructMatrix_b(IplImage* Ikx,IplImage* 
 			cvReleaseImage(&constu);
 			cvReleaseImage(&constv);
 
-			delete B;
-			delete A;
+			//B->clear();
+			//delete B;
+			//delete A;
 			return dUdV;
 
 

@@ -941,6 +941,28 @@ vector<float>* toolsKit::vectorTools::vectorAdd(vector<float>* a, vector<float>*
 	return ans;
 	}
 
+vector<float>* toolsKit::vectorTools::vectorAdd(int count, ...){
+	if (count==0) return NULL;
+	va_list vectors;
+	va_start(vectors,count);
+	vector<float> * elem = va_arg(vectors,vector<float>*);
+	vector<float> * ans = new vector<float>();
+	//copy the first vector:
+	for (vector<float>::iterator it = elem->begin(); it != elem->end(); it++){
+		ans->push_back(*it);
+	}
+	if(count ==1) return ans;
+	//add the rest of the vectors:
+	for (int i=1; i< count; i++){
+		elem = va_arg(vectors,vector<float>*);
+		for (vector<float>::iterator it = ans->begin(), it1 = elem->begin(); it != ans->end() && it1 != elem->end(); it++, it1++){
+			*it += *it1;
+		}
+	}
+	va_end(vectors);
+	return ans;
+}
+
 vector<float>* toolsKit::vectorTools::vectorAdd(vector<float>* a, float val){
 	vector<float>* ans = new vector<float>();
 	for (vector<float>::iterator it = a->begin(); it != a->end(); it++)
@@ -957,6 +979,23 @@ vector<float>* toolsKit::vectorTools::elementsFromIpl(IplImage* I, vector<float>
 		vector<float>* ans = new vector<float>();
 		vector<float>* colVect = toolsKit::IplImageToCoulmnVector(I);
 		for(vector<float>::iterator it = p->begin(); it!= p->end(); it++)
-			ans->push_back((*colVect)[*it]);
+			ans->push_back((*colVect)[(*it)-1]);
 		return ans;
 	}
+
+//A + B * (C - 1)
+vector<float> * toolsKit::vectorTools::elementsForIpl(vector<float> * A, int B, vector<float> * C){
+		vector<float> * args = new vector<float>();
+		args = toolsKit::vectorTools::vectorSub(C,1);
+		args = toolsKit::vectorTools::vectorMul(B,args);
+		args = toolsKit::vectorTools::vectorAdd(A,args);
+		return args;
+	}
+
+void toolsKit::vectorTools::vectorToFile(vector<float>* v, string filename){
+	ofstream thefile(filename.c_str(),ios::out & ios::trunc);
+	for (vector<float>::iterator it = v->begin(); it != v->end();it++)
+		thefile<<*it<<endl;
+
+	}	
+

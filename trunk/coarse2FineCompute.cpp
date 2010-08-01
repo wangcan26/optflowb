@@ -34,24 +34,18 @@ IplImage** coarse2FineCompute::meshgrid(int cols, int rows){
 
 
 
-
-IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
-
-
-	//I = toolsKit::IplFromFile("c:\\a\\warp_im1.txt");
-	//u = toolsKit::IplFromFile("c:\\a\\warp_u.txt");
-	//v = toolsKit::IplFromFile("c:\\a\\warp_v.txt");
+IplImage * coarse2FineCompute::warpLayer(IplImage* I, IplImage* u, IplImage * v){
 	int height = I->height;
 	int width = I->width;
 	int nChannels = I->nChannels;
 	IplImage ** XY = meshgrid(width, height);
 	IplImage * X = XY[0];
 	IplImage * Y = XY[1];
-	
+
 	IplImage * Xu = cvCreateImage(cvSize(X->width,X->height),X->depth,X->nChannels);
 	cvAdd(X,u,Xu);
 	cvReleaseImage(&X);
-	
+
 	IplImage * Yv = cvCreateImage(cvSize(Y->width,Y->height),Y->depth,Y->nChannels);
 	cvAdd(Y,v,Yv);
 	cvReleaseImage(&Y);
@@ -67,7 +61,7 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	//XI = max(1, min(sx - 1E-6, XI));
 	vtools::vectorMin(YI, width-eM6);
 	vtools::vectorMax(YI, 1);
- 	//toolsKit::vectorTools::vectorToFile(XI, "c:\\a\\XI_cpp.txt");
+	//toolsKit::vectorTools::vectorToFile(XI, "c:\\a\\XI_cpp.txt");
 	//toolsKit::vectorTools::vectorToFile(YI, "c:\\a\\YI_cpp.txt");
 	//fXI = floor(XI);
 	vector<float>* fXI = vtools::vectorFloor(XI);
@@ -87,33 +81,34 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	//toolsKit::vectorTools::vectorToFile(alpha_x, "c:\\a\\alpha_x_cpp.txt");
 	//alpha_y = YI - fYI;
 	vector<float>* alpha_y = vtools::vectorSub(YI, fYI);
-//	toolsKit::vectorTools::vectorToFile(alpha_y, "c:\\a\\alpha_y_cpp.txt");
+	//	toolsKit::vectorTools::vectorToFile(alpha_y, "c:\\a\\alpha_y_cpp.txt");
 
 	//A1 = (1 - alpha_x) .* (1 - alpha_y) .* I(fYI + sy * (fXI - 1))
-	vector<float> A1 = (1 - *alpha_x) *(1 - *alpha_y)*(I<<=*fYI+height*(*fXI-1));
-	
+	//vector<float>*  A1 = (1 - *alpha_x) * (1 - *alpha_y) * (I<<=*fYI+height*(*fXI-1));
+	vector<float> * Iargs = vtools::elementsForIpl(fYI,height,fXI);
+	vector<float>*  A1 = vtools::vectorMul(vtools::vectorMul((vtools::vectorSub(1 , alpha_x)) , (vtools::vectorSub(1 ,alpha_y))) , vtools::elementsFromIpl(I,Iargs));
+	delete Iargs;
 	//A2 = alpha_x .* (1 - alpha_y) .* I(fYI + sy * (cXI - 1))
 
-	
-	vector<float> A2 = *alpha_x*(1-*alpha_y)*(I<<=*fYI+height*(*cXI-1));
-	
+	Iargs = vtools::elementsForIpl(fYI,height,cXI);
+	vector<float>*  A2 = vtools::vectorMul(alpha_x, vtools::vectorMul(vtools::vectorSub(1,alpha_y),(vtools::elementsFromIpl(I,Iargs))));
+	delete Iargs;
 
 	//A3 = (1 - alpha_x) .* alpha_y .* I(cYI + sy * (fXI - 1))
-	
-	vector<float> A3 = (1 - *alpha_x) * *alpha_y * (I<<=(*cYI + height * (*fXI - 1)));
-	
+	Iargs = vtools::elementsForIpl(cYI,height,fXI);
+	vector<float> * A3 = vtools::vectorMul(vtools::vectorSub(1 , alpha_x) , vtools::vectorMul(alpha_y , (vtools::elementsFromIpl(I,Iargs))));
+	delete Iargs;
 
 	//A4 = alpha_x .* alpha_y .* I(cYI + sy * (cXI - 1))
-	
-	vector<float>  A4 = *alpha_x * *alpha_y * (I<<=(*cYI + height * (*cXI - 1)));
-
-	vector<float> O = A1 + A2 + A3 + A4;
-	
+	Iargs = vtools::elementsForIpl(cYI,height,cXI);
+	vector<float>  *A4 = vtools::vectorMul(alpha_x , vtools::vectorMul(alpha_y , (vtools::elementsFromIpl(I,Iargs))));
+	delete Iargs;
+	vector<float> * O = vtools::vectorAdd(4,A1 , A2 , A3 , A4);
+	delete A1; delete A2; delete A3; delete A4;
 	//O = reshape(O, sy, sx); -> from vector to IPLImage
 	IplImage* IplO = cvCreateImage(cvSize(width, height), I->depth, nChannels);
-	toolsKit::ColumnVectorToIplImage(&O,IplO);
-
-
+	toolsKit::ColumnVectorToIplImage(O,IplO);
+	delete O;
 	delete XI;
 	delete YI;
 	delete fXI;
@@ -126,6 +121,41 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	cvReleaseImage(&Y);
 	delete[] XY;
 	return IplO;
+	}
+
+//// Allocate image planes
+//	IplImage* r = cvCreateImage( cvGetSize(src), IPL_DEPTH_8U, 1 );
+//	IplImage* g = cvCreateImage( cvGetSize(src), IPL_DEPTH_8U, 1 );
+//	IplImage* b = cvCreateImage( cvGetSize(src), IPL_DEPTH_8U, 1 );
+//
+//	// Split image onto the color planes
+//	cvSplit( src, r, g, b, NULL );
+
+IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
+
+	if(I->nChannels ==1)
+		return warpLayer(I,u,v);
+	//==3
+	
+	IplImage* r = cvCreateImage( cvGetSize(I), I->depth, 1 );
+	IplImage* g = cvCreateImage( cvGetSize(I), I->depth, 1 );
+	IplImage* b = cvCreateImage( cvGetSize(I), I->depth, 1 );
+
+	cvSplit(I,r,g,b,NULL);
+	r = warpLayer(r,u,v);
+	g = warpLayer(g,u,v);
+	b = warpLayer(b,u,v);
+	//toolsKit::cvShowManyImages("rgb?",3,r,g,b);
+
+	IplImage * ans = cvCreateImage(cvGetSize(I),I->depth,I->nChannels);
+	cvMerge(r,g,b,0,ans);
+	cvReleaseImage( &r );
+	cvReleaseImage( &g );
+	cvReleaseImage( &b );
+	toolsKit::cvShowManyImages("I ans",2,I,ans);
+	//cvWaitKey(0);
+	return ans;
+	
 	}
 
 
@@ -309,10 +339,12 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 		
 		//outer fixed point iteration
 		vector<float> * dUdV = new vector<float>(Ikx->height*Ikx->width*2);
+		SparseMat<float> * A = new SparseMat<float>(2*Ikx->height*Ikx->width);
+		vector<float> * B = new vector<float>(A->getM());
 		for(int iter=0;iter<nOuterFPIterations;iter++){						
 			///construct Matrix and solve it
 			dUdV = constructMatrix_brox::constructMatrix_b(Ikx, Iky, Ikt_Org, Ixx, Ixy, Iyy, IXt_axis, IYt_ayis, 
-																		   UV,Du,Dv,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);						
+																		   UV,Du,Dv,A,B,dUdV, gamma ,alpha, _ERROR_CONST,nInnerFPIterations);						
 			//cout<<"dUdV size = "<<dUdV->size()<<endl;
 			//cout<<"Du size is: "<<Du->height<<","<<Du->width<<endl;
 			//cout<<"Dv size is: "<<Dv->height<<","<<Dv->width<<endl;
@@ -335,6 +367,8 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 
 
 	//clean temp vars
+		delete A;
+		delete dUdV;
 	cvReleaseImage( &Ikx ); 
 	cvReleaseImage( &Iky ); 
 	cvReleaseImage( &Ikx2 ); 

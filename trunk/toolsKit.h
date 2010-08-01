@@ -2,7 +2,7 @@
 
 #include <cv.h>
 #include <highgui.h>
-
+#include <stdarg.h>
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -118,6 +118,8 @@ class toolsKit
 			static vector<float>* vectorMul(vector<float>* a, float val);
 		
 			static vector<float>* vectorAdd(vector<float>* a, vector<float>* b);
+			
+			static vector<float>* vectorAdd(int count, ...);
 
 			static vector<float>* vectorAdd(vector<float>* a, float val);
 
@@ -125,9 +127,12 @@ class toolsKit
 
 			static vector<float>* elementsFromIpl(IplImage* I, vector<float> * p);
 
+			static void vectorToFile(vector<float>* v, string filename);
 			
-
+			static vector<float> * elementsForIpl(vector<float> * A, int B, vector<float> * C);
 			};
+		
+		
 		
 		virtual ~toolsKit(void);
 	private:

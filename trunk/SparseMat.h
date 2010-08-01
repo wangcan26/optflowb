@@ -58,6 +58,33 @@ class SparseMat
 				}
 			}
 		
+		void cube(const SparseMat<T>* q1, const SparseMat<T>* q2, const SparseMat<T>* q3, const SparseMat<T>* q4){
+			if (m != q1->m + q3->m || n != q1->n + q2->n)
+				cout<<" might be something strange here"<<endl;
+			this->mat.clear();
+			for (const_row_iter row = q1->mat.begin(); row != q1->mat.end(); row++)
+				for (const_col_iter col = row->second.begin(); col != row->second.end(); col++)
+					this->mat[row->first][col->first] = col->second;	
+			//add q2
+			for (const_row_iter row = q2->mat.begin(); row != q2->mat.end(); row++){
+				for( const_col_iter col = row->second.begin(); col != row->second.end(); col++){
+					mat[row->first][q1->n+ col->first] = col->second;
+					}
+				}
+			//add q3
+			for (const_row_iter row = q3->mat.begin(); row != q3->mat.end(); row++){
+				for( const_col_iter col = row->second.begin(); col != row->second.end(); col++){
+					mat[q1->m+row->first][col->first] = col->second;
+					}
+				}
+			//add q4
+			for (const_row_iter row = q4->mat.begin(); row != q4->mat.end(); row++){
+				for( const_col_iter col = row->second.begin(); col != row->second.end(); col++){
+					mat[q1->m+row->first][q1->n+col->first] = col->second;
+					}
+				}
+			}
+
 
 		//assuming all matrixes are the same size
 		template<class T2>

@@ -117,6 +117,7 @@ template<class T>
 ostream& operator <<(ostream& lhs, const vector<T>& rhs){
 	for (vector<T>::const_iterator it = rhs.begin(); it != rhs.end(); it++)
 		lhs<<*it<<endl;
+	
 	return lhs;
 	}
 

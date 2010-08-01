@@ -22,6 +22,8 @@ public:
 								  flowUV* UV,
 								  IplImage* du,
 								  IplImage* dv,
+								  SparseMat<float> * A,
+								  vector<float> * B,
 								  vector<float>* dUdV,
 								  double gamma,
 								  double alpha,

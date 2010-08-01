@@ -37,6 +37,7 @@ private:
 
 	IplImage* LaplaceCompute(IplImage* input,IplImage* input2);
 	IplImage* createWarp(IplImage*WarpImage2,IplImage* img1,IplImage* img2,IplImage* vx,IplImage* vy);
+	IplImage * warpLayer(IplImage* I, IplImage* u, IplImage * v);
 	IplImage* RGBwarp(IplImage* img, IplImage* u, IplImage* v);
 	
 	void SmoothFlowPDE( IplImage* Im1, 
