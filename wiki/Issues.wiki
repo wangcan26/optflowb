@@ -1,0 +1,14 @@
+= Introduction =
+
+known issues and limitation
+
+
+== SOR solver ==
+
+SOR solver does not work with w != 1.0
+
+== image WARP ==
+
+image warping is not working properly.
+
+
