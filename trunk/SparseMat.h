@@ -252,9 +252,6 @@ class SparseMat
 
 
 
-		IplImage* toIPL(){
-			
-			}
 
 		/*clean the matrix form 0 valued elements*/
 		void clean(){
@@ -319,10 +316,14 @@ class SparseMat
 			}
 
 
-		col_iter getRowIterator(int row){
-			return mat[row].begin();
+		row_iter begin(){
+				return mat.begin();
 			}
-		
+
+		row_iter end(){
+			return mat.end();
+			}
+
 		col_t getRow(int row){
 				return mat[row];
 			}
