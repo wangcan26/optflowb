@@ -1,11 +1,13 @@
 #include "coarse2FineCompute.h"
 #include "flowMatrix.h"
+#include "improvements.h"
 #include <ctime>
 
-coarse2FineCompute::coarse2FineCompute(int imageDepth,double error)
+coarse2FineCompute::coarse2FineCompute(int imageDepth,double error,bool useMedianFiltering)
 {
 	_imageDepth=imageDepth;
 	_ERROR_CONST=error;
+	this->useMediaFiltering=useMedianFiltering;
 }
 
 coarse2FineCompute::~coarse2FineCompute(void)
@@ -269,6 +271,12 @@ flowUV* coarse2FineCompute::Coarse2FineFlow( const IplImage* Im1,
 			//cvWaitKey(0);
 
 			cvCvtColor( WarpImage2, pyramid2_gray, CV_BGR2GRAY );
+			if (useMediaFiltering)
+			{
+				// Perform median filtering on the warped image.
+				medianFilter(pyramid2_gray,5);
+			}
+
 		}	
 			
 					  

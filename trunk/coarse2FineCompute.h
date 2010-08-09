@@ -18,9 +18,10 @@ typedef toolsKit::vectorTools vtools;
 class coarse2FineCompute
 {
 public:
+	bool useMediaFiltering;
 	double _ERROR_CONST;
 	int _imageDepth;
-	coarse2FineCompute(int imageDepth,double error);
+	coarse2FineCompute(int imageDepth,double error,bool useMedianFiltering=false);
 	flowUV* Coarse2FineFlow( const IplImage* Im1, 
 							 const IplImage* Im2, 
 							 double alpha,

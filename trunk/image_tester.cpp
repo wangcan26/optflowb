@@ -8,11 +8,14 @@
 #include <ctime>
 #include "flowIO.h"
 #include "middleburyImage.h"
+#include "improvements.h"
 using namespace std;
 
 int main (int argc,char** argv) 
 { 
 	double error_const=0.001;
+	bool useTextureDecomposition=false;
+	float textureAlpha=0.95;
 	//IPL_DEPTH_32F IPL_DEPTH_8U
 	coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
 	double ratio=0.75;
@@ -49,6 +52,15 @@ int main (int argc,char** argv)
 	cvCvtColor( img1_32, img1_32g, CV_BGR2GRAY );
 	cvCvtColor( img2_32, img2_32g, CV_BGR2GRAY );
 
+	// Preprocess the gray images.
+	if (useTextureDecomposition)
+	{
+		IplImage *texture1=cvCreateImage(cvSize(img1_32g->width,img1_32g->height),IPL_DEPTH_32F,1);
+		IplImage *texture2=cvCreateImage(cvSize(img2_32g->width,img2_32g->height),IPL_DEPTH_32F,1);
+		structure_texture_decomposition_rof(img1_32g,img1_32g,texture1,texture2,NULL,NULL,1.0f/8.0f,100,textureAlpha);
+		cvCopy(texture1,img1_32g);
+		cvCopy(texture2,img2_32g);
+	}
 
 	//cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
 	//cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
