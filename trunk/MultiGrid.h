@@ -1,7 +1,7 @@
 #ifndef MULTIGRID_H_
 #define MULTIGRID_H_
 
-#include "../h/FAS.h"
+#include "FAS.h"
 #define MAX_ITERATIONS 200
 #define DEFECT_FACTOR 10
 #define V_CYCLE 1

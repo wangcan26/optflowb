@@ -1,7 +1,7 @@
 #ifndef FAS_H_
 #define FAS_H_
-#include "../h/SparseMat.h"
-#include "../h/Utils.h"
+#include "SparseMat.h"
+#include "Utils.h"
 void restrictionX(const vector<float>& Xh,vector<float>& X2h);
 void restrictionV(const vector<float>& Xh,vector<float>& X2h);
 void restrictionM(SparseMat<float>& Ah,SparseMat<float>& A2h);

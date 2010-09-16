@@ -1,5 +1,5 @@
-#include "../h/MultiGrid.h"
-#include "../h/SOR.h"
+#include "MultiGrid.h"
+
 
 int currentIterations =0;
 void multigridIteration(vector<float>* (*solver)(SparseMat<float> A, vector<float> X,vector<float> B, float w, int numOfIterations),
@@ -81,7 +81,7 @@ void multigridIteration(vector<float>* (*solver)(SparseMat<float> A, vector<floa
 				//defectSolutionDifference = X2hCopy - X2h
 			sumVectors(X2hCopy,*X2h,*defectSolutionDifference2h,1);
 			for(int i=0; i< size2h	;i++){
-				(*defectSolutionDifference2h)[i] /= pow(DEFECT_FACTOR,currentIterations);
+				(*defectSolutionDifference2h)[i] /= pow((float)DEFECT_FACTOR,currentIterations);
 			}
 			prolongation(*defectSolutionDifference2h,*defectSolutionDifference);
 

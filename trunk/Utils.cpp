@@ -1,28 +1,9 @@
-#include "../h/SparseMat.h"
-#include "../h/Utils.h"
+#include "SparseMat.h"
+#include "Utils.h"
 
 
 
-void printMatrix(SparseMat<float> sp_mat){
-	int i,j;
-	printf("Printing matrix... \n ");
-	for(i=0;i<sp_mat.getM();i++){
-		for(j=0;j<sp_mat.getN();j++){
-			printf(" %f ",sp_mat(i,j));
-		}
-		printf(" \n ");
-	}
-}
-void printVector(vector<float> vec){
-	unsigned int i;
-	printf("Printing vector... \n ");
-	for(i=0;i<vec.size();i++){
 
-		printf(" %f ",vec.at(i));
-	}
-	printf(" \n ");
-
-}
 void residual(SparseMat<float>& A,const vector<float>& B,const vector<float>& X,vector<float>& residualVec){
 		unsigned int i;
 		multByVec(A,X,residualVec);

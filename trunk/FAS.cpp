@@ -1,4 +1,4 @@
-#include "../h/FAS.h"
+#include "FAS.h"
 //build coarse grid X2h of Xh using avg of 4 cells, result is saved in X2h(use for coarse X)
 void restrictionX(const vector<float>& Xh,vector<float>& X2h){
 	if(Xh.size()!= 2*X2h.size() ){
