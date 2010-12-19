@@ -4,8 +4,6 @@
 
 
 #include "optical_flow_demo.h"
-#include "middleburyImage.h"
-#include "flowIO.h"
 
 static const double pi = 3.14159265358979323846;
 

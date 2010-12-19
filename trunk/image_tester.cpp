@@ -6,16 +6,15 @@
 #include "SparseToolKit.h"
 #include "optical_flow_demo.h"
 #include <ctime>
-#include "flowIO.h"
-#include "middleburyImage.h"
 #include "improvements.h"
+#include "FlowUtils.h"
 using namespace std;
 
 int main (int argc,char** argv) 
 { 
 	double error_const=0.001;
 	bool useTextureDecomposition=false;
-	float textureAlpha=0.95;
+	float textureAlpha=0.95f;
 	//IPL_DEPTH_32F IPL_DEPTH_8U
 	coarse2FineCompute coarse2fComp(IPL_DEPTH_32F,error_const);
 	double ratio=0.75;
@@ -64,45 +63,30 @@ int main (int argc,char** argv)
 
 	//cvNormalize(img1_32g,img1_32g,127,0,CV_MINMAX); //CV_MINMAX
 	//cvNormalize(img2_32g,img2_32g,127,0,CV_MINMAX); 
-
-			
-	toolsKit::cvShowManyImages("img1,img2 ",2,img1_32,img2_32);	
-	cvWaitKey(1);
-	
+	/*int t=GetTickCount();
+	img1_32g=medianFilter(img1_32g,5);
+	cFlowUtils::cvShowManyImages("img1,img2 ",1,img1_32g);	
+	cout << (double)(GetTickCount()-t)/1000.0 << endl;
+	cvWaitKey(0);
+	return 0;*/
 	
 	//read GT
-	CvMat* velx = cvCreateMat(img1_32->width, img1_32->height, CV_32FC1 );
-	CvMat* vely = cvCreateMat(img1_32->width, img1_32->height, CV_32FC1 );
+	CvMat* velx;
+	CvMat* vely;
 	try {
-		middlebury::CShape sh(img1_32->width, img1_32->height, 2);
-		middlebury::CFloatImage img(sh);
-		img.ClearPixels();
-	
-		char *filename = "flow10.flo";
-		middlebury::ReadFlowFile(img, filename);
 		
-		for (int y = 0; y < velx->height; y++) {
-			 float* ptr = ( float*)(velx->data.ptr + y * velx->step);
-			for (int x = 0; x < velx->width; x++) {
-				  *ptr++ = -img.Pixel(y, x, 0) ;
-			}
-		}
-
-		for (int y = 0; y < vely->height; y++) {
-			 float* ptr = (float*)(vely->data.ptr + y * vely->step);
-			for (int x = 0; x < vely->width; x++) {
-				  *ptr++ = -img.Pixel(y, x, 1);
-			}
-		}
+		char *filename = "Media\\flow10.flo";
+		cFlowUtils::ReadFlowFile(filename,&velx,&vely);
+				
 	}
-  catch (middlebury::CError &err) {
+  catch (CError &err) {
 	fprintf(stderr, err.message);
 	fprintf(stderr, "\n");
 	exit(1);
     }
 
 	
-	toolsKit::drawFlow(vely,velx,1);
+	cFlowUtils::DrawFlow(vely,velx);
 	
 
 
@@ -125,7 +109,7 @@ int main (int argc,char** argv)
 	 cvReleaseImage(&img1);
 	 cvReleaseImage(&img2);
 
-	 toolsKit::drawFlow(UV->getU(),UV->getV(),0);
+	 cFlowUtils::DrawFlow(UV->getU(),UV->getV());
 
 
 	cout<<"fin"<<endl;

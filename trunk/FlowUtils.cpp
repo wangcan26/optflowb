@@ -10,12 +10,20 @@ using namespace std;
 #include "toolsKit.h"
 #include "FlowUtils.h"
 
-int ncols2 = 0;
-#define MAXCOLS2 60
-int colorwheel2[MAXCOLS2][3];
-void makecolorwheel2();
-
-cFlowUtils::cFlowUtils() : U(NULL),V(NULL),gtU(NULL),gtV(NULL),eeImage(NULL),aeImage(NULL),orientationImage(NULL),magnitudeImage(NULL)
+int ncols = 0;
+#define MAXCOLS 60
+int colorwheel[MAXCOLS][3];
+void makecolorwheel();
+// Default values for error range
+const float cFlowUtils::minValueAngleError=0.0f;
+const float cFlowUtils::maxValueAngleError=0.436f;
+const float cFlowUtils::minValueEndpointError=0.0f;
+const float cFlowUtils::maxValueEndpointError=20.0f;
+const float cFlowUtils::minValueOriError=0.0f;
+const float cFlowUtils::maxValueOriError=0.436f;
+const float cFlowUtils::minValueMagError=0.0f;
+const float cFlowUtils::maxValueMagError=20.0f;
+cFlowUtils::cFlowUtils() : U(NULL),V(NULL),gtU(NULL),gtV(NULL),eeImage(NULL),aeImage(NULL),orientationImage(NULL),magnitudeImage(NULL),mask(NULL)
 {	
 }
 cFlowUtils::cFlowUtils(IplImage *U,IplImage *V,IplImage *gtU,IplImage *gtV)
@@ -28,6 +36,11 @@ cFlowUtils::cFlowUtils(IplImage *U,IplImage *V,IplImage *gtU,IplImage *gtV)
 }
 cFlowUtils::~cFlowUtils()
 {
+	if (mask)
+	{
+		delete [] mask;
+		mask=NULL;
+	}
 	if (U)
 	{
 		cvReleaseImage(&U);
@@ -73,6 +86,7 @@ void cFlowUtils::SetFlow(IplImage *U,IplImage *V)
 {
 	this->U=cvCloneImage(U);
 	this->V=cvCloneImage(V);
+	CalculateMask();
 }
 void cFlowUtils::SetFlow(CvMat *U,CvMat *V)
 {
@@ -82,17 +96,19 @@ void cFlowUtils::SetFlow(CvMat *U,CvMat *V)
 	{
 		for (int x=0;x<U->rows;x++)
 		{
-			float u=cvmGet(U,x,y);
-			float v=cvmGet(V,x,y);
+			float u=(float)cvmGet(U,x,y);
+			float v=(float)cvmGet(V,x,y);
 			cvSet2D(this->U,y,x,cvScalar(u));
 			cvSet2D(this->V,y,x,cvScalar(v));
 		}
 	}
+	CalculateMask();
 }
 void cFlowUtils::SetGroundTruthFlow(IplImage *U,IplImage *V)
 {
 	this->gtU=cvCloneImage(U);
 	this->gtV=cvCloneImage(V);
+	CalculateMask();
 }
 void cFlowUtils::SetGroundTruthFlow(CvMat *U,CvMat *V)
 {
@@ -102,27 +118,35 @@ void cFlowUtils::SetGroundTruthFlow(CvMat *U,CvMat *V)
 	{
 		for (int x=0;x<U->rows;x++)
 		{
-			float u=cvmGet(U,x,y);
-			float v=cvmGet(V,x,y);
+			float u=(float)cvmGet(U,x,y);
+			float v=(float)cvmGet(V,x,y);
 			cvSet2D(this->gtU,y,x,cvScalar(u));
 			cvSet2D(this->gtV,y,x,cvScalar(v));
 		}
 	}
+	CalculateMask();
 }
 bool cFlowUtils::LoadFlow(const string &filename)
 {
-	return cFlowUtils::ReadFlowFile(filename,&U,&V,IPL_DEPTH_32F);
+	bool ret = cFlowUtils::ReadFlowFile(filename,&U,&V,IPL_DEPTH_32F);
+	CalculateMask();
+	return ret;
 }
 bool cFlowUtils::LoadGroundTruthFlow(const string &filename)
 {
-	return cFlowUtils::ReadFlowFile(filename,&gtU,&gtV,IPL_DEPTH_32F);
+	bool ret = cFlowUtils::ReadFlowFile(filename,&gtU,&gtV,IPL_DEPTH_32F);
+	CalculateMask();
+	return ret;
 }
 bool cFlowUtils::ReadFlowFile(const string &filename,IplImage **U,IplImage **V,int depth)
-{
+{	
 	const float tag_float = 202021.25f;
 	FILE *file=fopen(filename.c_str(),"rb");
 	if (!file)
+	{
+		throw CError("ReadFlowFile: could not open %s", filename.c_str());
 		return false;
+	}
 	int width, height;
 	float tag;
 
@@ -135,7 +159,6 @@ bool cFlowUtils::ReadFlowFile(const string &filename,IplImage **U,IplImage **V,i
 	fread(&width,sizeof(int),1,file);
 	fread(&height,sizeof(int),1,file);
 	
-	
 	*U=cvCreateImage(cvSize(width,height),depth,1);
 	*V=cvCreateImage(cvSize(width,height),depth,1);
 	
@@ -146,14 +169,41 @@ bool cFlowUtils::ReadFlowFile(const string &filename,IplImage **U,IplImage **V,i
 			float u,v;
 			fread(&u,sizeof(float),1,file);
 			fread(&v,sizeof(float),1,file);
+			
 			CvScalar su=cvScalar(u);
 			CvScalar sv=cvScalar(v);
-			cvSet2D(*U,y,x,su);
-			cvSet2D(*V,y,x,sv);
+			cvSet2D(*U,y,x,su);				
+			cvSet2D(*V,y,x,sv);			
 		}
 	}
 	fclose(file);
 	return true;
+}
+void cFlowUtils::CalculateMask()
+{
+	if (U==NULL || V==NULL || gtU==NULL || gtV==NULL)
+		return;
+
+	validPixels=0;	
+	if (!mask)
+		mask=new char[U->width*U->height];
+	for (int y=0;y<U->height;y++)
+	{
+		for (int x=0;x<U->width;x++)
+		{
+			float u=(float)cvGet2D(U,y,x).val[0];
+			float v=(float)cvGet2D(V,y,x).val[0];
+			float gtu=(float)cvGet2D(gtU,y,x).val[0];
+			float gtv=(float)cvGet2D(gtV,y,x).val[0];			
+			if (u>1000 || v>1000 || gtu>1000 || gtv>1000)
+				mask[y*U->width+x]=0;
+			else
+			{
+				mask[y*U->width+x]=1;
+				validPixels++;
+			}
+		}
+	}
 }
 bool cFlowUtils::WriteFlowFile(const string &filename,IplImage *U,IplImage *V)
 {
@@ -164,7 +214,10 @@ bool cFlowUtils::WriteFlowFile(const string &filename,IplImage *U,IplImage *V)
 
 	FILE *file=fopen(filename.c_str(),"wb");
 	if (!file)
+	{
+		throw CError("ReadFlowFile: could not open %s", filename.c_str());
 		return false;
+	}
 
 	fwrite("PIEH",1,4,file);
 	int width=U->width;
@@ -186,11 +239,14 @@ bool cFlowUtils::WriteFlowFile(const string &filename,IplImage *U,IplImage *V)
 	return true;
 }
 bool cFlowUtils::ReadFlowFile(const string &filename,CvMat **U,CvMat **V)
-{
+{	
 	const float tag_float = 202021.25f;
 	FILE *file=fopen(filename.c_str(),"rb");
 	if (!file)
+	{
+		throw CError("ReadFlowFile: could not open %s", filename.c_str());
 		return false;
+	}
 	int width, height;
 	float tag;
 
@@ -202,8 +258,7 @@ bool cFlowUtils::ReadFlowFile(const string &filename,CvMat **U,CvMat **V)
 	}
 	fread(&width,sizeof(int),1,file);
 	fread(&height,sizeof(int),1,file);
-
-
+	
 	*U=cvCreateMat(width,height,CV_32FC1);
 	*V=cvCreateMat(width,height,CV_32FC1);
 
@@ -230,7 +285,10 @@ bool cFlowUtils::WriteFlowFile(const string &filename,CvMat *U,CvMat *V)
 
 	FILE *file=fopen(filename.c_str(),"wb");
 	if (!file)
+	{
+		throw CError("ReadFlowFile: could not open %s", filename.c_str());
 		return false;
+	}
 
 	fwrite("PIEH",1,4,file);
 	int width=U->width;
@@ -251,77 +309,124 @@ bool cFlowUtils::WriteFlowFile(const string &filename,CvMat *U,CvMat *V)
 	fclose(file);
 	return true;
 }
-void cFlowUtils::CalculateError(eErrorType errorType,float maxMotion)
+// Calculates the various errors.
+// [minValue maxValue] is the error range for the angle error endpoint error and magnitude error.
+// [minValue2 maxValue2] is the error range for the magnitude error.
+void cFlowUtils::CalculateError(eErrorType errorType,float minValue,float maxValue,float minValue2,float maxValue2)
 {
 	const float pi=3.1415926535897932384626433832795f;
 	double totalError=0.0;
 	double totalError2=0.0;
 	if (errorType==errorAE)
 	{	
+		if (minValue==0.0f && maxValue==0.0f)
+		{
+			minValue=cFlowUtils::minValueAngleError;
+			maxValue=cFlowUtils::maxValueAngleError;
+		}
 		aeImage=cvCreateImage(cvSize(U->width,U->height),IPL_DEPTH_32F,1);		
 		for (int y=0;y<U->height;y++)
 		{
 			for (int x=0;x<U->width;x++)
 			{
-				float u=(float)cvGet2D(U,y,x).val[0];
-				float v=(float)cvGet2D(V,y,x).val[0];
-				float gtu=(float)cvGet2D(gtU,y,x).val[0];
-				float gtv=(float)cvGet2D(gtV,y,x).val[0];
-				// get the angle between (u,v,1), (gtu,gtv,1).
-				float ae=(float)acos( (1.0f+u*gtu+v*gtv) / (sqrt(1.0f+u*u+v*v)*sqrt(1.0f+gtu*gtu+gtv*gtv)));
-				cvSet2D(aeImage,y,x,cvScalar(ae/pi));			
-				totalError+=ae;
+				if (mask[y*U->width+x])
+				{				
+					float u=(float)cvGet2D(U,y,x).val[0];
+					float v=(float)cvGet2D(V,y,x).val[0];
+					float gtu=(float)cvGet2D(gtU,y,x).val[0];
+					float gtv=(float)cvGet2D(gtV,y,x).val[0];
+					// get the angle between (u,v,1), (gtu,gtv,1).
+					float ae=(float)acos( (1.0f+u*gtu+v*gtv) / (sqrt(1.0f+u*u+v*v)*sqrt(1.0f+gtu*gtu+gtv*gtv)));
+					if (ae<minValue)
+						ae=minValue;
+					else if (ae>maxValue)
+						ae=maxValue;
+					cvSet2D(aeImage,y,x,cvScalar(ae/pi));			
+					totalError+=ae;
+				}
 			}
 		}
-		averageAE = totalError/((double)U->width*(double)U->height);
+		averageAE = totalError/((double)validPixels);
 	}
 	else if (errorType==errorEP)
-	{		
-		if (maxMotion==0.0f)
-			maxMotion=sqrt((double)(U->width*U->width+U->height*U->height));
+	{
+		if (minValue==0.0f && maxValue==0.0f)
+		{
+			minValue=cFlowUtils::minValueEndpointError;
+			maxValue=cFlowUtils::maxValueEndpointError;
+		}
 		eeImage=cvCreateImage(cvSize(U->width,U->height),IPL_DEPTH_32F,1);
 		for (int y=0;y<U->height;y++)
 		{
 			for (int x=0;x<U->width;x++)
 			{
-				float u=(float)cvGet2D(U,y,x).val[0];
-				float v=(float)cvGet2D(V,y,x).val[0];
-				float gtu=(float)cvGet2D(gtU,y,x).val[0];
-				float gtv=(float)cvGet2D(gtV,y,x).val[0];
-				// end-point error in pixels.
-				float ee=(float)sqrt( (u-gtu) * (u-gtu) + (v-gtv) * (v-gtv) );
-				cvSet2D(eeImage,y,x,cvScalar(ee/maxMotion));			
-				totalError+=ee;
+				if (mask[y*U->width+x])
+				{
+					float u=(float)cvGet2D(U,y,x).val[0];
+					float v=(float)cvGet2D(V,y,x).val[0];
+					float gtu=(float)cvGet2D(gtU,y,x).val[0];
+					float gtv=(float)cvGet2D(gtV,y,x).val[0];
+					// end-point error in pixels.
+					float ee=(float)sqrt( (u-gtu) * (u-gtu) + (v-gtv) * (v-gtv) );
+					if (ee<minValue)
+						ee=minValue;
+					else if (ee>maxValue)
+						ee=maxValue;
+
+					cvSet2D(eeImage,y,x,cvScalar(ee));			
+					totalError+=ee;
+				}
 			}
 		}
-		averageEE = totalError/((double)U->width*(double)U->height);
+		averageEE = totalError/((double)validPixels);
 	}
 	else if (errorType==errorMagAndOri)
 	{
-		if (maxMotion==0.0f)
-			maxMotion=sqrt((double)(U->width*U->width+U->height*U->height));
+		if (minValue==0.0f && maxValue==0.0f)
+		{
+			minValue=cFlowUtils::minValueMagError;
+			maxValue=cFlowUtils::maxValueMagError;
+		}
+		if (minValue2==0.0f && maxValue2==0.0f)
+		{
+			minValue2=cFlowUtils::minValueOriError;
+			maxValue2=cFlowUtils::maxValueOriError;
+		}
 		orientationImage=cvCreateImage(cvSize(U->width,U->height),IPL_DEPTH_32F,1);
 		magnitudeImage=cvCreateImage(cvSize(U->width,U->height),IPL_DEPTH_32F,1);
 		for (int y=0;y<U->height;y++)
 		{
 			for (int x=0;x<U->width;x++)
 			{
-				float u=(float)cvGet2D(U,y,x).val[0];
-				float v=(float)cvGet2D(V,y,x).val[0];
-				float gtu=(float)cvGet2D(gtU,y,x).val[0];
-				float gtv=(float)cvGet2D(gtV,y,x).val[0];
-				float a=atan2(v,u);
-				float b=atan2(gtv,gtu);
-				cvSet2D(orientationImage,y,x,cvScalar(fabs(a-b)/(2*pi)));			
-				totalError+=fabs(a-b);
-				float mag1=sqrt(u*u+v*v);
-				float mag2=sqrt(gtu*gtu+gtv*gtv);
-				cvSet2D(magnitudeImage,y,x,cvScalar(fabs(mag1-mag2)/maxMotion));			
-				totalError2+=fabs(mag1-mag2);
+				if (mask[y*U->width+x])
+				{
+					float u=(float)cvGet2D(U,y,x).val[0];
+					float v=(float)cvGet2D(V,y,x).val[0];
+					float gtu=(float)cvGet2D(gtU,y,x).val[0];
+					float gtv=(float)cvGet2D(gtV,y,x).val[0];
+					float mag1=sqrt(u*u+v*v);
+					float mag2=sqrt(gtu*gtu+gtv*gtv);
+					float mage=fabs(mag1-mag2);
+					float ori=(float)acos( (u*gtu+v*gtv) / (mag1*mag2));
+					if (ori != ori)
+						continue;
+					if (ori<minValue2)
+						ori=minValue2;
+					else if (ori>maxValue2)
+						ori=maxValue2;
+					if (mage<minValue)
+						mage=minValue;
+					else if (mage>maxValue)
+						mage=maxValue;
+					cvSet2D(orientationImage,y,x,cvScalar(ori));			
+					totalError+=ori;					
+					cvSet2D(magnitudeImage,y,x,cvScalar(mage));
+					totalError2+=mage;
+				}
 			}
 		}
-		averageOri = totalError/((double)U->width*(double)U->height);
-		averageMag = totalError2/((double)U->width*(double)U->height);
+		averageOri = totalError/((double)validPixels);
+		averageMag = totalError2/((double)validPixels);
 
 	}
 }
@@ -419,8 +524,8 @@ IplImage *cFlowUtils::GetFlowImage(IplImage *U,IplImage *V,float maxMotion)
 	if (maxLength==0.0f)
 		maxLength=1.0f;
 
-	if (ncols2==0)
-		makecolorwheel2();
+	if (ncols==0)
+		makecolorwheel();
 
 	for (int y=0;y<U->height;y++)
 	{
@@ -436,14 +541,14 @@ IplImage *cFlowUtils::GetFlowImage(IplImage *U,IplImage *V,float maxMotion)
 				v=v/maxLength;
 				float rad = sqrt(u * u + v * v);
 				float a = atan2(-v, -u) / pi;
-				float fk = (a + 1.0f) / 2.0f * (ncols2-1);
+				float fk = (a + 1.0f) / 2.0f * (ncols-1);
 				int k0 = (int)fk;
-				int k1 = (k0 + 1) % ncols2;
+				int k1 = (k0 + 1) % ncols;
 				float f = fk - k0;
 				//f = 0; // uncomment to see original color wheel
 				for (int b = 0; b < 3; b++) {
-					float col0 = colorwheel2[k0][b] / 255.0f;
-					float col1 = colorwheel2[k1][b] / 255.0f;
+					float col0 = colorwheel[k0][b] / 255.0f;
+					float col1 = colorwheel[k1][b] / 255.0f;
 					float col = (1 - f) * col0 + f * col1;
 					if (rad <= 1)
 						col = 1 - rad * (1 - col); // increase saturation with radius
@@ -461,7 +566,47 @@ IplImage *cFlowUtils::GetFlowImage(IplImage *U,IplImage *V,float maxMotion)
 		
 	return color_img;
 }
+// Tests error calculation and example usage
+void cFlowUtils::Test()
+{
+	LoadFlow("Media\\testCflowUtil.flo");
+	LoadGroundTruthFlow("Media\\testCflowUtilGT.flo");
+	CalculateError(cFlowUtils::errorAE);
+	CalculateError(cFlowUtils::errorEP);
+	CalculateError(cFlowUtils::errorMagAndOri);
+	cout << "Average Angle error: " << GetAverageAE() << endl;
+	cout << "Average endpoint error: " << GetAverageEP() << endl;
+	cout << "Average magnitue error: " << GetAverageMag() << endl;
+	cout << "Average orientation error: " << GetAverageOri() << endl;
+}
+void cFlowUtils::DrawFlow(IplImage* U,IplImage* V)
+{
+	IplImage *flow=GetFlowImage(U,V);
+	cvShowManyImages("flow",1,flow);
+	cvWaitKey(0);			
+	cvReleaseImage(&flow);
+}
+void cFlowUtils::DrawFlow(CvMat* U,CvMat* V)
+{
+	IplImage stub, *u,*v;
+	u = cvGetImage(U, &stub);
+	v = cvGetImage(V, &stub);
+	DrawFlow(u,v);
+}
+void cFlowUtils::DrawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v)
+{
+	IplImage* tempsumU =cvCreateImage( cvSize(u->width,u->height), u->depth, u->nChannels );
+	IplImage* tempsumV =cvCreateImage( cvSize(u->width,u->height), u->depth, u->nChannels );
 
+	cvAdd(u,du,tempsumU);
+	cvAdd(v,dv,tempsumV);
+
+	DrawFlow(tempsumU,tempsumV);
+
+	cvReleaseImage(&tempsumU);
+	cvReleaseImage(&tempsumV);
+
+}
 void cFlowUtils::cvShowManyImages(char* title, int nArgs, ...) {
 
 	// img - Used for getting the arguments 
@@ -567,16 +712,14 @@ void cFlowUtils::cvShowManyImages(char* title, int nArgs, ...) {
 	cvReleaseImage(&DispImage);
 }
 
-
-
-void setcols2(int r, int g, int b, int k)
+void setcols(int r, int g, int b, int k)
 {
-	colorwheel2[k][0] = r;
-	colorwheel2[k][1] = g;
-	colorwheel2[k][2] = b;
+	colorwheel[k][0] = r;
+	colorwheel[k][1] = g;
+	colorwheel[k][2] = b;
 }
 
-void makecolorwheel2()
+void makecolorwheel()
 {
 	// relative lengths of color transitions:
 	// these are chosen based on perceptual similarity
@@ -588,16 +731,16 @@ void makecolorwheel2()
 	int CB = 11;
 	int BM = 13;
 	int MR = 6;
-	ncols2 = RY + YG + GC + CB + BM + MR;
+	ncols = RY + YG + GC + CB + BM + MR;
 	//printf("ncols = %d\n", ncols);
-	if (ncols2 > MAXCOLS2)
+	if (ncols > MAXCOLS)
 		exit(1);
 	int i;
 	int k = 0;
-	for (i = 0; i < RY; i++) setcols2(255,	   255*i/RY,	 0,	       k++);
-	for (i = 0; i < YG; i++) setcols2(255-255*i/YG, 255,		 0,	       k++);
-	for (i = 0; i < GC; i++) setcols2(0,		   255,		 255*i/GC,     k++);
-	for (i = 0; i < CB; i++) setcols2(0,		   255-255*i/CB, 255,	       k++);
-	for (i = 0; i < BM; i++) setcols2(255*i/BM,	   0,		 255,	       k++);
-	for (i = 0; i < MR; i++) setcols2(255,	   0,		 255-255*i/MR, k++);
+	for (i = 0; i < RY; i++) setcols(255,	   255*i/RY,	 0,	       k++);
+	for (i = 0; i < YG; i++) setcols(255-255*i/YG, 255,		 0,	       k++);
+	for (i = 0; i < GC; i++) setcols(0,		   255,		 255*i/GC,     k++);
+	for (i = 0; i < CB; i++) setcols(0,		   255-255*i/CB, 255,	       k++);
+	for (i = 0; i < BM; i++) setcols(255*i/BM,	   0,		 255,	       k++);
+	for (i = 0; i < MR; i++) setcols(255,	   0,		 255-255*i/MR, k++);
 }

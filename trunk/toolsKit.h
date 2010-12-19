@@ -17,7 +17,7 @@ class toolsKit
 		enum operations {ADD=1,SUB=2,MUL=3};
 		enum directions {UP=1,DOWN=2,LEFT=3,RIGHT=4};
 		toolsKit();
-		static void cvShowManyImages(char* title, int nArgs, ...);
+		
 
 		template <class PEL>
 		static void IPLsqrt_mul2(IplImageIterator<PEL> it){
@@ -69,9 +69,6 @@ class toolsKit
 		static void IPL_add(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_sub(IplImage* img,IplImage* img2,IplImage* dest);	
 		static void IPL_print(const IplImage *image);
-		static void drawFlow(IplImage* u,IplImage* v,int select);
-		static void drawFlow(CvMat* u,CvMat* v,int select);
-		static void drawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v,int select);
 		static void PrintMat(CvMat *A);
 		static void cvMulScalar(IplImage* img,float scalar);
 		static void cvZeroBottom(IplImage* img);

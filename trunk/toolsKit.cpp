@@ -350,65 +350,6 @@ IplImage*  toolsKit::transposeImage2(IplImage* image) {
   cvFlip(rotated, NULL, 0);
   return rotated;
 }
-
-void toolsKit::drawFlow(IplImage* u,IplImage* v,int select){
-	IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
-	//IplImage* color_imgRotated = cvCreateImage( cvSize(u->width,u->height), IPL_DEPTH_8U, 3 );
-			CvMat mathdr;
-			CvMat mathdr2;
-			CvMat* tempU = cvGetMat(u,&mathdr );
-			CvMat* tempV = cvGetMat(v,&mathdr2);
-			
-			MotionToColor( tempU,  tempV,  color_img,  0.001f);			
-		//	cvFlip(color_img, NULL, -1);
-			color_img=transposeImage2(color_img);
-			//toolsKit::IPL_print(color_img);
-			if (select){
-				toolsKit::cvShowManyImages("flow",1,color_img);	
-				cvWaitKey(1);			
-			}
-			else{
-				//cvFlip(color_img, NULL, 1);
-               // cvShowImage("image", color_img);
-				toolsKit::cvShowManyImages("final flow",1,color_img);
-				cvWaitKey(0);			
-				//cvDestroyWindow("final flow"); 
-			}
-						
-			cvReleaseImage(&color_img);
-	//		cvReleaseMat(&tempU);
-	//		cvReleaseMat(&tempV);					
-}
-
-
-
-void toolsKit::drawFlow(CvMat* u,CvMat* v,int select){
-	IplImage* color_img = cvCreateImage( cvSize(u->height,u->width), IPL_DEPTH_8U, 3 );
-			
-			MotionToColor( u,  v,  color_img,  0.001f);			
-			toolsKit::cvShowManyImages("ground truth",1,color_img);	
-			if (select)
-				cvWaitKey(1);
-			else
-				cvWaitKey(0);			
-						
-			cvReleaseImage(&color_img);					
-}
-
-void toolsKit::drawFlow2(IplImage* du,IplImage* u,IplImage* dv,IplImage* v,int select){
-	
-	IplImage* tempsumU =cvCreateImage( cvSize(u->width,u->height), u->depth, u->nChannels );
-	IplImage* tempsumV =cvCreateImage( cvSize(u->width,u->height), u->depth, u->nChannels );
-	
-	cvAdd(u,du,tempsumU);
-	cvAdd(v,dv,tempsumV);
-
-	drawFlow(tempsumU,tempsumV,select);
-
-	cvReleaseImage(&tempsumU);
-	cvReleaseImage(&tempsumV);
-
-}
 void toolsKit::cvMulScalar(IplImage* img,float scalar){
 	IplImageIterator<float> it(img);
 	while (!it) {   
@@ -715,7 +656,7 @@ cegparamesh[at]gmail[dot]com
 ...
 ///////////////////////////////////////////////////////////////////////*/
 
-void toolsKit::cvShowManyImages(char* title, int nArgs, ...) {
+/*void toolsKit::cvShowManyImages(char* title, int nArgs, ...) {
 
 	// img - Used for getting the arguments 
 	IplImage *img;
@@ -820,7 +761,7 @@ void toolsKit::cvShowManyImages(char* title, int nArgs, ...) {
 	cvReleaseImage(&DispImage);
 	}
 
-
+	*/
 vector<float> * toolsKit::IplImageToCoulmnVector(IplImage* img){
 	vector<float> * ans = new vector<float>(img->height*img->width);
 	IplImageIterator<float> it(img);

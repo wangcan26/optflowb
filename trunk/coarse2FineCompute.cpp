@@ -1,6 +1,7 @@
 #include "coarse2FineCompute.h"
 #include "flowMatrix.h"
 #include "improvements.h"
+#include "FlowUtils.h"
 #include <ctime>
 #define TEST_Multigrid false
 
@@ -156,7 +157,7 @@ IplImage* coarse2FineCompute::RGBwarp(IplImage* I, IplImage* u, IplImage* v){
 	cvReleaseImage( &r );
 	cvReleaseImage( &g );
 	cvReleaseImage( &b );
-	toolsKit::cvShowManyImages("I ans",2,I,ans);
+	cFlowUtils::cvShowManyImages("I ans",2,I,ans);
 	cvWaitKey(0);
 	return ans;
 	
@@ -372,7 +373,7 @@ void coarse2FineCompute::SmoothFlowPDE(  IplImage* Im1,
 			//toolsKit::cvNormalizeEdges(Dv);
 		
 			//print flow
-			toolsKit::drawFlow2(UV->getU(),Du,UV->getV(),Dv,1);
+			cFlowUtils::DrawFlow2(UV->getU(),Du,UV->getV(),Dv);
 		}
 
 		//now add the most accurate du/dv to the flow		

@@ -4,7 +4,6 @@
 #include "highgui.h" 
 #include "cv.h"
 #include "GaussPyramid.h"
-#include "toolsKit.h"
 #include "flowUV.h"
 #include "IplImageIterator.h"
 #include "constructMatrix_brox.h"
@@ -12,6 +11,7 @@
 #include "VectorToolsKit.h"
 #include "SparseMat.h"
 #include "LinearSolver.h"
+#include "toolsKit.h"
 typedef toolsKit::vectorTools vtools;
 
 
