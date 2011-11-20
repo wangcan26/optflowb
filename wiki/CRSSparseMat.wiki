@@ -1,4 +1,4 @@
-#summary CRSSparseMat data structure implementation information
+#summary CRSSparseMat data structure specification.
 
 = CRSSparseMat =
 
