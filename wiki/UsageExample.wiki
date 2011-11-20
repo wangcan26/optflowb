@@ -117,5 +117,5 @@ Calculate the optical flow.
 	cout << "Image tester: AAE " << err[0] << " STD " << err[1] << " average end point error " << err[2] << endl;
 }}}
 Drawing output flow and calculating error values,
- * AAE - Angular Error
+ * AAE - Average Angular Error
  * STD - Standard Deviation
