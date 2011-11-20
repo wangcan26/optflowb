@@ -4,7 +4,7 @@
 
 The source code seen in this page is included in the svn as `image_tester.cpp`
 {{{
-#define OPTFLOW_TYPE			CV_32F
+	#define OPTFLOW_TYPE			CV_32F
 }}}
 {{{
 	cv::Mat tU;
