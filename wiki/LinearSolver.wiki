@@ -1,69 +1,19 @@
 =LinearSolver=
 
 
-Linear Solver for equations of type Ax = B with Multigrid method
-	which makes use of correction steps that compute the error on a
-	coarser grid.Thus ,lower frequency components of the error reappear
-	as higher ones and allow for an efficient attenuation with standart
-	iterative methods, such as SOR method implemented here.
-	FAS srategy is used so advanced Multigrid strategies such as
-	V-cycles and W-cycles may be applied in a hierarchical way.
-	Maximal number of levels and iterations may be choosed.
+Linear Solver for equations of type Ax = B using SOR method for CRS sparse matrices.
 	
-	=LinearSolver implementation=
+	==LinearSolver Implementation==
 	
-	==Data Structure==
-	
-	int maxIterations;	
-	int maxLevels;
-	vector<float>*(*solver)(SparseMat<float> *A, vector<float> *X,vector<float> *B, float w, int numOfIterations) ;
 
-	private fields :
-	maximal number of multigrid iterations :number of whole cycles;
-	maximal number of levels : how deep should each cycle be, each level size of matrix is divided by 2(if the size is even number),so maximal    number of levels can be reached if the size of matrix can be divided by 2 maximal number of levels times;
-					
-	solver: iterative method such as SOR implemented here.
-
-==Constructors==
-		==empty constructor ,same as LinearSolver(1,2,sparseMatSor);==
+	The LinearSolver static class implements 2 version of the SOR method
 	{{{
-	LinearSolver(void);
-	}}}
-	
-	==constructor initialises fields==
-	{{{
-	LinearSolver(int iterations,int levels,vector<float>*(*solver)(SparseMat<float> *A, vector<float> *X,vector<float> *B, float w, int numOfIterations));
-	}}}
-	
-how to initialize LinearSolver:
-{{{
-//inner calss implementation:
-LinearSolver lSolver(some number of iterations,some number of levels,some solver);
-//for example
-LinearSolver lSolver(1,2,sparseMatSor);
-
-//outer class implementation:
-LinearSolver lSolver(some number of iterations,some number of levels,some solver);
-//for example
-LinearSolver lSolver(1,2,LinearSolver::sparseMatSor);
-//you can use sparseMatSor or some other solver (SparseToolKit::SOR)
+LinearSolver::sparseMatSorNoResidual(CRSSparseMat& A, FArray& X0, FArray& X, FArray& B, const float w, const int iters)
 }}}
-
-	
-==Solve equation of type Ax = B with multigrid method==
+	This implementation provides the simplest method to solve using the SOR method, provide a the left side CRS sparse matrix, an initial solution X0, a destenation X, the right side B, the over relaxation factor w and the total number of iterations.
+	As implied by the function name, this implementation of the SOR method does not use any residual calculation to stop its operation when the answer Ax is withing a tolerance value from B.
 	{{{
-	/*cycleType = V_CYCLE or W_CYCLE*/
-	vector<float> * multigrid(SparseMat<float>& A, vector<float>& B,float w,vector<float>& X,	int preIterations,int postIterations,int cycleType);
-	}}}
-	To solve linear equation of type Ax = B with multigrid method you should make two steps:
-	1) initialize LinearSolver
-	2) call multigrid method of the initialised object
-	//for example:
-	LinearSolver lSolver(1,2,LinearSolver::sparseMatSor);
-	lSolver.multigrid(A,B,1.0,X,1,1,V_CYCLE);
-	
-	
-==SOR static method==	
-	{{{
-	static vector<float> * sparseMatSor(SparseMat<float>* A, vector<float>* x,vector<float>* B, float w, int numOfIterations);
-	}}}
+LinearSolver::sparseMatSor(CRSSparseMat& A, FArray& X0, FArray& X, FArray& B, const float w, const int iters, const float tolerance)
+}}}
+	In addition to what specified for the previous implementation of the SOR method, the second implementation provides a method to stop the calculation when Ax is within a tolerance value from B, this tolerance value is specified by the last float parameter of the function.
+	_*Please notice, the tolerance is checked every 5 iterations of the SOR, this can be bad for performance if the number of iteration is set to a high value.* (if you're using a high value, it might be better to use the first, residual-less implementation)_
