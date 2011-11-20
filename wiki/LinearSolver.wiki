@@ -1,6 +1,6 @@
+#summary Basic Solver.
+
 = LinearSolver =
-
-
 Linear Solver for equations of type Ax = B using SOR method for CRS sparse matrices.
 	
 = Implementation Details =
