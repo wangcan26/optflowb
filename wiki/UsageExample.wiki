@@ -3,7 +3,9 @@
 = Usage Example =
 
 The source code seen in this page is included in the svn as `image_tester.cpp`
-
+{{{
+#define OPTFLOW_TYPE			CV_32F
+}}}
 {{{
 	cv::Mat tU;
 	cv::Mat tV;
@@ -24,8 +26,8 @@ The source code seen in this page is included in the svn as `image_tester.cpp`
 
 	cv::Mat image1GrayFloat(image1.rows, image1Gray.cols, OPTFLOW_TYPE);
 	cv::Mat image2GrayFloat(image2.rows, image2Gray.cols, OPTFLOW_TYPE);
-	image1Gray.convertTo(image1GrayFloat, CV_32F);
-	image2Gray.convertTo(image2GrayFloat, CV_32F);
+	image1Gray.convertTo(image1GrayFloat, OPTFLOW_TYPE);
+	image2Gray.convertTo(image2GrayFloat, OPTFLOW_TYPE);
 
 	image1Gray.release();
 	image2Gray.release();
@@ -82,8 +84,8 @@ Loading and drawing the Ground Truth file for error calculations (see [http://vi
 
 	cv::Mat image1GrayFloat(image1.rows, image1Gray.cols, OPTFLOW_TYPE);
 	cv::Mat image2GrayFloat(image2.rows, image2Gray.cols, OPTFLOW_TYPE);
-	image1Gray.convertTo(image1GrayFloat, CV_32F);
-	image2Gray.convertTo(image2GrayFloat, CV_32F);
+	image1Gray.convertTo(image1GrayFloat, OPTFLOW_TYPE);
+	image2Gray.convertTo(image2GrayFloat, OPTFLOW_TYPE);
 
 	image1Gray.release();
 	image2Gray.release();
