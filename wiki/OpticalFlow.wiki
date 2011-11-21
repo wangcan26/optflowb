@@ -2,7 +2,7 @@
 
 = OpticalFlow =
 The main class in the project, calculates the optical flow via the static function `calculate`.
-To learn more about the internal operation of the algorithm, see TheroyPseudoCode page in the Wiki.
+To learn more about the internal operation of the algorithm, see TheoryPseudoCode page in the Wiki.
 
 = Implementation Details =
 
