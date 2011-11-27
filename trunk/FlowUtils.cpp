@@ -16,7 +16,7 @@ void makecolorwheel();
 
 float UtilsFlow::FindMaxLength(cv::Mat& U,cv::Mat& V)
 {
-	float maxLength=numeric_limits<float>::lowest();
+	float maxLength=-numeric_limits<float>::max();
 	for (int y=0; y < U.rows;y++)
 	{
 		for (int x=0; x < U.cols;x++)
