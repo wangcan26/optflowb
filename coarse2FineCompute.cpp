@@ -1,5 +1,4 @@
 #include "coarse2FineCompute.h"
-#include "flowMatrix.h"
 #include "Decomposition.h"
 #include "FlowOperator.h"
 #include "FlowUtils.h"
