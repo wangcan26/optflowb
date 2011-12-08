@@ -8,15 +8,18 @@
 #include <iostream>
 using namespace std;
 
-float* calculateFlow(string files[], bool verbose = false)
+float* calculateFlow(string files[], bool verbose = false, bool ignoreErr = false)
 { 
 	cv::Mat tU;
 	cv::Mat tV;
-	UtilsFlow::ReadFlowFile(files[0], tU, tV);
-	if (verbose)
-		UtilsFlow::DrawFlow(tU, tV, "Ground Truth");
+	if (!ignoreErr){
+		UtilsFlow::ReadFlowFile(files[0], tU, tV);
+		if (verbose)
+			UtilsFlow::DrawFlow(tU, tV, "Ground Truth");
+	}
 	flowUV GT(tU, tV);
 	
+
 	cv::Mat image1 = cv::imread(files[1]);
 	cv::Mat image2 = cv::imread(files[2]);
 	
@@ -43,7 +46,7 @@ float* calculateFlow(string files[], bool verbose = false)
 									PenaltyFunctionCompute::Second,
 									PenaltyFunctionCompute::Quadratic, 
 									PenaltyFunctionCompute::Second,
-									true, 1.0f/8.0f, 100, 0.95f, false, true);
+									true, 1.0f/8.0f, 100, 0.95f, false, false);
 
 	//OpticalFlowParams GNC2params(3, 2, 0.8f, 0.5f, false, 5, 100, 1.9f, false, 0.01f, 3, 1, 0.001f , 
 	//								PenaltyFunctionCompute::GeneralizedCharbonnier, 
@@ -74,9 +77,11 @@ float* calculateFlow(string files[], bool verbose = false)
 		UtilsFlow::DrawFlow(UV->getU(), UV->getV(), "Flow");
 		cout << "Image tester: calculating error..." << endl;
 	}
-	float* err = FlowError::calcError(*UV, GT, verbose);
+	float* err = ignoreErr? 0 : FlowError::calcError(*UV, GT, verbose);
 	if(verbose)
 		cout << "Image tester: AAE " << err[0] << " STD " << err[1] << " average end point error " << err[2] << endl;
+
+	UtilsFlow::WriteFlowFile("flowTest.flo", UV->getU(), UV->getV());
 
 	delete UV;
 	if(verbose){
@@ -89,45 +94,44 @@ float* calculateFlow(string files[], bool verbose = false)
 
 int main (int argc,char** argv) 
 { 
+	string files[8][3];
+	string name[8] = {"Dimetrodon", "Grove2", "Grove3", "Hydrangea", "RubberWhale", "Urban2", "Urban3", "Venus"};
+
+
+	files[0][0] = "Data\\Dimetrodon\\flow10.flo";
+	files[0][1] = "Data\\Dimetrodon\\frame10.png";
+	files[0][2] = "Data\\Dimetrodon\\frame11.png";
+ 
+	files[1][0] = "Data\\Grove2\\flow10.flo";
+	files[1][1] = "Data\\Grove2\\frame10.png";
+	files[1][2] = "Data\\Grove2\\frame11.png";
+ 
+	files[2][0] = "Data\\Grove3\\flow10.flo";
+	files[2][1] = "Data\\Grove3\\frame10.png";
+	files[2][2] = "Data\\Grove3\\frame11.png";
+ 
+	files[3][0] = "Data\\Hydrangea\\flow10.flo";
+	files[3][1] = "Data\\Hydrangea\\frame10.png";
+	files[3][2] = "Data\\Hydrangea\\frame11.png";
+ 
+	files[4][0] = "Data\\RubberWhale\\flow10.flo";
+	files[4][1] = "Data\\RubberWhale\\frame10.png";
+	files[4][2] = "Data\\RubberWhale\\frame11.png";
+ 
+	files[5][0] = "Data\\Urban2\\flow10.flo";
+	files[5][1] = "Data\\Urban2\\frame10.png";
+	files[5][2] = "Data\\Urban2\\frame11.png";
+ 
+	files[6][0] = "Data\\Urban3\\flow10.flo";
+	files[6][1] = "Data\\Urban3\\frame10.png";
+	files[6][2] = "Data\\Urban3\\frame11.png";
+ 
+	files[7][0] = "Data\\Venus\\flow10.flo";
+	files[7][1] = "Data\\Venus\\frame10.png";
+	files[7][2] = "Data\\Venus\\frame11.png";
 	if (true){
-		string file[3] = {"Data\\RubberWhale\\flow10.flo", "Data\\RubberWhale\\frame10.png", "Data\\RubberWhale\\frame11.png"};
-		calculateFlow(file, true);
+		calculateFlow(files[4], false, true);
 	}else{
-		string files[8][3];
-		string name[8] = {"Dimetrodon", "Grove2", "Grove3", "Hydrangea", "RubberWhale", "Urban2", "Urban3", "Venus"};
-
-
-		files[0][0] = "Data\\Dimetrodon\\flow10.flo";
-		files[0][1] = "Data\\Dimetrodon\\frame10.png";
-		files[0][2] = "Data\\Dimetrodon\\frame11.png";
- 
-		files[1][0] = "Data\\Grove2\\flow10.flo";
-		files[1][1] = "Data\\Grove2\\frame10.png";
-		files[1][2] = "Data\\Grove2\\frame11.png";
- 
-		files[2][0] = "Data\\Grove3\\flow10.flo";
-		files[2][1] = "Data\\Grove3\\frame10.png";
-		files[2][2] = "Data\\Grove3\\frame11.png";
- 
-		files[3][0] = "Data\\Hydrangea\\flow10.flo";
-		files[3][1] = "Data\\Hydrangea\\frame10.png";
-		files[3][2] = "Data\\Hydrangea\\frame11.png";
- 
-		files[4][0] = "Data\\RubberWhale\\flow10.flo";
-		files[4][1] = "Data\\RubberWhale\\frame10.png";
-		files[4][2] = "Data\\RubberWhale\\frame11.png";
- 
-		files[5][0] = "Data\\Urban2\\flow10.flo";
-		files[5][1] = "Data\\Urban2\\frame10.png";
-		files[5][2] = "Data\\Urban2\\frame11.png";
- 
-		files[6][0] = "Data\\Urban3\\flow10.flo";
-		files[6][1] = "Data\\Urban3\\frame10.png";
-		files[6][2] = "Data\\Urban3\\frame11.png";
- 
-		files[7][0] = "Data\\Venus\\flow10.flo";
-		files[7][1] = "Data\\Venus\\frame10.png";
-		files[7][2] = "Data\\Venus\\frame11.png";
  
 		std::fstream file;
 		file.open("Results.txt", fstream::in | fstream::out | fstream::trunc);

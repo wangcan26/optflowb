@@ -5,6 +5,8 @@
 #include "CRSSparseMat.h"
 #include "WeightedMedianFilter.h"
 #include "Defs.h"
+#include "UtilsMat.h"
+
 #include <ctime>
 #include <iostream>
 
