@@ -26,13 +26,14 @@ void Decomposition::Reproject(cv::Mat & p0, cv::Mat & p1)
 	cv::Mat reprojection(p0.rows,p0.cols,OPTFLOW_TYPE, cv::Scalar(0));
 	float * p0Ptr = (float *) p0.data;
 	float * p1Ptr = (float *) p1.data;
-	float * repPtr = (float *) reprojection.data;
+	float rep;
 	int size = p0.rows * p0.cols;
-	for (int i = 0 ; i < size ; ++i, ++p0Ptr, ++p1Ptr, ++repPtr){
-		*repPtr = std::max(1.0f, std::sqrt((*p0Ptr)*(*p0Ptr)+(*p1Ptr)*(*p1Ptr)));
-		if (*repPtr > 1){
-			*p0Ptr = (*p0Ptr) / (*repPtr);
-			*p1Ptr = (*p1Ptr) / (*repPtr);
+	for (int i = 0 ; i < size ; ++i, ++p0Ptr, ++p1Ptr){
+		rep = std::max(1.0f, std::sqrt((*p0Ptr)*(*p0Ptr)+(*p1Ptr)*(*p1Ptr)));
+		//rep = std::max(1.0f, std::abs(complex<float>(*p0Ptr,*p1Ptr)));
+		if (rep > 1){
+			*p0Ptr = (*p0Ptr) / rep;
+			*p1Ptr = (*p1Ptr) / rep;
 		}
 	}
 }

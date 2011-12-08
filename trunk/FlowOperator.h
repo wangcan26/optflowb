@@ -1,11 +1,10 @@
 #pragma once
 #include "cv.h"
-#include "CRSSparseMat.h"
-#include "FArray.h"
 #include "flowUV.h"
-#include "PenaltyFunctionCompute.h"
-#include "UtilsMat.h"
+#include "CRSSparseMat.h"
 #include "OpticalFlowParams.h"
+#include "FArray.h"
+
 class FlowOperator{
 
 public:

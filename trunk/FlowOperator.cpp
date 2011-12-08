@@ -1,5 +1,7 @@
 #include "FlowOperator.h"
 #include "Defs.h"
+#include "PenaltyFunctionCompute.h"
+#include "UtilsMat.h"
 
 FlowOperator::FlowOperator(const int rows, const int cols) : _b(2 * rows * cols, true, 0), _rows(rows), _cols(cols), _cells(rows * cols){
 	//construct consts

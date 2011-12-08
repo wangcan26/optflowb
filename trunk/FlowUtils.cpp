@@ -248,36 +248,49 @@ bool UtilsFlow::ReadFlowFile(const string &filename,cv::Mat &U,cv::Mat &V)
 {
 	std::ifstream file;
 	file.open(filename.c_str(),ios::binary);
-
 	if (!file)
-	{
-		//ERROR
 		return false;
-	}
 
-	int cols = 0, rows = 0;
-	const string bla = "PIEH";
-	char* tag = new char[5]; // create 4 char string
+	/*streambuf * pbuf;
+	pbuf = file.rdbuf();*/
+
+	static const string bla = "PIEH";
+	char tag[5];
 	tag[4] = NULL;
+	//pbuf->sgetn(tag, 4);
 	file.read(tag, 4);
+
 	if (bla.compare(tag) != 0)
 	{
 		file.close();
 		return false;
 	}
-	file.read(tag, 4);
-	cols = *(int*)tag;
-	file.read(tag, 4);
-	rows = *(int*)tag;
 
-	U=cv::Mat(rows, cols, CV_32FC1);
-	V=cv::Mat(rows, cols, CV_32FC1);
-	char* buf = new char[sizeof(float)];
-	for (int y=0;y<U.rows;y++)
+	//pbuf->sgetn(tag, 4);
+	file.read(tag, 4);
+	int cols = *(int*)tag;
+	//pbuf->sgetn(tag, 4);
+	file.read(tag, 4);
+	int rows = *(int*)tag;
+	
+	U = cv::Mat(rows, cols, CV_32FC1);
+	V = cv::Mat(rows, cols, CV_32FC1);
+	char* buf = new char[/*2 * */sizeof(float)];
+	//char* buf2 = buf + sizeof(float);
+	//float* v = (float*)V.data;
+	//float* u = (float*)U.data;
+	//for (int i = 0; i < cols * rows; ++i, ++u, ++v){
+	//	pbuf->sgetn (buf, 2 * sizeof(float));
+	//	//file.read(buf, sizeof(float));
+	//	*u = *(float*)buf;
+	//	//file.read(buf, sizeof(float));
+	//	*v = *(float*)buf2;
+	//}
+
+	for (int y = 0; y < U.rows; ++y)
 	{
-		for (int x=0;x<U.cols;x++)
+		for (int x = 0; x < U.cols; ++x)
 		{
-			float u = 0,v = 0;
 			file.read(buf, sizeof(float));
 			U.at<float>(y,x) = *(float*)buf;
 			file.read(buf, sizeof(float));
@@ -285,6 +298,9 @@ bool UtilsFlow::ReadFlowFile(const string &filename,cv::Mat &U,cv::Mat &V)
 		}
 	}
 	file.close();
+
+	delete[] buf;
+
 	return true;
 }
 
