@@ -4,7 +4,8 @@
 #include "FArray.h"
 #include "CRSSparseMat.h"
 #include "limits.h"
-
+#include <iostream>
+using namespace std;
 class UtilsDebug
 {
 public:

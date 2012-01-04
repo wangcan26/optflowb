@@ -23,6 +23,10 @@ private:
 	int _rows;
 	int _cols;
 	int _cells;
+	cv::Mat FMxD;
+	cv::Mat FMxd;
+	cv::Mat FMyD;
+	cv::Mat FMyd;
 
 	static void bulidA (CRSSparseMat* const A,
 						const int	cols,

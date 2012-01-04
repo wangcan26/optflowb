@@ -102,11 +102,8 @@ void getDXsCV(const cv::Mat src1, cv::Mat dest_dx, cv::Mat dest_dy){
 	cv::filter2D(src1, dest_dx, dest_dx.depth(), weickertX, cv::Point(-1, -1), 0, cv::BORDER_CONSTANT);
 	
 	//y derivative
-	cv::Mat src1Trans(src1.cols, src1.rows, src1.type());
-	cv::transpose(src1,src1Trans);
-	cv::Mat destT_dy(src1Trans.rows,src1Trans.cols, src1Trans.type());
-	cv::filter2D(src1Trans, destT_dy, destT_dy.depth(), weickertX, cv::Point(-1, -1), 0, cv::BORDER_CONSTANT);
-	cv::transpose(destT_dy, dest_dy);
+	cv::Mat weickertY(5, 1, CV_64FC1, y ); // 64FC1 for double
+	cv::filter2D(src1, dest_dy, dest_dy.depth(), weickertY, cv::Point(-1, -1), 0, cv::BORDER_CONSTANT);
 }
 
 
