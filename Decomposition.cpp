@@ -23,14 +23,13 @@ void Decomposition::findMinMax(const cv::Mat & img,float &min,float &max)
 // Reproject so each vector given by [p0 p1] is of length <=1
 void Decomposition::Reproject(cv::Mat & p0, cv::Mat & p1)
 {
-	cv::Mat reprojection(p0.rows,p0.cols,OPTFLOW_TYPE, cv::Scalar(0));
+	//cv::Mat reprojection(p0.rows,p0.cols,OPTFLOW_TYPE, cv::Scalar(0));
 	float * p0Ptr = (float *) p0.data;
 	float * p1Ptr = (float *) p1.data;
 	float rep;
 	int size = p0.rows * p0.cols;
 	for (int i = 0 ; i < size ; ++i, ++p0Ptr, ++p1Ptr){
-		rep = std::max(1.0f, std::sqrt((*p0Ptr)*(*p0Ptr)+(*p1Ptr)*(*p1Ptr)));
-		//rep = std::max(1.0f, std::abs(complex<float>(*p0Ptr,*p1Ptr)));
+		rep = std::max(1.0f, std::sqrtf((*p0Ptr)*(*p0Ptr)+(*p1Ptr)*(*p1Ptr)));
 		if (rep > 1){
 			*p0Ptr = (*p0Ptr) / rep;
 			*p1Ptr = (*p1Ptr) / rep;
@@ -82,21 +81,20 @@ void Decomposition::structureTextureDecompositionRof(const cv::Mat& in1,const cv
 	rescale(new_in1,new_in2,-1,1);
 	// Backup orginal images
 
+	int type = new_in1.type();
+
 	cv::Mat o1 = new_in1.clone();
 	cv::Mat o2 = new_in2.clone();
 
-	cv::Mat p1(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat p2(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat tmp(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat tmp1(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat tmp2(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat I_x(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat I_y(new_in1.rows, new_in1.cols, new_in1.type());
-	cv::Mat div_p(new_in1.rows, new_in1.cols, new_in1.type());
+	cv::Mat p1(new_in1.rows, new_in1.cols, type);
+	cv::Mat p2(new_in1.rows, new_in1.cols, type);
+	cv::Mat tmp(new_in1.rows, new_in1.cols, type);
+	cv::Mat tmp1(new_in1.rows, new_in1.cols, type);
+	cv::Mat tmp2(new_in1.rows, new_in1.cols, type);
+	cv::Mat I_x(new_in1.rows, new_in1.cols, type);
+	cv::Mat I_y(new_in1.rows, new_in1.cols, type);
+	cv::Mat div_p(new_in1.rows, new_in1.cols, type);
 	cv::Mat p[] = {p1, p2};
-
-	cv::Mat p1Trans(p[1].cols,p[1].rows,p[1].type());
-	cv::Mat tmp3(p1Trans.rows, p1Trans.cols, OPTFLOW_TYPE);
 	
 	// stepsize
 	float delta = 1.0f/(4.0f*theta);
@@ -106,31 +104,24 @@ void Decomposition::structureTextureDecompositionRof(const cv::Mat& in1,const cv
 	cv::Mat ker3 = (cv::Mat_<float>(2,1) << -1, 1);
 	cv::Mat ker4 = (cv::Mat_<float>(3,1) << -1, 1, 0);
 
-	for (int i=0;i<2;i++)
+	for (int i = 0; i < 2; ++i)
 	{
 		// Initialize dual variable p to be 0
 		p[0].setTo(cv::Scalar(0));
 		p[1].setTo(cv::Scalar(0));
-		for (int iter=0;iter<nIters;iter++)
+		for (int iter = 0; iter < nIters; ++iter)
 		{
 			// Compute divergence
-			cv::filter2D(p[0],tmp1,tmp1.depth(),ker1,cv::Point(-1,-1),0,cv::BORDER_CONSTANT);
-
-			// UGLY CODE			-	todo  -  fix this ugly ass code
-			//cv::Mat p1Trans(p[1].cols,p[1].rows,p[1].type());			// moved up to optimize mat construction
-			cv::transpose(p[1], p1Trans);
-			//cv::Mat tmp3(p1Trans.rows, p1Trans.cols, OPTFLOW_TYPE);	// moved up to optimize mat construction
-			cv::filter2D(p1Trans,tmp3,tmp3.depth(),ker1,cv::Point(-1,-1),0, cv::BORDER_CONSTANT);
-			cv::transpose(tmp3, tmp2);
+			cv::filter2D(p[0],tmp1,type,ker1,cv::Point(-1,-1),0, cv::BORDER_CONSTANT);
+			cv::filter2D(p[1],tmp2,type,ker4,cv::Point(-1,-1),0, cv::BORDER_CONSTANT);
 
 			div_p = tmp1 + tmp2;
 			div_p *= theta;
 			im[i].copyTo(tmp);
 			tmp += div_p;
 			
-
-			cv::filter2D(tmp,I_x,I_x.depth(),ker2,cv::Point(0,0),0,cv::BORDER_REPLICATE);
-			cv::filter2D(tmp,I_y,I_y.depth(),ker3,cv::Point(0,0),0,cv::BORDER_REPLICATE);
+			cv::filter2D(tmp,I_x,type,ker2,cv::Point(0,0),0, cv::BORDER_REPLICATE);
+			cv::filter2D(tmp,I_y,type,ker3,cv::Point(0,0),0, cv::BORDER_REPLICATE);
 
 			I_x *= delta;
 			I_y *= delta;
@@ -143,14 +134,8 @@ void Decomposition::structureTextureDecompositionRof(const cv::Mat& in1,const cv
 			Reproject(p[0],p[1]);	
 		}
 		// compute divergence    
-		cv::filter2D(p[0],tmp1,tmp1.depth(),ker1,cv::Point(-1,-1),0,cv::BORDER_CONSTANT); // same as first
-
-		// UGLY CODE			-	todo  -  fix this ugly ass code
-		//cv::Mat p1Trans(p[1].cols,p[1].rows,p[1].type());			// moved up to optimize mat construction
-		cv::transpose(p[1], p1Trans);
-		//cv::Mat tmp3(p1Trans.rows, p1Trans.cols, OPTFLOW_TYPE);	// moved up to optimize mat construction
-		cv::filter2D(p1Trans,tmp3,tmp3.depth(),ker1,cv::Point(-1,-1),0, cv::BORDER_CONSTANT);
-		cv::transpose(tmp3, tmp2);
+		cv::filter2D(p[0],tmp1,type,ker1,cv::Point(-1,-1),0, cv::BORDER_CONSTANT); // same as first
+		cv::filter2D(p[1],tmp2,type,ker4,cv::Point(-1,-1),0, cv::BORDER_CONSTANT);
 
 		div_p = tmp1 + tmp2;
 		div_p *= theta;
@@ -176,9 +161,6 @@ void Decomposition::structureTextureDecompositionRof(const cv::Mat& in1,const cv
 		cv::imshow("Texture 2", texture4);
 		cv::waitKey(1);
 	}
-
-
 	rescale(texture1,texture2,0,255);
-
 }
 

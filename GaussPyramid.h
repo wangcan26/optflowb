@@ -1,10 +1,8 @@
-#ifndef _GaussPyramid_h
-#define _GaussPyramid_h
-
 #include "cv.h"
 #include "UtilsDebug.h"
 #include "highgui.h" 
 #include "Defs.h"
+#include <vector>
 class GaussPyramid
 {
 private:
@@ -50,4 +48,3 @@ public:
 		return (r > 0.0f) ? floor(r + 0.5f) : ceil(r - 0.5f);
 	}
 };
-#endif

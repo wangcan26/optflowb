@@ -239,9 +239,9 @@ void WeightedMedianFilter::findEdges(const cv::Mat & src, cv::Mat & dest, double
 
 void WeightedMedianFilter::medFilt(const cv::Mat & src, int filterSize ,cv::Mat & dest)
 {
-	cv::Mat domain(filterSize,filterSize,OPTFLOW_TYPE, cv::Scalar(1));
+	//cv::Mat domain(filterSize,filterSize,OPTFLOW_TYPE, cv::Scalar(1));
 
-	int order = ((filterSize * filterSize) + 1)/2;
+	//int order = ((filterSize * filterSize) + 1)/2;
 
 	// order filter
 	int center = ((filterSize + 1) / 2);
@@ -253,8 +253,8 @@ void WeightedMedianFilter::medFilt(const cv::Mat & src, int filterSize ,cv::Mat 
 	src.copyTo(paddedMat2);
 	
 	// copy values into padded boundaries symetrically
-	float * srcPtr;
-	float * destPtr;
+	float* srcPtr;
+	float* destPtr;
 
 	
 	// copy the first two rows
@@ -318,21 +318,21 @@ void WeightedMedianFilter::medFilt(const cv::Mat & src, int filterSize ,cv::Mat 
 
 void WeightedMedianFilter::runMedianFilter(cv::Mat & flowU, cv::Mat &  flowV, const cv::Mat & image1, const cv::Mat & image2, int filterSize,int area_hsz, int sigma_i, cv::Mat & occ)
 {
-	float sigma_x = 7;
+	/*float sigma_x = 7;
 	int dilate = 5;
-	
+	*/
 	cv::Mat flowUMedian(flowU.rows, flowU.cols, OPTFLOW_TYPE);
 	cv::Mat flowVMedian(flowV.rows, flowV.cols, OPTFLOW_TYPE);
 	medFilt(flowU, filterSize, flowUMedian);
 	medFilt(flowV, filterSize, flowVMedian);
 
-	cv::Mat edgesU(flowU.rows, flowU.cols, OPTFLOW_TYPE);
-	cv::Mat edgesV(flowV.rows, flowV.cols, OPTFLOW_TYPE);
-	cv::Mat edges(flowU.rows, flowU.cols, OPTFLOW_TYPE);
-	findEdges(flowU,edgesU);
-	findEdges(flowV,edgesV);
+	//cv::Mat edgesU(flowU.rows, flowU.cols, OPTFLOW_TYPE);
+	//cv::Mat edgesV(flowV.rows, flowV.cols, OPTFLOW_TYPE);
+	//cv::Mat edges(flowU.rows, flowU.cols, OPTFLOW_TYPE);
+	//findEdges(flowU,edgesU);
+	//findEdges(flowV,edgesV);
 
-	edges = edgesU | edgesV;
+	//edges = edgesU | edgesV;
 
 	// thin edges
 	// dilate edges
@@ -341,14 +341,14 @@ void WeightedMedianFilter::runMedianFilter(cv::Mat & flowU, cv::Mat &  flowV, co
 	
 	flowUMedian.copyTo(flowU);
 	flowVMedian.copyTo(flowV);
-
 }
 
 
 void WeightedMedianFilter::computeMedianFilter(cv::Mat & flowU, cv::Mat & flowV, const  cv::Mat & image1, const  cv::Mat & image2, int filterSize, int area_hsz, int sigma_i)
 {
-	cv::Mat occ(flowU.rows, flowU.cols, OPTFLOW_TYPE);
-	detect_occlusion(flowU, flowV, image1, image2, occ);
+	//cv::Mat occ(flowU.rows, flowU.cols, OPTFLOW_TYPE);
+	//detect_occlusion(flowU, flowV, image1, image2, occ);
 	
-	runMedianFilter(flowU, flowV, image1, image2, filterSize, area_hsz,sigma_i,occ);
+	//runMedianFilter(flowU, flowV, image1, image2, filterSize, area_hsz,sigma_i,occ);
+	runMedianFilter(flowU, flowV, image1, image2, filterSize, area_hsz,sigma_i,cv::Mat());
 }

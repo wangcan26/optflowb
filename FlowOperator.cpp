@@ -3,9 +3,62 @@
 #include "PenaltyFunctionCompute.h"
 #include "UtilsMat.h"
 
-FlowOperator::FlowOperator(const int rows, const int cols) : _b(2 * rows * cols, true, 0), _rows(rows), _cols(cols), _cells(rows * cols){
+FlowOperator::FlowOperator(const int rows, const int cols) : _b(2 * rows * cols, true, 0), _rows(rows), _cols(cols), _cells(rows * cols), FMxD(rows, cols, OPTFLOW_TYPE), FMxd(rows, cols, OPTFLOW_TYPE), FMyD(rows, cols, OPTFLOW_TYPE), FMyd(rows, cols, OPTFLOW_TYPE){
 	//construct consts
+		//FMx/Fx const
+	//FMx contains the FMxD mat on its main diagonal and FMxd on the -cols(in matlab its -rows) diagonal
+	FArray zeros(_cols, true, 0);
+	FArray ones(_cols, true, 1);
+	FArray nones(_cols, true, -1);
 
+	/*
+	0  1  1  1       0  0  0  0
+	0  1  1  1  ->   1  1  1  1
+	0  1  1  1       1  1  1  1
+	0  1  1  1       1  1  1  1
+	*/
+	//cv::Mat FMxD(_rows, _cols, OPTFLOW_TYPE);
+	memcpy(FMxD.ptr<float>(0), zeros.ptr, _cols * sizeof(float));
+	for(int i = 1; i < _rows; ++i)
+		memcpy(FMxD.ptr<float>(i), ones.ptr, _cols * sizeof(float));
+	/*
+	-1 -1 -1  0      -1 -1 -1 -1
+	-1 -1 -1  0  ->  -1 -1 -1 -1
+	-1 -1 -1  0      -1 -1 -1 -1
+	-1 -1 -1  0       0  0  0  0
+	*/
+	//cv::Mat FMxd(_rows, _cols, OPTFLOW_TYPE, cv::Scalar(-1)); increases quality
+	//cv::Mat FMxd(_rows, _cols, OPTFLOW_TYPE);
+	for(int i = 1; i < _rows; ++i)
+		memcpy(FMxd.ptr<float>(i), nones.ptr, _cols * sizeof(float));
+	memcpy(FMxd.ptr<float>(0), zeros.ptr, _cols * sizeof(float));
+
+
+	//FMy/Fy const
+
+	/*
+	 0  0  0  0       0  1  1  1
+	 1  1  1  1  ->   0  1  1  1
+	 1  1  1  1       0  1  1  1
+	 1  1  1  1       0  1  1  1
+	*/
+	FArray line1(_cols, true, 1);
+	*(line1.ptr) = 0;	
+	//cv::Mat FMyD(_rows, _cols, OPTFLOW_TYPE);
+	for(int i = 0; i < _rows; ++i)
+		memcpy(FMyD.ptr<float>(i), line1.ptr, _cols * sizeof(float));
+	
+	/*
+	-1 -1 -1 -1       -1 -1 -1  0
+	-1 -1 -1 -1   ->  -1 -1 -1  0
+	-1 -1 -1 -1       -1 -1 -1  0
+	 0  0  0  0       -1 -1 -1  0
+	*/
+	FArray line2(_cols, true, -1);
+	*(line2.ptr + _cols - 1) = 0;
+	//cv::Mat FMyd(_rows, _cols, OPTFLOW_TYPE);
+	for(int i = 0; i < _rows; ++i)
+		memcpy(FMyd.ptr<float>(i), line2.ptr, _cols * sizeof(float));
 }
 
 FlowOperator::~FlowOperator(){
@@ -139,60 +192,60 @@ void FlowOperator::buildM (CRSSparseMat& const A,
 
 
 void FlowOperator::construct(flowUV& UV, const cv::Mat& Du, const cv::Mat& Dv, const cv::Mat& Ix, const cv::Mat& Iy, const cv::Mat It, const OpticalFlowParams& params){
-	//FMx/Fx const
-	//FMx contains the FMxD mat on its main diagonal and FMxd on the -cols(in matlab its -rows) diagonal
-	FArray zeros(_cols, true, 0);
-	FArray ones(_cols, true, 1);
-	FArray nones(_cols, true, -1);
+	////FMx/Fx const
+	////FMx contains the FMxD mat on its main diagonal and FMxd on the -cols(in matlab its -rows) diagonal
+	//FArray zeros(_cols, true, 0);
+	//FArray ones(_cols, true, 1);
+	//FArray nones(_cols, true, -1);
 
-	/*
-	0  1  1  1       0  0  0  0
-	0  1  1  1  ->   1  1  1  1
-	0  1  1  1       1  1  1  1
-	0  1  1  1       1  1  1  1
-	*/
-	cv::Mat FMxD(_rows, _cols, OPTFLOW_TYPE);
-	memcpy(FMxD.ptr<float>(0), zeros.ptr, _cols * sizeof(float));
-	for(int i = 1; i < _rows; ++i)
-		memcpy(FMxD.ptr<float>(i), ones.ptr, _cols * sizeof(float));
-	/*
-	-1 -1 -1  0      -1 -1 -1 -1
-	-1 -1 -1  0  ->  -1 -1 -1 -1
-	-1 -1 -1  0      -1 -1 -1 -1
-	-1 -1 -1  0       0  0  0  0
-	*/
-	//cv::Mat FMxd(_rows, _cols, OPTFLOW_TYPE, cv::Scalar(-1)); increases quality
-	cv::Mat FMxd(_rows, _cols, OPTFLOW_TYPE);
-	for(int i = 1; i < _rows; ++i)
-		memcpy(FMxd.ptr<float>(i), nones.ptr, _cols * sizeof(float));
-	memcpy(FMxd.ptr<float>(0), zeros.ptr, _cols * sizeof(float));
+	///*
+	//0  1  1  1       0  0  0  0
+	//0  1  1  1  ->   1  1  1  1
+	//0  1  1  1       1  1  1  1
+	//0  1  1  1       1  1  1  1
+	//*/
+	//cv::Mat FMxD(_rows, _cols, OPTFLOW_TYPE);
+	//memcpy(FMxD.ptr<float>(0), zeros.ptr, _cols * sizeof(float));
+	//for(int i = 1; i < _rows; ++i)
+	//	memcpy(FMxD.ptr<float>(i), ones.ptr, _cols * sizeof(float));
+	///*
+	//-1 -1 -1  0      -1 -1 -1 -1
+	//-1 -1 -1  0  ->  -1 -1 -1 -1
+	//-1 -1 -1  0      -1 -1 -1 -1
+	//-1 -1 -1  0       0  0  0  0
+	//*/
+	////cv::Mat FMxd(_rows, _cols, OPTFLOW_TYPE, cv::Scalar(-1)); increases quality
+	//cv::Mat FMxd(_rows, _cols, OPTFLOW_TYPE);
+	//for(int i = 1; i < _rows; ++i)
+	//	memcpy(FMxd.ptr<float>(i), nones.ptr, _cols * sizeof(float));
+	//memcpy(FMxd.ptr<float>(0), zeros.ptr, _cols * sizeof(float));
 
 
-	//FMy/Fy const
+	////FMy/Fy const
 
-	/*
-	 0  0  0  0       0  1  1  1
-	 1  1  1  1  ->   0  1  1  1
-	 1  1  1  1       0  1  1  1
-	 1  1  1  1       0  1  1  1
-	*/
-	FArray line1(_cols, true, 1);
-	*(line1.ptr) = 0;	
-	cv::Mat FMyD(_rows, _cols, OPTFLOW_TYPE);
-	for(int i = 0; i < _rows; ++i)
-		memcpy(FMyD.ptr<float>(i), line1.ptr, _cols * sizeof(float));
-	
-	/*
-	-1 -1 -1 -1       -1 -1 -1  0
-	-1 -1 -1 -1   ->  -1 -1 -1  0
-	-1 -1 -1 -1       -1 -1 -1  0
-	 0  0  0  0       -1 -1 -1  0
-	*/
-	FArray line2(_cols, true, -1);
-	*(line2.ptr + _cols - 1) = 0;
-	cv::Mat FMyd(_rows, _cols, OPTFLOW_TYPE);
-	for(int i = 0; i < _rows; ++i)
-		memcpy(FMyd.ptr<float>(i), line2.ptr, _cols * sizeof(float));
+	///*
+	// 0  0  0  0       0  1  1  1
+	// 1  1  1  1  ->   0  1  1  1
+	// 1  1  1  1       0  1  1  1
+	// 1  1  1  1       0  1  1  1
+	//*/
+	//FArray line1(_cols, true, 1);
+	//*(line1.ptr) = 0;	
+	//cv::Mat FMyD(_rows, _cols, OPTFLOW_TYPE);
+	//for(int i = 0; i < _rows; ++i)
+	//	memcpy(FMyD.ptr<float>(i), line1.ptr, _cols * sizeof(float));
+	//
+	///*
+	//-1 -1 -1 -1       -1 -1 -1  0
+	//-1 -1 -1 -1   ->  -1 -1 -1  0
+	//-1 -1 -1 -1       -1 -1 -1  0
+	// 0  0  0  0       -1 -1 -1  0
+	//*/
+	//FArray line2(_cols, true, -1);
+	//*(line2.ptr + _cols - 1) = 0;
+	//cv::Mat FMyd(_rows, _cols, OPTFLOW_TYPE);
+	//for(int i = 0; i < _rows; ++i)
+	//	memcpy(FMyd.ptr<float>(i), line2.ptr, _cols * sizeof(float));
 
 
 
